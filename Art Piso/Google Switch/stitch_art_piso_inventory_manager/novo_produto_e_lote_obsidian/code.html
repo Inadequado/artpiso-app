@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Art Piso - Cadastro de Produto e Lote</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/font/sans.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#09090b",
+                    "primary-fixed": "#ede9fe",
+                    "outline": "#52525b",
+                    "surface-container": "#121215",
+                    "on-background": "#fafafa",
+                    "tertiary-container": "#065f46",
+                    "background": "#09090b",
+                    "secondary": "#71717a",
+                    "tertiary-fixed-dim": "#6ee7b7",
+                    "error-container": "#3b1111",
+                    "surface": "#0c0c0f",
+                    "on-tertiary": "#001a12",
+                    "secondary-fixed": "#a1a1aa",
+                    "on-primary-fixed-variant": "#5b21b6",
+                    "primary-fixed-dim": "#c4b5fd",
+                    "on-secondary-container": "#a1a1aa",
+                    "on-secondary": "#09090b",
+                    "secondary-container": "#27272a",
+                    "on-error": "#1a0000",
+                    "on-surface": "#fafafa",
+                    "surface-variant": "#18181b",
+                    "inverse-primary": "#5b21b6",
+                    "on-tertiary-fixed-variant": "#047857",
+                    "surface-dim": "#0c0c0f",
+                    "surface-container-highest": "#1e1e22",
+                    "surface-bright": "#18181b",
+                    "on-surface-variant": "#a1a1aa",
+                    "error": "#ef4444",
+                    "inverse-surface": "#fafafa",
+                    "on-secondary-fixed-variant": "#3f3f46",
+                    "on-tertiary-fixed": "#003318",
+                    "on-primary": "#0a0012",
+                    "on-error-container": "#fca5a5",
+                    "on-tertiary-container": "#bbf7d0",
+                    "primary": "#a78bfa",
+                    "on-secondary-fixed": "#18181b",
+                    "on-primary-fixed": "#2e1065",
+                    "tertiary-fixed": "#bbf7d0",
+                    "surface-container-high": "#18181b",
+                    "secondary-fixed-dim": "#71717a",
+                    "surface-container-low": "#0f0f12",
+                    "primary-container": "#7c3aed",
+                    "inverse-on-surface": "#09090b",
+                    "outline-variant": "#27272a",
+                    "on-primary-container": "#ede9fe",
+                    "tertiary": "#34d399",
+                    "surface-tint": "#a78bfa"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Geist"],
+                    "display": ["Geist"],
+                    "body": ["Geist"],
+                    "label": ["Geist"]
+            },
+            "width": {
+              "sidebar-width": "280px"
+            },
+            "margin": {
+              "sidebar-width": "280px"
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid #a78bfa !important;
+            outline-offset: 2px;
+        }
+        .bento-card {
+            background-color: #121215;
+            border: 1px solid #27272a;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .bento-card:hover {
+            border-color: #52525b;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col py-6 px-4 z-50 hidden md:flex">
+<div class="mb-10 px-4">
+<h1 class="text-headline-md font-extrabold text-primary tracking-tight">Art Piso</h1>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">Warehouse Management</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Navigation Items -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium">Estoque</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-medium">Reservas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-semibold transition-colors" href="#">
+<span class="material-symbols-outlined">layers</span>
+<span class="font-medium">Produtos e Lotes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-medium">Ajustes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium">Configurações</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary font-bold">
+                AP
+            </div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-on-surface">Admin User</span>
+<span class="text-xs text-on-surface-variant">Central Distribution</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-sidebar-width min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="h-16 flex items-center justify-between px-8 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-40">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container text-sm rounded-lg pl-10 pr-4 py-2 border border-outline-variant focus:border-primary transition-all" placeholder="Pesquisar produtos ou lotes..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-8 max-w-6xl mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-3xl font-bold text-on-background tracking-tight mb-2">Novo Cadastro</h2>
+<p class="text-on-surface-variant">Registre novos produtos e vincule seus respectivos lotes ao estoque.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface font-medium hover:bg-surface-container transition-all">
+                        Descartar
+                    </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        Salvar Registro
+                    </button>
+</div>
+</div>
+<!-- Split Layout Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Product Section (Step 1) -->
+<div class="lg:col-span-7 flex flex-col gap-6">
+<div class="bento-card p-6 flex flex-col gap-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-bold">1</div>
+<h3 class="text-lg font-bold text-on-background uppercase tracking-wider text-sm">Informações do Produto</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Referência</label>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface focus:bg-surface-container transition-all" placeholder="Ex: PT-4502" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Marca</label>
+<select class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface appearance-none focus:bg-surface-container transition-all">
+<option disabled="" selected="" value="">Selecione a marca</option>
+<option>Art Piso Premium</option>
+<option>Cerâmica Forte</option>
+<option>Elite Revestimentos</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Tamanho (cm)</label>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface focus:bg-surface-container transition-all" placeholder="Ex: 60x60, 80x80" type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Descrição do Produto</label>
+<textarea class="bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface focus:bg-surface-container transition-all resize-none" placeholder="Detalhes técnicos, acabamento (brilhoso, acetinado, etc)..." rows="4"></textarea>
+</div>
+</div>
+<!-- Visual Preview Card (Ghost Item) -->
+<div class="bento-card border-dashed border-2 p-10 flex flex-col items-center justify-center text-center gap-4 group cursor-pointer hover:bg-surface-container-low/30">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-4xl">add_a_photo</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Adicionar Foto do Produto</p>
+<p class="text-sm text-on-surface-variant">Formatos suportados: JPG, PNG. Máx 5MB.</p>
+</div>
+</div>
+</div>
+<!-- Lote Section (Step 2) -->
+<div class="lg:col-span-5 flex flex-col gap-6">
+<div class="bento-card p-6 flex flex-col gap-6 bg-surface-container-high/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold">2</div>
+<h3 class="text-lg font-bold text-on-background uppercase tracking-wider text-sm">Dados do Lote</h3>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Código do Lote</label>
+<input class="bg-surface-container border border-outline-variant rounded-lg p-3 text-on-surface font-mono focus:ring-tertiary transition-all" placeholder="Ex: LOTE-2023-A12" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">Quadra</label>
+<input class="bg-surface-container border border-outline-variant rounded-lg p-3 text-on-surface focus:ring-tertiary transition-all" placeholder="A, B, C..." type="text"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold text-on-surface-variant uppercase ml-1">M² por Caixa</label>
+<div class="relative">
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg p-3 text-on-surface pr-10 focus:ring-tertiary transition-all" placeholder="2.45" step="0.01" type="number"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-on-surface-variant">m²</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<label class="text-xs font-semibold text-on-surface-variant uppercase">Estoque Inicial</label>
+<span class="text-xs text-on-surface-variant/60">Total de caixas no momento do cadastro</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded bg-surface-container border border-outline-variant hover:bg-surface-container-high active:scale-90 transition-all" onclick="decrementStock()">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<input class="w-16 bg-transparent border-none text-center font-bold text-xl text-primary focus:ring-0" id="stock-input" type="number" value="0"/>
+<button class="w-10 h-10 flex items-center justify-center rounded bg-surface-container border border-outline-variant hover:bg-surface-container-high active:scale-90 transition-all" onclick="incrementStock()">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+<div class="pt-3 border-t border-outline-variant flex justify-between items-center">
+<span class="text-xs font-medium text-on-surface-variant">Total Estimado:</span>
+<span class="text-lg font-bold text-tertiary" id="total-m2">0.00 m²</span>
+</div>
+</div>
+<div class="flex gap-2 p-3 rounded-lg bg-tertiary/10 border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-sm">info</span>
+<p class="text-xs text-on-surface">Novos lotes para a mesma referência podem ser adicionados posteriormente no menu "Ajustes".</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Spacer for Bottom Nav on Mobile -->
+<div class="h-20 md:hidden"></div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-lowest border-t border-outline-variant shadow-lg flex justify-around items-center h-16 px-4 pb-safe">
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] mt-1 font-medium">Estoque</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] mt-1 font-medium">Reservas</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 px-4 scale-110">
+<span class="material-symbols-outlined">layers</span>
+<span class="text-[10px] mt-1 font-bold">Produtos</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="text-[10px] mt-1 font-medium">Ajustes</span>
+</button>
+</nav>
+<script>
+        const stockInput = document.getElementById('stock-input');
+        const m2Input = document.querySelector('input[placeholder="2.45"]');
+        const totalDisplay = document.getElementById('total-m2');
+
+        function updateCalculation() {
+            const boxes = parseInt(stockInput.value) || 0;
+            const m2PerBox = parseFloat(m2Input.value) || 0;
+            const total = (boxes * m2PerBox).toFixed(2);
+            totalDisplay.innerText = `${total} m²`;
+        }
+
+        function incrementStock() {
+            stockInput.value = parseInt(stockInput.value) + 1;
+            updateCalculation();
+        }
+
+        function decrementStock() {
+            if (parseInt(stockInput.value) > 0) {
+                stockInput.value = parseInt(stockInput.value) - 1;
+                updateCalculation();
+            }
+        }
+
+        stockInput.addEventListener('input', updateCalculation);
+        m2Input.addEventListener('input', updateCalculation);
+
+        // Simple button active state toggle for UI demonstration
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => el.classList.add('scale-95'));
+            el.addEventListener('mouseup', () => el.classList.remove('scale-95'));
+            el.addEventListener('mouseleave', () => el.classList.remove('scale-95'));
+        });
+    </script>
+</body></html>

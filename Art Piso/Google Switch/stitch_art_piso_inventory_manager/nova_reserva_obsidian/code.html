@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Art Piso - Nova Reserva</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link font-family="Geist" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#09090b",
+                    "primary-fixed": "#ede9fe",
+                    "outline": "#52525b",
+                    "surface-container": "#121215",
+                    "on-background": "#fafafa",
+                    "tertiary-container": "#065f46",
+                    "background": "#09090b",
+                    "secondary": "#71717a",
+                    "tertiary-fixed-dim": "#6ee7b7",
+                    "error-container": "#3b1111",
+                    "surface": "#0c0c0f",
+                    "on-tertiary": "#001a12",
+                    "secondary-fixed": "#a1a1aa",
+                    "on-primary-fixed-variant": "#5b21b6",
+                    "primary-fixed-dim": "#c4b5fd",
+                    "on-secondary-container": "#a1a1aa",
+                    "on-secondary": "#09090b",
+                    "secondary-container": "#27272a",
+                    "on-error": "#1a0000",
+                    "on-surface": "#fafafa",
+                    "surface-variant": "#18181b",
+                    "inverse-primary": "#5b21b6",
+                    "on-tertiary-fixed-variant": "#047857",
+                    "surface-dim": "#0c0c0f",
+                    "surface-container-highest": "#1e1e22",
+                    "surface-bright": "#18181b",
+                    "on-surface-variant": "#a1a1aa",
+                    "error": "#ef4444",
+                    "inverse-surface": "#fafafa",
+                    "on-secondary-fixed-variant": "#3f3f46",
+                    "on-tertiary-fixed": "#003318",
+                    "on-primary": "#0a0012",
+                    "on-error-container": "#fca5a5",
+                    "on-tertiary-container": "#bbf7d0",
+                    "primary": "#a78bfa",
+                    "on-secondary-fixed": "#18181b",
+                    "on-primary-fixed": "#2e1065",
+                    "tertiary-fixed": "#bbf7d0",
+                    "surface-container-high": "#18181b",
+                    "secondary-fixed-dim": "#71717a",
+                    "surface-container-low": "#0f0f12",
+                    "primary-container": "#7c3aed",
+                    "inverse-on-surface": "#09090b",
+                    "outline-variant": "#27272a",
+                    "on-primary-container": "#ede9fe",
+                    "tertiary": "#34d399",
+                    "surface-tint": "#a78bfa"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Geist"],
+                    "display": ["Geist"],
+                    "body": ["Geist"],
+                    "label": ["Geist"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col py-4 px-4 z-40 hidden md:flex">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-headline-md text-primary tracking-tight">Art Piso</h1>
+<p class="text-on-surface-variant text-sm">Warehouse Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary-container text-on-secondary-container font-medium cursor-pointer transition-all active:scale-95">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Estoque</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<span class="material-symbols-outlined">event_available</span>
+<span>Reservas</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<span class="material-symbols-outlined">layers</span>
+<span>Produtos e Lotes</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>Ajustes</span>
+</div>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-4 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a warehouse manager in a dark high-contrast studio setting, wearing a sleek black polo shirt. The lighting is dramatic and moody, emphasizing a professional and focused demeanor. Background is a deep charcoal gray consistent with Obsidian theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3gB-iNSETcEs97IxAVDW-fc_vc1-hHmueePwLv8mjUZIqX3BdBblRk8U5EMtoCyPzZOAoN4CUUUs7Xi9peT2RHgLZ5dkf4d05jtKabY--egN-Uv5qT_H9ZLKqZ8P8brJhSXu7CMPOvCV4pdUrqLZ9k-BA9YtNpvZ6PJeDjBNnre9GYeJ9XCuWCwBRC6Pr89Ayxyd8Jr5E1ud5jCx6qEbIMkwgpvnsj5rgGdz6YnlsVw40k4LpHpUV-DjHfUIFsK6fDM5dOCYk4w"/>
+</div>
+<div>
+<p class="text-sm font-medium">Operador</p>
+<p class="text-xs text-on-surface-variant">Unidade Matriz</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas (Background behind drawer) -->
+<main class="md:pl-[280px] min-h-screen">
+<!-- Top Bar -->
+<header class="h-16 flex items-center justify-between px-8 bg-surface-container-lowest border-b border-outline-variant">
+<div class="flex items-center gap-4 flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-low border-outline-variant border rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Buscar no estoque..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<!-- Content Placeholder -->
+<div class="p-8">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-2xl font-bold tracking-tight">Estoque Geral</h2>
+<p class="text-on-surface-variant">Gerencie produtos e lotes disponíveis.</p>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>Novo Item</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Example Card (Locked State) -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-5 hover:border-primary/50 transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-4">
+<div class="px-2 py-1 bg-tertiary-container/30 text-tertiary text-[10px] font-bold rounded uppercase tracking-wider">Disponível</div>
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</div>
+<h3 class="font-bold text-lg mb-1">Porcelanato Polido 60x120</h3>
+<p class="text-on-surface-variant text-sm mb-4">Lote: 2024-AX09</p>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-outline-variant">
+<div>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Quadra</p>
+<p class="font-mono text-lg text-primary">A-04</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant uppercase tracking-tighter">Saldo</p>
+<p class="font-mono text-lg">142 m²</p>
+</div>
+</div>
+</div>
+<!-- More cards would be here... -->
+</div>
+</div></main>
+<!-- Modal Overlay Backdrop -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end transition-opacity duration-300" id="modalOverlay">
+<!-- Drawer Container -->
+<div class="w-full max-w-lg bg-surface-container-lowest h-full border-l border-outline-variant shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-0" id="drawer">
+<!-- Drawer Header -->
+<div class="px-6 py-6 border-b border-outline-variant flex items-center justify-between">
+<div>
+<h2 class="text-xl font-bold tracking-tight text-on-surface">Nova Reserva</h2>
+<p class="text-sm text-on-surface-variant">Vincular produtos a um pedido de cliente.</p>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full text-on-surface-variant transition-colors" onclick="document.getElementById('modalOverlay').style.display='none'">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+<!-- Product Info Section (ReadOnly Summary) -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+<h3 class="text-xs font-bold uppercase tracking-widest">Produto Selecionado</h3>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-4 flex gap-4">
+<div class="w-20 h-20 rounded-lg bg-surface-container-high overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Macro high-definition photography of a premium gray porcelain tile with subtle white veining. The texture is smooth and polished, catching soft ambient studio light. The overall aesthetic is minimalist, modern, and high-end, fitting the Obsidian dark mode design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1OMmFhrgsgIJG6Spc7jZR8Cf-_IFTjgfXiwjHxoecPazxChx82MDaruIutquT9uypJchQylTNDFiVWa8pHRCuzL5BUilHWEyClXJcO3QWOM0yT3boJ7sERVnciBoF2ByfIgthtyvh3XbgiJXwKJesrUyaXUL700XIC4-qkoEp6Z0VJ6INjB-kRyncSdejtQkHm-BM7BgyD_utdvT3n5sJqXb3jUD6l6WxlIjpk0UK6ayj-BQvSUSX5iQHgyZ-J2aiF2mjvUjwIg"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Porcelanato Polido Carrara 60x120</h4>
+<div class="mt-2 grid grid-cols-2 gap-y-2">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Lote</p>
+<p class="text-sm font-mono">2024-AX09</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Quadra</p>
+<p class="text-sm font-mono text-tertiary">A-04</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Disp. Caixas</p>
+<p class="text-sm">78 cx</p>
+</div>
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-medium">Disp. m²</p>
+<p class="text-sm">112.32 m²</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Reservation Form -->
+<section class="space-y-6">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">edit_note</span>
+<h3 class="text-xs font-bold uppercase tracking-widest">Dados da Reserva</h3>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Quantidade (Caixas)</label>
+<input class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="0" type="number"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Quantidade (m²)</label>
+<input class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Nome do Cliente</label>
+<input class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Nome completo" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Telefone</label>
+<input class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="(00) 00000-0000" type="tel"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Número do Pedido</label>
+<input class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Ex: 45092" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-on-surface-variant ml-1">Observações</label>
+<textarea class="w-full bg-surface-container border-outline-variant border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none" placeholder="Detalhes adicionais sobre a reserva ou entrega..." rows="4"></textarea>
+</div>
+</section>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 border-t border-outline-variant bg-surface-container">
+<div class="flex gap-4">
+<button class="flex-1 px-4 py-3 border border-outline-variant rounded-xl font-medium text-on-surface-variant hover:bg-surface-container-high transition-colors" onclick="document.getElementById('modalOverlay').style.display='none'">
+                        Cancelar
+                    </button>
+<button class="flex-[2] bg-primary text-on-primary px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">check_circle</span>
+                        Confirmar Reserva
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Mobile Bottom Nav -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center h-16 px-4 pb-safe shadow-lg">
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] mt-0.5">Estoque</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] mt-0.5">Reservas</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="text-[10px] mt-0.5">Ajustes</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] mt-0.5">Perfil</span>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for the drawer closing
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modalOverlay') {
+                const drawer = document.getElementById('drawer');
+                drawer.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.getElementById('modalOverlay').style.display = 'none';
+                    drawer.classList.remove('translate-x-full');
+                }, 300);
+            }
+        });
+    </script>
+</body></html>

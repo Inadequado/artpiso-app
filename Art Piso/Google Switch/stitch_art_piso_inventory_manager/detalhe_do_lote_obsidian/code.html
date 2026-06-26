@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalhe do Lote | Art Piso</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#09090b",
+                    "primary-fixed": "#ede9fe",
+                    "outline": "#52525b",
+                    "surface-container": "#121215",
+                    "on-background": "#fafafa",
+                    "tertiary-container": "#065f46",
+                    "background": "#09090b",
+                    "secondary": "#71717a",
+                    "tertiary-fixed-dim": "#6ee7b7",
+                    "error-container": "#3b1111",
+                    "surface": "#0c0c0f",
+                    "on-tertiary": "#001a12",
+                    "secondary-fixed": "#a1a1aa",
+                    "on-primary-fixed-variant": "#5b21b6",
+                    "primary-fixed-dim": "#c4b5fd",
+                    "on-secondary-container": "#a1a1aa",
+                    "on-secondary": "#09090b",
+                    "secondary-container": "#27272a",
+                    "on-error": "#1a0000",
+                    "on-surface": "#fafafa",
+                    "surface-variant": "#18181b",
+                    "inverse-primary": "#5b21b6",
+                    "on-tertiary-fixed-variant": "#047857",
+                    "surface-dim": "#0c0c0f",
+                    "surface-container-highest": "#1e1e22",
+                    "surface-bright": "#18181b",
+                    "on-surface-variant": "#a1a1aa",
+                    "error": "#ef4444",
+                    "inverse-surface": "#fafafa",
+                    "on-secondary-fixed-variant": "#3f3f46",
+                    "on-tertiary-fixed": "#003318",
+                    "on-primary": "#0a0012",
+                    "on-error-container": "#fca5a5",
+                    "on-tertiary-container": "#bbf7d0",
+                    "primary": "#a78bfa",
+                    "on-secondary-fixed": "#18181b",
+                    "on-primary-fixed": "#2e1065",
+                    "tertiary-fixed": "#bbf7d0",
+                    "surface-container-high": "#18181b",
+                    "secondary-fixed-dim": "#71717a",
+                    "surface-container-low": "#0f0f12",
+                    "primary-container": "#7c3aed",
+                    "inverse-on-surface": "#09090b",
+                    "outline-variant": "#27272a",
+                    "on-primary-container": "#ede9fe",
+                    "tertiary": "#34d399",
+                    "surface-tint": "#a78bfa"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Geist"],
+                    "display": ["Geist"],
+                    "body": ["Geist"],
+                    "label": ["Geist"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-width { width: 280px; }
+        .left-sidebar-width { margin-left: 280px; }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col py-6 px-4 z-50 hidden md:flex sidebar-width">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-headline-md text-primary tracking-tight">Art Piso</h1>
+<p class="text-on-surface-variant text-sm mt-1">Warehouse Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary-container text-on-secondary-container font-medium transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Estoque</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span>Reservas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">layers</span>
+<span>Produtos e Lotes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>Ajustes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Configurações</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional warehouse manager portrait, close-up, neutral expression, soft studio lighting in a dark industrial aesthetic. The background is a clean, dark-toned storage facility with subtle violet highlights on the shelving units, matching the Obsidian design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7-KQPlTFLpk2NqGAyunJN8UeWvhi-IblsM5utSP0YT5bUVanPbXhAjFERsNa-82t2H6Zjf1Ma0NBm_VBkIPteZZLBg5br46nytuvElKZ36kwGLcdGuuSVCATIYzjBAo8Fuq_AhGq1QyV2B2ZW0nDxtvZ7AP8QPiTBjmre1mSXcgP-zfrjtqqGdnZkVD9U8NMHnCC7c3swk3lNZiLv_yKkAO8q_vFhYC9ydXSUoto4zClzz0xnt4GcEb970PJKoiFg64i5-4EI4g"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Admin User</span>
+<span class="text-xs text-on-surface-variant">Warehouse Lead</span>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="h-16 fixed top-0 right-0 left-0 md:left-sidebar-width bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-6 z-40">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface p-1">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center bg-surface-container-low rounded-lg px-3 py-1.5 border border-outline-variant w-64 md:w-96">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full text-on-surface placeholder:text-outline" placeholder="Buscar lote ou referência..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-16 pb-20 md:pb-6 left-0 md:left-sidebar-width min-h-screen px-4 md:px-8 bg-background">
+<div class="max-w-7xl mx-auto py-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-xs text-on-surface-variant mb-6">
+<a class="hover:text-primary" href="#">Estoque</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<a class="hover:text-primary" href="#">Produtos e Lotes</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-on-surface">Detalhe do Lote</span>
+</nav>
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="text-3xl font-bold tracking-tight text-on-surface">Lote: <span class="text-primary">LT-8842-P</span></h2>
+<p class="text-on-surface-variant mt-2 flex items-center gap-2">
+                        Ref: <span class="text-on-surface font-mono">PORCELANATO-120-GR</span>
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+                        Status: <span class="text-tertiary font-medium">Em Estoque</span>
+</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="px-5 py-2.5 bg-primary text-on-primary font-semibold rounded-lg flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">event_available</span>
+                        Reservar
+                    </button>
+<button class="px-5 py-2.5 border border-outline-variant text-on-surface font-semibold rounded-lg flex items-center gap-2 hover:bg-surface-container-low active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">settings_suggest</span>
+                        Ajustar Estoque
+                    </button>
+<button class="px-5 py-2.5 border border-error/30 text-error font-semibold rounded-lg flex items-center gap-2 hover:bg-error-container active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">report_problem</span>
+                        Registrar Perda
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Product Card (Large) -->
+<div class="lg:col-span-2 bg-surface-container border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+<div class="h-64 relative">
+<img class="w-full h-full object-cover" data-alt="High-resolution close-up texture of a premium light gray porcelain floor tile. The image highlights the fine grain, subtle marble-like veining, and matte finish. The lighting is precise, emphasizing the material quality in a clean architectural style consistent with Obsidian's precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnynjXUunSeMaCEpTVR8BhGSlIk-UNB6rzw3fr4tURPZfdWy-3xgPqwgHetMJw5S0pSr1eGbY75AdT0Z-bYytOfdt2KxNtW473u3MbGXXmx8qhNaY0rJZVsB6u2nZ-WmtS2LcuMD7N_gkC2emgQCXKuNBAbA7csc1QlxaCb7Vjo4P9q1NGgqeCM1oOGKirOW6nh5Ko08qd0zzBGchna5mNt-O6md7Bq3hMfKCvZyHDp64aZlkOGWoFhQssS84eSF_z2gaNxhtISw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container to-transparent"></div>
+<div class="absolute bottom-4 left-6">
+<span class="px-2 py-1 bg-surface-container-highest text-primary text-[10px] uppercase font-bold rounded border border-outline-variant mb-2 inline-block">Premium Collection</span>
+<h3 class="text-2xl font-bold">Porcelanato Polido 120x120 Grise</h3>
+</div>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="space-y-1">
+<p class="text-xs text-on-surface-variant uppercase tracking-wider font-bold">Localização</p>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<span class="text-lg font-mono">Quadra B - Rua 04</span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs text-on-surface-variant uppercase tracking-wider font-bold">Dimensões</p>
+<p class="text-lg text-on-surface">120cm x 120cm</p>
+</div>
+<div class="space-y-1">
+<p class="text-xs text-on-surface-variant uppercase tracking-wider font-bold">Acabamento</p>
+<p class="text-lg text-on-surface">Polido Retificado</p>
+</div>
+</div>
+</div>
+<!-- Stock Summary Sidebar Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 flex flex-col gap-6">
+<h3 class="font-bold text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                        Resumo de Estoque
+                    </h3>
+<div class="space-y-4">
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex justify-between items-center mb-1">
+<span class="text-on-surface-variant text-sm">Estoque Total</span>
+<span class="material-symbols-outlined text-on-surface-variant text-lg">inventory</span>
+</div>
+<p class="text-3xl font-bold">1.240,50 <span class="text-sm font-normal text-on-surface-variant">m²</span></p>
+<p class="text-xs text-on-surface-variant mt-1">~862 Caixas</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<span class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest">Reservado</span>
+<p class="text-lg font-bold text-primary">340,00 <span class="text-[10px] font-normal">m²</span></p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<span class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest">Perda</span>
+<p class="text-lg font-bold text-error">12,40 <span class="text-[10px] font-normal">m²</span></p>
+</div>
+</div>
+<div class="p-4 bg-tertiary/10 border border-tertiary/20 rounded-lg">
+<div class="flex justify-between items-center mb-1">
+<span class="text-tertiary-fixed-dim text-sm font-bold uppercase tracking-widest">Disponível</span>
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<p class="text-3xl font-bold text-tertiary">888,10 <span class="text-sm font-normal text-on-surface-variant">m²</span></p>
+</div>
+</div>
+</div>
+<!-- Technical Data Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+<h3 class="font-bold text-lg flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">description</span>
+                        Dados Técnicos do Lote
+                    </h3>
+<div class="space-y-4">
+<div class="flex justify-between py-3 border-b border-outline-variant">
+<span class="text-on-surface-variant">Metragem por Caixa</span>
+<span class="font-mono text-on-surface">1,44 m²</span>
+</div>
+<div class="flex justify-between py-3 border-b border-outline-variant">
+<span class="text-on-surface-variant">Peças por Caixa</span>
+<span class="font-mono text-on-surface">2 un</span>
+</div>
+<div class="flex justify-between py-3 border-b border-outline-variant">
+<span class="text-on-surface-variant">Peso por Caixa</span>
+<span class="font-mono text-on-surface">32,5 kg</span>
+</div>
+<div class="flex justify-between py-3 border-b border-outline-variant">
+<span class="text-on-surface-variant">Data de Fabricação</span>
+<span class="font-mono text-on-surface">12/10/2023</span>
+</div>
+<div class="flex justify-between py-3">
+<span class="text-on-surface-variant">Classe de Resistência</span>
+<span class="font-mono text-tertiary">PEI 4</span>
+</div>
+</div>
+</div>
+<!-- Logistics / Map Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl overflow-hidden relative group">
+<div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all z-10 pointer-events-none"></div>
+<div class="z-20 relative p-6 pointer-events-none">
+<h3 class="font-bold text-lg flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary">map</span>
+                            Mapa da Quadra
+                        </h3>
+<p class="text-xs text-on-surface-variant mb-4">Posicionamento geográfico no armazém</p>
+</div>
+<div class="h-full min-h-[240px] bg-surface-container-high relative overflow-hidden" data-location="São Paulo Warehouse" style="">
+<!-- Simulated Map UI -->
+<div class="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-1 p-2 opacity-30">
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-primary bg-primary/20 rounded-sm ring-2 ring-primary animate-pulse"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+<div class="border border-outline-variant rounded-sm"></div>
+</div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container p-2 rounded-lg border border-primary z-20 text-xs font-mono">
+                            QUADRA B - R04
+                        </div>
+</div>
+</div>
+<!-- Recent Movements Card -->
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 overflow-hidden">
+<h3 class="font-bold text-lg flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">history</span>
+                        Movimentações Recentes
+                    </h3>
+<div class="space-y-4">
+<div class="flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-tertiary/10 border border-tertiary/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary text-sm">add</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-sm font-semibold">Entrada de Lote</p>
+<span class="text-[10px] text-on-surface-variant font-mono">HOJE 10:45</span>
+</div>
+<p class="text-xs text-on-surface-variant">+500,00 m² - Nota Fiscal #4421</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-sm">bookmark</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-sm font-semibold">Reserva Cliente</p>
+<span class="text-[10px] text-on-surface-variant font-mono">ONTEM 16:20</span>
+</div>
+<p class="text-xs text-on-surface-variant">-120,50 m² - Pedido #89122</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-error/10 border border-error/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error text-sm">remove</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<p class="text-sm font-semibold">Registro de Perda</p>
+<span class="text-[10px] text-on-surface-variant font-mono">15 OUT 09:12</span>
+</div>
+<p class="text-xs text-on-surface-variant">-4,32 m² - Avaria Empilhadeira</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 text-xs font-bold text-primary hover:underline transition-all">Ver Histórico Completo</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center h-16 px-4 pb-safe shadow-lg">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] mt-1">Estoque</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] mt-1">Reservas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="text-[10px] mt-1">Ajustes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] mt-1">Perfil</span>
+</a>
+</nav>
+<script>
+        // Simple interactivity for demonstration
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const label = e.currentTarget.innerText.trim().split('\n').pop();
+                console.log(`Action triggered: ${label}`);
+            });
+        });
+    </script>
+</body></html>

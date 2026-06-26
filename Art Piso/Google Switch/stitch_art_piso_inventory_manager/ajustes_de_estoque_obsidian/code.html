@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ajustes de Estoque - Art Piso</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Scrollbar for Obsidian Theme */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        
+        .glass-card {
+            background: rgba(18, 18, 21, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #27272a;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#09090b",
+                        "primary-fixed": "#ede9fe",
+                        "outline": "#52525b",
+                        "surface-container": "#121215",
+                        "on-background": "#fafafa",
+                        "tertiary-container": "#065f46",
+                        "background": "#09090b",
+                        "secondary": "#71717a",
+                        "tertiary-fixed-dim": "#6ee7b7",
+                        "error-container": "#3b1111",
+                        "surface": "#0c0c0f",
+                        "on-tertiary": "#001a12",
+                        "secondary-fixed": "#a1a1aa",
+                        "on-primary-fixed-variant": "#5b21b6",
+                        "primary-fixed-dim": "#c4b5fd",
+                        "on-secondary-container": "#a1a1aa",
+                        "on-secondary": "#09090b",
+                        "secondary-container": "#27272a",
+                        "on-error": "#1a0000",
+                        "on-surface": "#fafafa",
+                        "surface-variant": "#18181b",
+                        "inverse-primary": "#5b21b6",
+                        "on-tertiary-fixed-variant": "#047857",
+                        "surface-dim": "#0c0c0f",
+                        "surface-container-highest": "#1e1e22",
+                        "surface-bright": "#18181b",
+                        "on-surface-variant": "#a1a1aa",
+                        "error": "#ef4444",
+                        "inverse-surface": "#fafafa",
+                        "on-secondary-fixed-variant": "#3f3f46",
+                        "on-tertiary-fixed": "#003318",
+                        "on-primary": "#0a0012",
+                        "on-error-container": "#fca5a5",
+                        "on-tertiary-container": "#bbf7d0",
+                        "primary": "#a78bfa",
+                        "on-secondary-fixed": "#18181b",
+                        "on-primary-fixed": "#2e1065",
+                        "tertiary-fixed": "#bbf7d0",
+                        "surface-container-high": "#18181b",
+                        "secondary-fixed-dim": "#71717a",
+                        "surface-container-low": "#0f0f12",
+                        "primary-container": "#7c3aed",
+                        "inverse-on-surface": "#09090b",
+                        "outline-variant": "#27272a",
+                        "on-primary-container": "#ede9fe",
+                        "tertiary": "#34d399",
+                        "surface-tint": "#a78bfa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Geist"],
+                        "display": ["Geist"],
+                        "body": ["Geist"],
+                        "label": ["Geist"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- SideNavBar (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 w-64 bg-surface-container-lowest border-r border-outline-variant py-4 px-4 z-40">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-bold text-primary tracking-tight">Art Piso</h1>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest mt-1">Warehouse Management</p>
+</div>
+<nav class="space-y-1 flex-1">
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="text-sm font-medium">Estoque</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">event_available</span>
+<span class="text-sm font-medium">Reservas</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">layers</span>
+<span class="text-sm font-medium">Produtos e Lotes</span>
+</div>
+<!-- Active State: Ajustes -->
+<div class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg transition-colors cursor-pointer shadow-sm">
+<span class="material-symbols-outlined text-[20px]">settings_suggest</span>
+<span class="text-sm font-bold">Ajustes</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Configurações</span>
+</div>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant px-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">JD</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-medium truncate">João Director</p>
+<p class="text-[10px] text-on-surface-variant truncate">Ops Manager</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-lg cursor-pointer">logout</span>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Desktop Offset) -->
+<header class="h-16 fixed top-0 right-0 left-0 md:left-64 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-6 z-30">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface-container text-sm rounded-lg border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary pl-10 pr-4 py-2 outline-none transition-all" placeholder="Buscar por SKU ou Lote..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<span class="text-sm font-medium text-on-surface hidden lg:block">Quarta-feira, 24 Mai</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-20 pb-24 md:pb-8 md:pl-72 md:pr-8 px-4 min-h-screen">
+<!-- Action Header -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+<div>
+<nav class="flex items-center gap-2 text-xs text-on-surface-variant mb-2">
+<span>Início</span>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-primary">Ajustes de Estoque</span>
+</nav>
+<h2 class="text-3xl font-bold tracking-tight text-on-surface">Central de Ajustes</h2>
+<p class="text-on-surface-variant mt-1">Gerencie entradas, perdas e realocações de material em tempo real.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-surface-container border border-outline-variant rounded-xl hover:border-primary transition-all group active:scale-95">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add_box</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Entrada</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-surface-container border border-outline-variant rounded-xl hover:border-error transition-all group active:scale-95">
+<span class="material-symbols-outlined text-error group-hover:scale-110 transition-transform">inventory_2</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-error">Perda</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-surface-container border border-outline-variant rounded-xl hover:border-tertiary transition-all group active:scale-95">
+<span class="material-symbols-outlined text-tertiary group-hover:scale-110 transition-transform">move_location</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-tertiary">Realocar</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 bg-surface-container border border-outline-variant rounded-xl hover:border-secondary transition-all group active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:scale-110 transition-transform">edit_square</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Corrigir</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Quick Stats Bento Section -->
+<div class="lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-surface-container border border-outline-variant p-5 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<span class="text-[10px] bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">+12%</span>
+</div>
+<p class="text-on-surface-variant text-sm">Entradas (Mês)</p>
+<h4 class="text-2xl font-bold mt-1">2.450 m²</h4>
+</div>
+<div class="bg-surface-container border border-outline-variant p-5 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error-container/20 rounded-lg">
+<span class="material-symbols-outlined text-error">report_problem</span>
+</div>
+<span class="text-[10px] bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full font-bold">-2%</span>
+</div>
+<p class="text-on-surface-variant text-sm">Perdas (Mês)</p>
+<h4 class="text-2xl font-bold mt-1">42 m²</h4>
+</div>
+<div class="bg-surface-container border border-outline-variant p-5 rounded-xl">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">swap_horiz</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm">Movimentações Internas</p>
+<h4 class="text-2xl font-bold mt-1">128 ações</h4>
+</div>
+</div>
+<!-- Recent Adjustments Feed -->
+<div class="lg:col-span-8">
+<div class="bg-surface-container border border-outline-variant rounded-2xl overflow-hidden">
+<div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between bg-surface">
+<h3 class="font-bold text-lg">Histórico Recente</h3>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="text-xs font-bold text-primary hover:underline px-2">Ver tudo</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low text-on-surface-variant text-[10px] uppercase tracking-wider">
+<tr>
+<th class="px-6 py-3 font-bold">Tipo / Data</th>
+<th class="px-6 py-3 font-bold">Material</th>
+<th class="px-6 py-3 font-bold text-right">Qtd</th>
+<th class="px-6 py-3 font-bold">Local Origem/Dest</th>
+<th class="px-6 py-3 font-bold">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-sm">move_location</span>
+</div>
+<div>
+<p class="text-sm font-medium">Realocação</p>
+<p class="text-[10px] text-on-surface-variant">Hoje, 09:45</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">Porcelanato Onyx Lux</p>
+<p class="text-[10px] text-on-surface-variant">Lote: #A9922</p>
+</td>
+<td class="px-6 py-4 text-right font-mono text-sm">12.5 m²</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-[11px]">
+<span class="px-1.5 py-0.5 bg-surface-container-highest rounded border border-outline-variant">Q-04</span>
+<span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+<span class="px-1.5 py-0.5 bg-primary-container/10 text-primary-fixed-dim rounded border border-primary/20">Q-12</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2 rounded-full bg-tertiary/10 text-tertiary text-[10px] font-bold uppercase tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span> Concluído
+                                        </span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-error-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-sm">inventory_2</span>
+</div>
+<div>
+<p class="text-sm font-medium">Perda (Avaria)</p>
+<p class="text-[10px] text-on-surface-variant">Hoje, 08:20</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">Revestimento Metro White</p>
+<p class="text-[10px] text-on-surface-variant">Lote: #B1040</p>
+</td>
+<td class="px-6 py-4 text-right font-mono text-sm text-error">-2.4 m²</td>
+<td class="px-6 py-4">
+<span class="px-1.5 py-0.5 bg-surface-container-highest rounded border border-outline-variant text-[11px]">Q-08</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2 rounded-full bg-tertiary/10 text-tertiary text-[10px] font-bold uppercase tracking-tight">
+                                            Concluído
+                                        </span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">add_box</span>
+</div>
+<div>
+<p class="text-sm font-medium">Entrada Avulsa</p>
+<p class="text-[10px] text-on-surface-variant">Ontem, 16:50</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm font-medium">Rodapé Poliestireno 10cm</p>
+<p class="text-[10px] text-on-surface-variant">Lote: #C8821</p>
+</td>
+<td class="px-6 py-4 text-right font-mono text-sm text-tertiary">+45 un</td>
+<td class="px-6 py-4">
+<span class="px-1.5 py-0.5 bg-primary-container/10 text-primary-fixed-dim rounded border border-primary/20 text-[11px]">Doca-01</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tight">
+                                            Verificando
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Side Cards / Map / Support -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Map Visualization Mini Card -->
+<div class="glass-card rounded-2xl overflow-hidden relative group">
+<div class="h-48 w-full bg-surface-container-highest">
+<div class="absolute inset-0 opacity-40 mix-blend-overlay">
+<img class="w-full h-full object-cover grayscale brightness-50" data-alt="A highly detailed architectural blueprint of a warehouse floor plan with colored heatmaps showing stock density. Minimalist digital aesthetic with neon violet and emerald accents over a deep charcoal background. Technical, precision-focused design with small labels and grid lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKCx5mw1Bbzaql_tg7Pg1HHHGW1aiPn0Jl2VoR2C6Y3hRJ2YfkxQqGuImyx_07hRo5C2-a0voCjCmoLoRtf4s2r6UHaNhc8xGkErBzBSZzOgzxvEzruaJ7dheVwyUP3U8SJXFlhSZVDC5hMFlMXFCkb90bbcs6uMZGgv_pNFXF6Zz1wxl2Mle6GJN_wCYwfJ5eQmpq-wJfkx-unwnVpgq-f1d2-XJ6yozc5390GJR8OH5vkH7aPxY7sNwDs0c8vmajWgJDF9HGdA"/>
+</div>
+<!-- Virtual Floor Marker Overlay -->
+<div class="absolute top-1/4 left-1/3 w-4 h-4 bg-primary rounded-full animate-ping"></div>
+<div class="absolute top-1/4 left-1/3 w-4 h-4 bg-primary rounded-full"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<p class="text-xs font-bold text-on-surface drop-shadow-md">Mapa de Calor: Ocupação</p>
+<p class="text-[10px] text-on-surface-variant/80">Galpão Principal - Quadra A e B em capacidade crítica.</p>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between">
+<span class="text-xs font-medium">Capacidade Total</span>
+<div class="w-32 h-1.5 bg-outline-variant rounded-full overflow-hidden">
+<div class="w-[78%] h-full bg-primary"></div>
+</div>
+<span class="text-xs font-bold">78%</span>
+</div>
+</div>
+<!-- Active Alerts -->
+<div class="bg-surface-container border border-outline-variant rounded-2xl p-5">
+<h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">warning</span>
+                        Alertas Operacionais
+                    </h3>
+<div class="space-y-4">
+<div class="flex gap-3 p-3 bg-error-container/10 border-l-4 border-error rounded-r-lg">
+<div class="flex-1">
+<p class="text-xs font-bold text-on-error-container">Divergência Detectada</p>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">SKU: ART-ONYX-02 mostra estoque negativo na Q-04. Correção necessária.</p>
+</div>
+<button class="h-max p-1 hover:bg-error-container/20 rounded">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<div class="flex gap-3 p-3 bg-surface-container-highest/50 border-l-4 border-primary rounded-r-lg">
+<div class="flex-1">
+<p class="text-xs font-bold">Relatório de Perdas</p>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">O fechamento semanal de perdas expira em 4 horas. Envie agora.</p>
+</div>
+<span class="material-symbols-outlined text-sm text-primary">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Visual Guide Card -->
+<div class="bg-surface-container border border-outline-variant rounded-2xl p-6 relative overflow-hidden group hover:border-primary/50 transition-all">
+<div class="relative z-10">
+<h3 class="font-bold text-on-surface">Guia Rápido</h3>
+<p class="text-xs text-on-surface-variant mt-2 leading-relaxed">Aprenda a realizar ajustes complexos e transferências entre lotes de forma segura.</p>
+<button class="mt-4 px-4 py-2 bg-surface-container-high border border-outline-variant rounded-lg text-xs font-bold hover:bg-primary hover:text-on-primary transition-all">Consultar Manual</button>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-8xl text-outline-variant opacity-20 rotate-12 group-hover:rotate-0 transition-transform">menu_book</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface-container-lowest border-t border-outline-variant shadow-lg flex justify-around items-center h-16 px-4 pb-safe">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium mt-1">Estoque</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] font-medium mt-1">Reservas</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 px-4 shadow-sm">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="text-[10px] font-bold mt-1">Ajustes</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium mt-1">Perfil</span>
+</div>
+</nav>
+<!-- Custom Micro-Interaction Script -->
+<script>
+        document.querySelectorAll('.active\\:scale-95').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.classList.add('scale-95');
+            });
+            button.addEventListener('touchend', function() {
+                this.classList.remove('scale-95');
+            });
+        });
+        
+        // Example dynamic toast notification logic (visual only)
+        function showNotification(type) {
+            console.log("Triggering interaction for: " + type);
+        }
+    </script>
+</body></html>

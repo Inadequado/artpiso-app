@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Art Piso - Produtos e Lotes (Obsidian Edition)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#a78bfa",
+                        "on-primary": "#000000",
+                        "surface": "#09090b",
+                        "surface-container": "#18181b",
+                        "surface-container-low": "#121215",
+                        "surface-container-high": "#27272a",
+                        "surface-container-highest": "#3f3f46",
+                        "on-surface": "#fafafa",
+                        "on-surface-variant": "#a1a1aa",
+                        "outline": "#3f3f46",
+                        "outline-variant": "#27272a",
+                        "error": "#ef4444",
+                        "success": "#22c55e",
+                        "warning": "#f59e0b",
+                        "background": "#09090b",
+                        "border-subtle": "#27272a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "8px",
+                        "lg": "8px",
+                        "xl": "8px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "260px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "sans": ["Geist", "Inter", "sans-serif"],
+                        "headline-lg": ["Geist"],
+                        "body-md": ["Geist"],
+                        "label-mono": ["JetBrains Mono"],
+                        "data-primary": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "data-primary": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: 'Geist', sans-serif; }
+        .product-card-active {
+            border-color: #a78bfa !important;
+            background-color: rgba(167, 139, 250, 0.05) !important;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden selection:bg-primary/30">
+<!-- Desktop Sidebar -->
+<aside class="hidden md:flex flex-col h-screen py-6 px-4 w-sidebar-width fixed left-0 top-0 bg-surface-container-low border-r border-border-subtle z-50">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-headline-md text-primary tracking-tight">Art Piso</h1>
+<p class="text-[10px] text-on-surface-variant tracking-[0.2em] font-label-mono uppercase mt-1">Warehouse Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span>Estoque</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">event_available</span>
+<span>Reservas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary text-on-primary font-medium rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined text-xl">layers</span>
+<span>Produtos e Lotes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings_suggest</span>
+<span>Ajustes</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-border-subtle">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span>Configurações</span>
+</a>
+<div class="flex items-center gap-3 px-3 py-4 mt-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary text-xs font-bold border border-outline/20">JD</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-semibold truncate text-on-surface">João D.</span>
+<span class="text-[10px] text-on-surface-variant font-label-mono">Gerente de Estoque</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation -->
+<header class="h-16 flex items-center justify-between px-margin-mobile md:px-margin-desktop bg-surface-container-low/80 backdrop-blur-md border-b border-border-subtle fixed top-0 right-0 left-0 md:left-sidebar-width z-40">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="text-headline-md font-headline-md text-on-surface hidden lg:block mr-8">Produtos e Lotes</h2>
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface-container border border-border-subtle rounded-lg py-1.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-on-surface-variant/50" placeholder="Buscar produto ou lote..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors relative border border-transparent hover:border-border-subtle">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-border-subtle mx-1"></div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:brightness-110 transition-all active:scale-95">
+<span class="material-symbols-outlined text-lg">add</span>
+<span class="hidden sm:inline">Novo Produto</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-16 md:ml-sidebar-width h-screen bg-background overflow-hidden">
+<div class="flex h-full">
+<!-- Product Catalog (Left Pane) -->
+<section class="flex-1 overflow-y-auto no-scrollbar p-margin-mobile md:p-margin-desktop">
+<div class="mb-8">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Catálogo de Produtos</h3>
+<p class="text-on-surface-variant mt-1">Selecione um produto para gerenciar seus lotes.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+<!-- Product Card 1 (Active) -->
+<div class="product-card-active border border-primary p-6 rounded-lg cursor-pointer transition-all hover:bg-surface-container/30 group flex flex-col justify-between h-56" onclick="selectProduct(this, 'AP-4501')">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label-mono px-2 py-1 bg-primary/20 text-primary rounded mb-3 inline-block uppercase tracking-wider">REF: AP-4501</span>
+<h4 class="font-data-primary text-lg text-on-surface mt-1 group-hover:text-primary transition-colors">Porcelanato Polido Bianco</h4>
+<p class="text-xs text-on-surface-variant">Marca: PortoBello</p>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="flex items-end justify-between mt-4">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Tamanho</p>
+<p class="font-data-primary text-on-surface">90x90 cm</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Estoque Total</p>
+<p class="font-headline-md text-primary">450 cx <span class="text-xs font-normal text-on-surface-variant">(364.5 m²)</span></p>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="border border-border-subtle bg-surface-container-low p-6 rounded-lg cursor-pointer hover:border-outline hover:bg-surface-container transition-all group flex flex-col justify-between h-56" onclick="selectProduct(this, 'AP-8822')">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label-mono px-2 py-1 bg-surface-container-high text-on-surface-variant rounded mb-3 inline-block uppercase tracking-wider">REF: AP-8822</span>
+<h4 class="font-data-primary text-lg text-on-surface mt-1 group-hover:text-primary transition-colors">Revestimento Acetinado Grey</h4>
+<p class="text-xs text-on-surface-variant">Marca: Eliane</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0">check_circle</span>
+</div>
+<div class="flex items-end justify-between mt-4">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Tamanho</p>
+<p class="font-data-primary text-on-surface">30x60 cm</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Estoque Total</p>
+<p class="font-headline-md text-on-surface">128 cx <span class="text-xs font-normal text-on-surface-variant">(230.4 m²)</span></p>
+</div>
+</div>
+</div>
+<!-- Product Card 3 (Warning) -->
+<div class="border border-border-subtle bg-surface-container-low p-6 rounded-lg cursor-pointer hover:border-outline hover:bg-surface-container transition-all group flex flex-col justify-between h-56" onclick="selectProduct(this, 'AP-1020')">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-label-mono px-2 py-1 bg-surface-container-high text-on-surface-variant rounded mb-3 inline-block uppercase tracking-wider">REF: AP-1020</span>
+<h4 class="font-data-primary text-lg text-on-surface mt-1 group-hover:text-primary transition-colors">Vinílico Wood Natura</h4>
+<p class="text-xs text-on-surface-variant">Marca: Tarkett</p>
+</div>
+<span class="px-2 py-0.5 border border-error/30 bg-error/10 text-error text-[9px] font-bold rounded uppercase tracking-widest">BAIXO ESTOQUE</span>
+</div>
+<div class="flex items-end justify-between mt-4">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Tamanho</p>
+<p class="font-data-primary text-on-surface">18x122 cm</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest text-error">Estoque Total</p>
+<p class="font-headline-md text-error">12 cx <span class="text-xs font-normal text-on-surface-variant">(39.6 m²)</span></p>
+</div>
+</div>
+</div>
+<!-- Add Card -->
+<div class="border border-dashed border-border-subtle hover:border-primary/50 hover:bg-surface-container/30 transition-all rounded-lg flex flex-col items-center justify-center h-56 group cursor-pointer">
+<div class="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all mb-3 border border-border-subtle">
+<span class="material-symbols-outlined">add</span>
+</div>
+<p class="font-data-primary text-on-surface-variant group-hover:text-primary transition-all">Adicionar novo produto</p>
+</div>
+</div>
+</section>
+<!-- Right Side Drawer/Detail Pane -->
+<aside class="hidden xl:flex flex-col w-[420px] bg-surface-container-low border-l border-border-subtle h-full overflow-hidden z-20">
+<!-- Header -->
+<div class="px-8 py-6 border-b border-border-subtle bg-surface-container">
+<div class="flex items-start justify-between">
+<div>
+<p class="text-[10px] font-label-mono text-primary uppercase tracking-[0.2em] font-bold">Gerenciamento de Lotes</p>
+<h3 class="font-headline-md text-headline-md text-on-surface mt-1" id="detail-product-name">AP-4501 Bianco</h3>
+<p class="text-xs text-on-surface-variant mt-1 font-label-mono">PortoBello • 3 Lotes ativos</p>
+</div>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto no-scrollbar p-8 space-y-8">
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-primary text-on-primary py-2.5 px-4 rounded-lg text-sm font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg">
+<span class="material-symbols-outlined text-lg">add_box</span>
+                        Novo Lote
+                    </button>
+<button class="flex items-center justify-center gap-2 bg-surface-container border border-border-subtle text-on-surface py-2.5 px-4 rounded-lg text-sm font-bold hover:bg-surface-container-high transition-all active:scale-95">
+<span class="material-symbols-outlined text-lg">tune</span>
+                        Ajustar
+                    </button>
+</div>
+<!-- Lotes List -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Lotes Vinculados</h4>
+<span class="text-[10px] font-label-mono bg-surface-container-high px-2 py-0.5 rounded text-on-surface border border-border-subtle">3 LOTES</span>
+</div>
+<div class="space-y-3">
+<!-- Lote Item 1 -->
+<div class="bg-surface-container border border-border-subtle p-4 rounded-lg hover:border-primary/50 transition-all cursor-pointer group relative">
+<div class="flex justify-between items-center mb-3">
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-sm font-bold text-primary">#L4501-A</span>
+<span class="bg-success/10 text-success text-[9px] px-2 py-0.5 rounded border border-success/30 font-bold uppercase tracking-wider">Disponível</span>
+</div>
+<button class="p-1 opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest">Endereço</p>
+<p class="text-sm font-medium text-on-surface">SETOR B - Q04</p>
+</div>
+<div class="text-right">
+<p class="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest">Quantidade</p>
+<p class="text-base font-bold text-primary">320 cx</p>
+</div>
+</div>
+</div>
+<!-- Lote Item 2 -->
+<div class="bg-surface-container border border-border-subtle p-4 rounded-lg hover:border-primary/50 transition-all cursor-pointer group relative">
+<div class="flex justify-between items-center mb-3">
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-sm font-bold text-primary">#L4501-B</span>
+<span class="bg-warning/10 text-warning text-[9px] px-2 py-0.5 rounded border border-warning/30 font-bold uppercase tracking-wider">Reservado</span>
+</div>
+<button class="p-1 opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest">Endereço</p>
+<p class="text-sm font-medium text-on-surface">SETOR B - Q05</p>
+</div>
+<div class="text-right">
+<p class="text-[9px] text-on-surface-variant uppercase font-bold tracking-widest">Quantidade</p>
+<p class="text-base font-bold text-warning">115 cx</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Info Box -->
+<div class="bg-surface-container-high/50 p-6 rounded-lg border border-border-subtle">
+<h4 class="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-on-surface-variant border-b border-border-subtle pb-2">Informações Técnicas</h4>
+<div class="space-y-4">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Peso p/ Caixa</span>
+<span class="text-on-surface font-bold">22.5 kg</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">m² p/ Caixa</span>
+<span class="text-on-surface font-bold">0.81 m²</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Pallet Padrão</span>
+<span class="text-on-surface font-bold">48 cx</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-6 border-t border-border-subtle bg-surface-container sticky bottom-0">
+<button class="w-full py-3.5 border border-border-subtle text-on-surface rounded-lg font-bold text-sm hover:bg-surface-container-highest hover:border-primary/50 transition-all flex items-center justify-center gap-3 group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">print</span>
+                    Imprimir Etiquetas
+                </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Mobile Navigation -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-low border-t border-border-subtle shadow-2xl flex justify-around items-center h-16 px-4 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-bold mt-1">Estoque</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] font-bold mt-1">Reservas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary p-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">layers</span>
+<span class="text-[10px] font-bold mt-1">Produtos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold mt-1">Perfil</span>
+</a>
+</nav>
+<script>
+    function selectProduct(element, ref) {
+        // Clear current active states
+        const allCards = document.querySelectorAll('.product-card-active, .border-primary');
+        allCards.forEach(card => {
+            card.classList.remove('product-card-active', 'border-primary');
+            card.classList.add('border-border-subtle', 'bg-surface-container-low');
+            const icon = card.querySelector('.material-symbols-outlined:last-child');
+            if (icon && icon.textContent === 'check_circle') icon.classList.add('opacity-0');
+        });
+
+        // Set new active state
+        element.classList.add('product-card-active', 'border-primary');
+        element.classList.remove('border-border-subtle', 'bg-surface-container-low');
+        const newIcon = element.querySelector('.material-symbols-outlined:last-child');
+        if (newIcon && newIcon.textContent === 'check_circle') newIcon.classList.remove('opacity-0');
+
+        // Update Detail Pane Title
+        const title = document.getElementById('detail-product-name');
+        const productName = element.querySelector('h4').textContent;
+        title.textContent = `${ref} ${productName}`;
+    }
+</script>
+</body></html>

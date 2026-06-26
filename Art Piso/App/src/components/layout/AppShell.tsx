@@ -1,0 +1,391 @@
+import {
+  Archive,
+  Bell,
+  CalendarCheck,
+  CalendarPlus,
+  ChevronRight,
+  KeyRound,
+  LogOut,
+  Plus,
+  Search,
+  Settings,
+  ShieldCheck,
+  SlidersHorizontal,
+  UserPlus,
+  UserRound,
+  Users,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { LogoSymbol, LogoWordmark } from '@/components/brand/Logo'
+import { NotificationsDrawer } from '@/components/layout/NotificationsDrawer'
+import { notificacaoIcon, notificacaoTone } from '@/components/layout/notification-style'
+import { PrimaryActionContext } from '@/components/layout/primary-action'
+import { SearchContext } from '@/components/layout/search'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ringBell } from '@/lib/animations'
+import { playNotificationSound } from '@/lib/sound'
+import { cn } from '@/lib/utils'
+import { useNotifications } from '@/store/notifications'
+
+export type AppSection = 'estoque' | 'reservas' | 'clientes' | 'ajustes' | 'configuracoes'
+
+type AppShellProps = {
+  activeSection: AppSection
+  title: string
+  children: ReactNode
+  searchQuery: string
+  onSearchChange: (value: string) => void
+  onNavigate: (section: AppSection) => void
+  onLogout?: () => void
+}
+
+// Acao primaria do topo por secao (contextual). null = secao sem botao no topo.
+const sectionAction: Record<AppSection, { label: string; icon: LucideIcon } | null> = {
+  estoque: { label: 'Novo produto/lote', icon: Plus },
+  reservas: { label: 'Nova Reserva', icon: CalendarPlus },
+  clientes: { label: 'Novo cliente', icon: UserPlus },
+  ajustes: null,
+  configuracoes: null,
+}
+
+const navItems: Array<{ id: AppSection; label: string; icon: typeof Archive }> = [
+  { id: 'estoque', label: 'Estoque', icon: Archive },
+  { id: 'reservas', label: 'Reservas', icon: CalendarCheck },
+  { id: 'clientes', label: 'Clientes', icon: Users },
+  { id: 'ajustes', label: 'Ajustes', icon: SlidersHorizontal },
+  { id: 'configuracoes', label: 'Configurações', icon: Settings },
+]
+
+const accountMenuItems: Array<{ id: string; label: string; description: string; icon: LucideIcon }> = [
+  {
+    id: 'perfil',
+    label: 'Perfil',
+    description: 'Dados do usuario atual',
+    icon: UserRound,
+  },
+  {
+    id: 'login',
+    label: 'Configuracoes de login',
+    description: 'Acessos, senha e autenticacao',
+    icon: KeyRound,
+  },
+  {
+    id: 'permissoes',
+    label: 'Permissoes',
+    description: 'Perfis e niveis de acesso',
+    icon: ShieldCheck,
+  },
+  {
+    id: 'sair',
+    label: 'Sair',
+    description: 'Encerrar sessao do sistema',
+    icon: LogOut,
+  },
+]
+
+export function AppShell({
+  activeSection,
+  title,
+  children,
+  searchQuery,
+  onSearchChange,
+  onNavigate,
+  onLogout,
+}: AppShellProps) {
+  const primaryAction = sectionAction[activeSection]
+  const primaryActionRef = useRef<(() => void) | null>(null)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [verTodasOpen, setVerTodasOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const notificationsRef = useRef<HTMLDivElement>(null)
+  const accountRef = useRef<HTMLDivElement>(null)
+  const bellRef = useRef<HTMLSpanElement>(null)
+
+  const { notificacoes, naoLidas, ringTick, marcarTodasLidas, marcarLida } = useNotifications()
+  const ringTickAnterior = useRef(ringTick)
+
+  // Toca o sino (anima + som) quando chega uma nova notificacao. Ignora o mount inicial.
+  useEffect(() => {
+    if (ringTick === ringTickAnterior.current) return
+    ringTickAnterior.current = ringTick
+    ringBell(bellRef.current)
+    playNotificationSound()
+  }, [ringTick])
+
+  function abrirNotificacoes() {
+    // Abrir nao marca mais todas como lidas: a marcacao virou granular (por item ou botao "Marcar todas").
+    setNotificationsOpen((open) => !open)
+  }
+
+  useEffect(() => {
+    if (!notificationsOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      if (!notificationsRef.current?.contains(event.target as Node)) {
+        setNotificationsOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setNotificationsOpen(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [notificationsOpen])
+
+  useEffect(() => {
+    if (!accountOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      if (!accountRef.current?.contains(event.target as Node)) {
+        setAccountOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setAccountOpen(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [accountOpen])
+
+  return (
+    <div className="dark flex min-h-screen bg-background text-foreground">
+      <aside className="relative w-20 shrink-0">
+        <div className="group absolute inset-y-0 left-0 z-30 flex w-20 flex-col overflow-hidden border-r bg-card transition-[width] duration-200 ease-out hover:w-[264px] focus-within:w-[264px]">
+          <div className="flex h-20 shrink-0 items-center gap-3 border-b px-4">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
+              <LogoSymbol className="w-full h-auto" />
+            </span>
+            <LogoWordmark className="h-5 w-auto shrink-0 text-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100" />
+          </div>
+
+          <nav className="flex flex-1 flex-col gap-2 p-4">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const active = activeSection === item.id
+              return (
+                <button
+                  key={item.id}
+                  className={cn(
+                    'flex h-11 items-center gap-3 rounded-md px-3 text-left text-sm font-semibold text-muted-foreground transition',
+                    active && 'bg-primary text-primary-foreground',
+                    !active && 'hover:bg-muted hover:text-foreground',
+                  )}
+                  type="button"
+                  title={item.label}
+                  onClick={() => onNavigate(item.id)}
+                >
+                  <Icon aria-hidden="true" className="shrink-0" data-icon="inline-start" />
+                  <span className="whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+                    {item.label}
+                  </span>
+                </button>
+              )
+            })}
+          </nav>
+
+          <div ref={accountRef} className="relative border-t p-4">
+            {accountOpen ? (
+              <div className="absolute bottom-20 left-4 z-50 w-[232px] rounded-lg border bg-card shadow-2xl" role="menu">
+                <div className="border-b p-4">
+                  <p className="text-sm font-bold">Administrador</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Gerente geral</p>
+                </div>
+                <div className="flex flex-col p-2">
+                  {accountMenuItems.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        role="menuitem"
+                        className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
+                        onClick={() => {
+                          setAccountOpen(false)
+                          if (item.id === 'sair') onLogout?.()
+                        }}
+                      >
+                        <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold">{item.label}</span>
+                          <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+                        </span>
+                        <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors group-hover:bg-muted group-focus-within:bg-muted"
+              aria-haspopup="menu"
+              aria-expanded={accountOpen}
+              onClick={() => setAccountOpen((open) => !open)}
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+                AP
+              </span>
+              <span className="min-w-0 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+                <span className="block text-sm font-bold">Administrador</span>
+                <span className="block text-xs text-muted-foreground">Gerente geral</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <main className="min-w-0 flex-1">
+        <header className="flex h-20 items-center justify-between border-b bg-card px-8">
+          <div>
+            <h1 className="text-2xl font-bold text-pretty">{title}</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative w-[420px]">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                data-icon="inline-start"
+              />
+              <Input
+                type="search"
+                name="busca"
+                aria-label="Buscar por referência, lote, cliente ou quadra"
+                autoComplete="off"
+                spellCheck={false}
+                className="pl-10"
+                placeholder="Buscar por referência, lote, cliente ou quadra…"
+                value={searchQuery}
+                onChange={(event) => onSearchChange(event.target.value)}
+              />
+            </div>
+            <div ref={notificationsRef} className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
+                aria-haspopup="menu"
+                aria-expanded={notificationsOpen}
+                onClick={abrirNotificacoes}
+              >
+                <span ref={bellRef} className="inline-flex">
+                  <Bell aria-hidden="true" data-icon="inline-start" />
+                </span>
+                {naoLidas > 0 ? (
+                  <span className="absolute right-2 top-2 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white">
+                    {naoLidas}
+                  </span>
+                ) : null}
+              </Button>
+
+              {notificationsOpen ? (
+                <div
+                  className="absolute right-0 top-12 z-50 w-[360px] rounded-lg border bg-card shadow-2xl"
+                  role="menu"
+                >
+                  <div className="flex items-start justify-between gap-3 border-b p-4">
+                    <div>
+                      <h2 className="font-bold">Notificações</h2>
+                      <p className="mt-1 text-xs text-muted-foreground">Alertas operacionais do estoque.</p>
+                    </div>
+                    {naoLidas > 0 ? (
+                      <button
+                        type="button"
+                        onClick={marcarTodasLidas}
+                        className="shrink-0 text-xs font-semibold text-primary transition hover:underline"
+                      >
+                        Marcar todas
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="flex max-h-80 flex-col overflow-y-auto p-2">
+                    {notificacoes.length === 0 ? (
+                      <p className="px-3 py-6 text-center text-sm text-muted-foreground">Nenhuma notificação por aqui.</p>
+                    ) : (
+                      notificacoes.map((notificacao) => {
+                        const Icon = notificacaoIcon[notificacao.tipo]
+                        return (
+                          <button
+                            key={notificacao.id}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => marcarLida(notificacao.id)}
+                            className={cn(
+                              'flex gap-3 rounded-md p-3 text-left transition hover:bg-muted',
+                              !notificacao.lida && 'bg-muted/40',
+                            )}
+                          >
+                            <span className={cn('mt-0.5 flex size-8 shrink-0 items-center justify-center', notificacaoTone[notificacao.tipo])}>
+                              <Icon aria-hidden="true" className="size-5" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-start justify-between gap-3">
+                                <span className="font-semibold">{notificacao.titulo}</span>
+                                <span className="shrink-0 text-xs text-muted-foreground">{notificacao.tempo}</span>
+                              </span>
+                              <span className="mt-1 block text-sm text-muted-foreground">{notificacao.descricao}</span>
+                            </span>
+                            {!notificacao.lida ? (
+                              <span className="mt-2 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                            ) : null}
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+                  <div className="border-t p-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNotificationsOpen(false)
+                        setVerTodasOpen(true)
+                      }}
+                      className="w-full rounded-md px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    >
+                      Ver todas as notificações
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            {primaryAction ? (
+              <Button onClick={() => primaryActionRef.current?.()}>
+                <primaryAction.icon data-icon="inline-start" />
+                {primaryAction.label}
+              </Button>
+            ) : null}
+          </div>
+        </header>
+
+        <PrimaryActionContext.Provider value={primaryActionRef}>
+          <SearchContext.Provider value={searchQuery}>
+            <div className="app-scrollbar h-[calc(100vh-80px)] overflow-y-auto p-8">{children}</div>
+          </SearchContext.Provider>
+        </PrimaryActionContext.Provider>
+      </main>
+
+      <NotificationsDrawer
+        open={verTodasOpen}
+        notificacoes={notificacoes}
+        onClose={() => setVerTodasOpen(false)}
+        onMarcarLida={marcarLida}
+      />
+    </div>
+  )
+}

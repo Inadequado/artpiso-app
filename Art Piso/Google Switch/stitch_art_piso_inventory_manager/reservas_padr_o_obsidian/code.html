@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Art Piso - Gestão de Reservas (Obsidian Edition)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#a78bfa",
+                    "on-primary": "#000000",
+                    "surface": "#09090b",
+                    "surface-container": "#18181b",
+                    "surface-container-low": "#121215",
+                    "surface-container-high": "#27272a",
+                    "surface-container-highest": "#3f3f46",
+                    "on-surface": "#fafafa",
+                    "on-surface-variant": "#a1a1aa",
+                    "outline": "#3f3f46",
+                    "outline-variant": "#27272a",
+                    "error": "#ef4444",
+                    "success": "#22c55e",
+                    "warning": "#f59e0b",
+                    "background": "#09090b",
+                    "border-subtle": "#27272a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "8px",
+                    "lg": "8px",
+                    "xl": "8px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "margin-desktop": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "sans": ["Geist", "Inter", "sans-serif"],
+                    "headline-lg": ["Geist"],
+                    "body-md": ["Geist"],
+                    "label-mono": ["JetBrains Mono"],
+                    "data-primary": ["Geist"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "data-primary": ["16px", {"lineHeight": "20px", "fontWeight": "600"}],
+                    "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: 'Geist', sans-serif; -webkit-font-smoothing: antialiased; }
+        .drawer-overlay { backdrop-filter: blur(8px); background-color: rgba(0, 0, 0, 0.8); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden selection:bg-primary/30">
+<!-- Desktop Sidebar -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 w-sidebar-width bg-surface-container-low border-r border-border-subtle py-6 px-4 z-50">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-headline-md text-primary tracking-tight">Art Piso</h1>
+<p class="text-[10px] text-on-surface-variant tracking-[0.2em] font-label-mono uppercase mt-1">Obsidian Core</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span>Estoque</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary text-on-primary font-medium rounded-lg transition-all shadow-lg shadow-primary/10" href="#">
+<span class="material-symbols-outlined text-xl">event_available</span>
+<span>Reservas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-xl">layers</span>
+<span>Produtos e Lotes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-xl">settings_suggest</span>
+<span>Ajustes</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-border-subtle">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span>Configurações</span>
+</a>
+<div class="flex items-center gap-3 px-3 py-4 mt-2 bg-surface-container-low">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary text-[12px] font-bold border border-outline/20">OP</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-sm font-semibold truncate text-on-surface">Operador 01</span>
+<span class="text-[10px] text-on-surface-variant font-label-mono">Turno Manhã</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-sidebar-width min-h-screen pb-24 md:pb-8">
+<!-- Top Navigation Bar -->
+<header class="h-16 sticky top-0 flex items-center justify-between px-margin-mobile md:px-margin-desktop bg-surface-container-low/80 backdrop-blur-md border-b border-border-subtle z-40">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="w-full bg-surface-container border border-border-subtle rounded-lg py-1.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-on-surface-variant/50" placeholder="Buscar pedido ou cliente..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors relative border border-transparent hover:border-border-subtle">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-border-subtle mx-1"></div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:brightness-110 transition-all active:scale-95">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>Nova Reserva</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-margin-mobile md:p-margin-desktop space-y-8">
+<!-- Summary Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface-container-low p-6 rounded-lg border border-border-subtle flex flex-col gap-2 group hover:border-primary/50 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Capacidade de Reserva</span>
+<span class="material-symbols-outlined text-primary/50 group-hover:text-primary transition-colors">analytics</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-3xl font-bold text-on-surface">74%</span>
+<span class="text-on-surface-variant text-xs font-label-mono">ocupado</span>
+</div>
+<div class="text-[11px] text-on-surface-variant mt-2 font-label-mono">
+                    Total: 1.240 cx hoje
+                </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-lg border border-border-subtle flex flex-col gap-2 group hover:border-warning/50 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Cancelamentos</span>
+<span class="material-symbols-outlined text-warning/50 group-hover:text-warning transition-colors">trending_down</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-3xl font-bold text-on-surface">2.4%</span>
+</div>
+<div class="text-[11px] text-success mt-2 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">trending_down</span>
+<span>-0.8% vs Setembro</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-lg border border-border-subtle flex flex-col gap-2 border-l-4 border-l-primary group hover:border-primary/50 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-wider text-primary">Reservas Ativas</span>
+<span class="material-symbols-outlined text-primary/50">history</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-3xl font-bold text-on-surface">45</span>
+<span class="text-on-surface-variant text-xs font-label-mono">pedidos</span>
+</div>
+<div class="text-[11px] text-on-surface-variant mt-2 font-label-mono">
+                    AGUARDANDO RETIRADA
+                </div>
+</div>
+</section>
+<!-- Filters Section -->
+<section class="flex flex-wrap items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low border border-border-subtle rounded-lg text-sm text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-base">filter_list</span>
+<span>Filtros</span>
+<span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+<div class="flex-1"></div>
+<div class="flex items-center bg-surface-container p-1 rounded-lg border border-border-subtle">
+<button class="px-3 py-1 text-xs font-bold bg-primary text-on-primary rounded shadow-sm">Todas</button>
+<button class="px-3 py-1 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">Reservado</button>
+<button class="px-3 py-1 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">Entregue</button>
+<button class="px-3 py-1 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors">Cancelado</button>
+</div>
+</section>
+<!-- Main Data Grid -->
+<div class="bg-surface-container-low rounded-lg border border-border-subtle overflow-hidden">
+<div class="overflow-x-auto no-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container border-b border-border-subtle">
+<tr>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Pedido</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Cliente</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Produto/Lote</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Quantidade</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Data</th>
+<th class="px-6 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-subtle">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer" onclick="openDrawer('PED-1024')">
+<td class="px-6 py-4 font-label-mono text-xs text-primary font-bold">PED-1024</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Carlos Almeida</span>
+<span class="text-xs text-on-surface-variant">***.442.118-**</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Porcelanato Polido 60x120</span>
+<span class="text-xs text-primary/80 font-label-mono">Lote: 2203-A</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">42 cx</span>
+<span class="text-[11px] text-on-surface-variant font-label-mono">60.48 m²</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 border border-warning/30 bg-warning/10 text-warning text-[10px] font-bold rounded uppercase tracking-wider">Reservado</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-label-mono">12 Out 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1 bg-primary text-on-primary text-[11px] font-bold rounded hover:brightness-110 transition-all" onclick="event.stopPropagation(); openDrawer('PED-1024')">Confirmar</button>
+<button class="p-1 text-on-surface-variant hover:text-error transition-colors" onclick="event.stopPropagation();">
+<span class="material-symbols-outlined text-xl">cancel</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container/50 transition-colors group">
+<td class="px-6 py-4 font-label-mono text-xs text-primary font-bold">PED-1025</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Mariana Souza</span>
+<span class="text-xs text-on-surface-variant">***.109.288-**</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Revestimento Metro White</span>
+<span class="text-xs text-primary/80 font-label-mono">Lote: 4492-C</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">15 cx</span>
+<span class="text-[11px] text-on-surface-variant font-label-mono">18.00 m²</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 border border-success/30 bg-success/10 text-success text-[10px] font-bold rounded uppercase tracking-wider">Entregue</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-label-mono">14 Out 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">open_in_new</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container/50 transition-colors group cursor-pointer" onclick="openDrawer('PED-1019')">
+<td class="px-6 py-4 font-label-mono text-xs text-primary font-bold">PED-1019</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Construtora Vale</span>
+<span class="text-xs text-on-surface-variant">12.334.***/0001</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Vinílico Amadeirado Oak</span>
+<span class="text-xs text-primary/80 font-label-mono">Lote: 8810-B</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">120 cx</span>
+<span class="text-[11px] text-on-surface-variant font-label-mono">240.00 m²</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 border border-warning/30 bg-warning/10 text-warning text-[10px] font-bold rounded uppercase tracking-wider">Reservado</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant font-label-mono">10 Out 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1 bg-primary text-on-primary text-[11px] font-bold rounded hover:brightness-110 transition-all" onclick="event.stopPropagation(); openDrawer('PED-1019')">Confirmar</button>
+<button class="p-1 text-on-surface-variant hover:text-error transition-colors" onclick="event.stopPropagation();">
+<span class="material-symbols-outlined text-xl">cancel</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-surface-container border-t border-border-subtle flex items-center justify-between text-xs text-on-surface-variant font-label-mono">
+<span>Mostrando 3 de 45 reservas</span>
+<div class="flex items-center gap-4">
+<button class="p-1 hover:text-primary transition-colors disabled:opacity-30" disabled=""><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<span class="font-bold text-primary">1</span>
+<button class="p-1 hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile Navigation -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-low border-t border-border-subtle shadow-2xl flex justify-around items-center h-16 px-4 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-bold mt-1">Estoque</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary p-2" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="text-[10px] font-bold mt-1">Reservas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="text-[10px] font-bold mt-1">Ajustes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold mt-1">Perfil</span>
+</a>
+</nav>
+<!-- Slide-over Drawer -->
+<div class="fixed inset-0 z-[60] drawer-overlay hidden opacity-0 transition-opacity duration-300" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-low z-[70] translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl border-l border-border-subtle" id="drawer">
+<div class="px-6 py-5 border-b border-border-subtle flex items-center justify-between bg-surface-container">
+<div>
+<h3 class="text-headline-md font-bold text-on-surface" id="drawerTitle">Confirmar Entrega</h3>
+<p class="text-xs text-primary font-label-mono mt-1" id="drawerSubtitle">Pedido #---</p>
+</div>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors" onclick="closeDrawer()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Responsável pela Retirada</label>
+<input class="w-full bg-surface-container border border-border-subtle rounded-lg text-on-surface text-sm focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30 py-2.5 px-4" placeholder="Nome do motorista ou cliente" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Placa do Veículo (Opcional)</label>
+<input class="w-full bg-surface-container border border-border-subtle rounded-lg text-on-surface text-sm focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30 py-2.5 px-4" placeholder="ABC-1234" type="text"/>
+</div>
+<div class="p-4 bg-primary/5 rounded-lg border border-primary/20 space-y-3">
+<p class="text-[10px] font-bold text-primary mb-2 uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                Resumo do Item
+            </p>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Quantidade:</span>
+<span class="font-bold text-on-surface">42 Caixas</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Lote:</span>
+<span class="font-bold text-on-surface font-label-mono">2203-A</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Peso Estimado:</span>
+<span class="font-bold text-on-surface">1.260 kg</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Observações</label>
+<textarea class="w-full bg-surface-container border border-border-subtle rounded-lg text-on-surface text-sm focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30 py-2.5 px-4 resize-none" placeholder="Detalhes adicionais..." rows="3"></textarea>
+</div>
+</div>
+<div class="p-6 border-t border-border-subtle bg-surface-container">
+<div class="flex flex-col gap-3">
+<button class="w-full py-3.5 bg-primary text-on-primary font-bold rounded-lg shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all text-sm" onclick="confirmDelivery()">
+                Finalizar Entrega
+            </button>
+<button class="w-full py-3.5 bg-surface-container-low border border-border-subtle text-on-surface-variant font-bold rounded-lg hover:bg-surface-container-highest transition-colors text-sm" onclick="closeDrawer()">
+                Voltar
+            </button>
+</div>
+</div>
+</div>
+<!-- Feedback Notification -->
+<div class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 bg-surface-container-highest text-on-surface px-6 py-3 rounded-lg shadow-2xl z-[100] transform translate-y-20 opacity-0 transition-all duration-500 pointer-events-none flex items-center gap-3 border border-primary/20" id="toast">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-sm font-medium" id="toastMessage">Reserva atualizada com sucesso.</span>
+</div>
+<script>
+    function openDrawer(orderId) {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const subtitle = document.getElementById('drawerSubtitle');
+        
+        subtitle.innerText = 'Pedido #' + orderId;
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('opacity-100');
+            drawer.classList.remove('translate-x-full');
+        }, 10);
+    }
+
+    function closeDrawer() {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawerOverlay');
+        
+        drawer.classList.add('translate-x-full');
+        overlay.classList.remove('opacity-100');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
+    }
+
+    function confirmDelivery() {
+        closeDrawer();
+        showToast("Entrega confirmada e estoque atualizado!");
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        toastMessage.innerText = message;
+        
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        setTimeout(() => {
+            toast.classList.add('translate-y-20', 'opacity-0');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+        }, 4000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.classList.add('dark');
+    });
+</script>
+</body></html>
