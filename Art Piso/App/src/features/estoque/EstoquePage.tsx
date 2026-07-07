@@ -58,7 +58,7 @@ export function EstoquePage() {
   const [editProdutoSeq, setEditProdutoSeq] = useState(0)
   const [loteEditar, setLoteEditar] = useState<LoteEstoque | null>(null)
   const [editLoteSeq, setEditLoteSeq] = useState(0)
-  const [selectedRef, setSelectedRef] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [quadraFiltro, setQuadraFiltro] = useState('todas')
   const [marcaFiltro, setMarcaFiltro] = useState('todas')
   const [statusFiltro, setStatusFiltro] = useState('todas')
@@ -90,7 +90,7 @@ export function EstoquePage() {
   }, [produtos, quadraFiltro, marcaFiltro, statusFiltro, busca])
 
   const filtroAtivo = quadraFiltro !== 'todas' || marcaFiltro !== 'todas' || statusFiltro !== 'todas'
-  const produtosAnimacaoKey = produtosFiltrados.map((produto) => produto.referencia).join('|')
+  const produtosAnimacaoKey = produtosFiltrados.map((produto) => produto.id).join('|')
 
   useGsapListRefresh(produtosTableRef, [produtosAnimacaoKey])
 
@@ -117,11 +117,11 @@ export function EstoquePage() {
     [produtos],
   )
 
-  const selecionado = produtos.find((produto) => produto.referencia === selectedRef) ?? null
+  const selecionado = produtos.find((produto) => produto.id === selectedId) ?? null
 
   function salvarLote(novo: LoteEstoque) {
     adicionarLote(novo)
-    setSelectedRef(novo.referencia)
+    setSelectedId(novo.produtoId)
   }
 
   function abrirReserva() {
@@ -130,12 +130,12 @@ export function EstoquePage() {
   }
 
   function openReserva(produto: Produto) {
-    setSelectedRef(produto.referencia)
+    setSelectedId(produto.id)
     abrirReserva()
   }
 
   function openDetalhe(produto: Produto) {
-    setSelectedRef(produto.referencia)
+    setSelectedId(produto.id)
     setDetalheOpen(true)
   }
 
@@ -215,7 +215,7 @@ export function EstoquePage() {
                 const status = statusProduto(produto)
                 const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
                 return (
-                  <tr key={produto.referencia}>
+                  <tr key={produto.id}>
                     <td>
                       <ProdutoThumb foto={produto.foto} nome={produto.produto} />
                     </td>
@@ -223,7 +223,9 @@ export function EstoquePage() {
                       <div className="flex flex-col gap-1">
                         <strong>{produto.produto}</strong>
                         <span className="text-sm text-muted-foreground">
-                          {produto.marca} - {produto.tamanho} - Ref. {produto.referencia}
+                          {[produto.marca, produto.tamanho, produto.referencia ? `Ref. ${produto.referencia}` : '']
+                            .filter(Boolean)
+                            .join(' - ')}
                         </span>
                       </div>
                     </td>

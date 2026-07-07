@@ -5,6 +5,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2405',
     precoM2: 89.9,
     produto: 'Porcelanato Branco Acetinado',
+    produtoId: 'prod-por-6060-bl',
+
     referencia: 'POR-6060-BL',
     marca: 'Portinari',
     tamanho: '60x60',
@@ -23,6 +25,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2406',
     precoM2: 89.9,
     produto: 'Porcelanato Branco Acetinado',
+    produtoId: 'prod-por-6060-bl',
+
     referencia: 'POR-6060-BL',
     marca: 'Portinari',
     tamanho: '60x60',
@@ -38,6 +42,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2391',
     precoM2: 64.9,
     produto: 'Revestimento Metro Sage',
+    produtoId: 'prod-eli-1020-sg',
+
     referencia: 'ELI-1020-SG',
     marca: 'Eliane',
     tamanho: '10x20',
@@ -53,6 +59,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2410',
     precoM2: 119.9,
     produto: 'Piso Vinílico Carvalho Natural',
+    produtoId: 'prod-bia-20120-cn',
+
     referencia: 'BIA-20120-CN',
     marca: 'Biancogres',
     tamanho: '20x120',
@@ -69,6 +77,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2200',
     precoM2: 149.9,
     produto: 'Ladrilho Hidráulico Mediterrâneo',
+    produtoId: 'prod-ceu-2020-md',
+
     referencia: 'CEU-2020-MD',
     marca: 'Ceusa',
     tamanho: '20x20',
@@ -85,6 +95,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-2201',
     precoM2: 149.9,
     produto: 'Ladrilho Hidráulico Mediterrâneo',
+    produtoId: 'prod-ceu-2020-md',
+
     referencia: 'CEU-2020-MD',
     marca: 'Ceusa',
     tamanho: '20x20',
@@ -100,6 +112,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3010',
     precoM2: 109.9,
     produto: 'Porcelanato Cinza Concreto',
+    produtoId: 'prod-por-8080-cg',
+
     referencia: 'POR-8080-CG',
     marca: 'Portinari',
     tamanho: '80x80',
@@ -117,6 +131,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3011',
     precoM2: 109.9,
     produto: 'Porcelanato Cinza Concreto',
+    produtoId: 'prod-por-8080-cg',
+
     referencia: 'POR-8080-CG',
     marca: 'Portinari',
     tamanho: '80x80',
@@ -132,6 +148,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3020',
     precoM2: 94.9,
     produto: 'Porcelanato Amadeirado Nature',
+    produtoId: 'prod-por-2090-am',
+
     referencia: 'POR-2090-AM',
     marca: 'Biancogres',
     tamanho: '20x90',
@@ -147,6 +165,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3021',
     precoM2: 94.9,
     produto: 'Porcelanato Amadeirado Nature',
+    produtoId: 'prod-por-2090-am',
+
     referencia: 'POR-2090-AM',
     marca: 'Biancogres',
     tamanho: '20x90',
@@ -162,6 +182,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3030',
     precoM2: 74.9,
     produto: 'Revestimento Cimento Queimado',
+    produtoId: 'prod-eli-3060-cq',
+
     referencia: 'ELI-3060-CQ',
     marca: 'Eliane',
     tamanho: '30x60',
@@ -177,6 +199,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3040',
     precoM2: 159.9,
     produto: 'Pastilha de Vidro Azul Oceano',
+    produtoId: 'prod-vid-3030-az',
+
     referencia: 'VID-3030-AZ',
     marca: 'Atlas',
     tamanho: '30x30',
@@ -192,6 +216,8 @@ export const lotes: LoteEstoque[] = [
     id: 'lote-3050',
     precoM2: 79.9,
     produto: 'Piso Laminado Carvalho Mel',
+    produtoId: 'prod-lam-19120-cm',
+
     referencia: 'LAM-19120-CM',
     marca: 'Durafloor',
     tamanho: '19x120',
@@ -512,15 +538,16 @@ export function precoPorCaixa(precoM2: number, m2PorCaixa: number) {
   return precoM2 * m2PorCaixa
 }
 
-/** Agrupa lotes pela referencia, formando os produtos do catalogo. */
+/** Agrupa lotes pelo produtoId, formando os produtos do catalogo (referencia e dado opcional, nao chave). */
 export function agruparPorProduto(lista: LoteEstoque[]): Produto[] {
   const mapa = new Map<string, Produto>()
   for (const lote of lista) {
-    const atual = mapa.get(lote.referencia)
+    const atual = mapa.get(lote.produtoId)
     if (atual) {
       atual.lotes.push(lote)
     } else {
-      mapa.set(lote.referencia, {
+      mapa.set(lote.produtoId, {
+        id: lote.produtoId,
         referencia: lote.referencia,
         produto: lote.produto,
         marca: lote.marca,

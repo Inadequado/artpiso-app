@@ -35,9 +35,13 @@ export type EstornoReserva = {
 
 export type LoteEstoque = {
   id: string
+  /** Identidade do produto ao qual o lote pertence. Chave de agrupamento do catalogo (referencia e opcional). */
+  produtoId: string
   produto: string
+  /** Codigo de referencia comercial. Opcional: vazio = produto sem referencia. */
   referencia: string
   marca: string
+  /** Tamanho nominal (ex.: "60x60"). Opcional: vazio = nao informado. */
   tamanho: string
   lote: string
   quadra: string
@@ -55,8 +59,9 @@ export type LoteEstoque = {
   foto?: string
 }
 
-/** Produto = agrupamento de lotes pela mesma referencia. Unidade de catalogo. */
+/** Produto = agrupamento de lotes pelo mesmo produtoId. Unidade de catalogo (referencia e dado opcional, nao identidade). */
 export type Produto = {
+  id: string
   referencia: string
   produto: string
   marca: string

@@ -11,6 +11,8 @@ export type AtualizarLotePatch = {
 
 export type AtualizarProdutoPatch = {
   produto: string
+  /** Codigo de referencia comercial (opcional: vazio = sem referencia). */
+  referencia: string
   marca: string
   tamanho: string
   m2PorCaixa: number
@@ -126,9 +128,9 @@ export type InventoryContextValue = {
   removerCliente: (id: string) => void
   adicionarLote: (lote: LoteEstoque) => void
   removerLote: (loteId: string) => void
-  removerProduto: (referencia: string) => void
+  removerProduto: (produtoId: string) => void
   atualizarLote: (loteId: string, patch: AtualizarLotePatch) => void
-  atualizarProduto: (referencia: string, patch: AtualizarProdutoPatch) => void
+  atualizarProduto: (produtoId: string, patch: AtualizarProdutoPatch) => void
   criarReserva: (input: NovaReservaInput) => void
   /** Cria um pedido multi-item: uma reserva por item, todas com o mesmo PED-XXXX (R-07). */
   criarPedido: (input: NovoPedidoInput) => void

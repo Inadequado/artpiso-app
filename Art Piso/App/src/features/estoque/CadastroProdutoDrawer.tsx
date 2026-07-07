@@ -49,9 +49,11 @@ export function CadastroProdutoDrawer({
         .filter((produto) => produto.produto.toLowerCase() !== termo)
         .slice(0, 6)
         .map((produto) => ({
-          value: produto.referencia,
+          value: produto.id,
           label: produto.produto,
-          hint: `${produto.marca} · ${produto.tamanho} · Ref. ${produto.referencia}`,
+          hint: [produto.marca, produto.tamanho, produto.referencia ? `Ref. ${produto.referencia}` : '']
+            .filter(Boolean)
+            .join(' · '),
         }))
     : []
 
@@ -64,12 +66,16 @@ export function CadastroProdutoDrawer({
     .slice(0, 6)
     .map((m) => ({ value: m, label: m }))
 
-  const produtoExistente = produtosExistentes.find(
-    (produto) => produto.referencia.trim().toLowerCase() === referencia.trim().toLowerCase() && referencia.trim() !== '',
-  )
+  // Reaproveitamento de produto existente: pela referencia (quando digitada) ou pelo nome exato
+  // (cobre produto sem referencia). A identidade que vale no save e o produtoId do match.
+  const produtoExistente =
+    produtosExistentes.find(
+      (produto) =>
+        produto.referencia.trim().toLowerCase() === referencia.trim().toLowerCase() && referencia.trim() !== '',
+    ) ?? produtosExistentes.find((produto) => produto.produto.trim().toLowerCase() === termo && termo !== '')
 
-  function selecionarProduto(ref: string) {
-    const produto = produtosExistentes.find((item) => item.referencia === ref)
+  function selecionarProduto(id: string) {
+    const produto = produtosExistentes.find((item) => item.id === id)
     if (!produto) return
     setNome(produto.produto)
     setReferencia(produto.referencia)
@@ -95,7 +101,6 @@ export function CadastroProdutoDrawer({
   const totalM2 = Number.isFinite(m2Caixa) && m2Caixa > 0 ? estoque * m2Caixa : 0
   const valido = Boolean(
     nome.trim() &&
-      referencia.trim() &&
       marca.trim() &&
       lote.trim() &&
       quadra.trim() &&
@@ -107,6 +112,8 @@ export function CadastroProdutoDrawer({
   function salvar() {
     onSave({
       id: crypto.randomUUID(),
+      // Novo lote de produto existente herda o produtoId dele; produto novo ganha id proprio.
+      produtoId: produtoExistente?.id ?? crypto.randomUUID(),
       produto: nome.trim(),
       referencia: referencia.trim(),
       marca: marca.trim(),
@@ -155,14 +162,14 @@ export function CadastroProdutoDrawer({
             <div className="-mt-1 flex gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
               <InfoIcon aria-hidden="true" className="size-4 shrink-0 text-primary" />
               <p className="text-xs text-muted-foreground">
-                Produto já cadastrado (<strong className="text-foreground">{produtoExistente.produto}</strong>, Ref.{' '}
-                {produtoExistente.referencia}). Você está adicionando um <strong className="text-foreground">novo lote</strong> a ele;
-                os dados do produto serão mantidos.
+                Produto já cadastrado (<strong className="text-foreground">{produtoExistente.produto}</strong>
+                {produtoExistente.referencia ? `, Ref. ${produtoExistente.referencia}` : ''}). Você está adicionando um{' '}
+                <strong className="text-foreground">novo lote</strong> a ele; os dados do produto serão mantidos.
               </p>
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Referência">
+            <Field label="Referência (opcional)">
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
             </Field>
             <Field label="Marca">
@@ -176,7 +183,7 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Tamanho (cm)">
+            <Field label="Tamanho (cm) — opcional">
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
             </Field>
             <Field label="Preço de venda (R$/m²)">

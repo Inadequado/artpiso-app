@@ -20,6 +20,7 @@ export function EditarProdutoDrawer({
 }) {
   const { atualizarProduto } = useInventory()
   const [nome, setNome] = useState(produto?.produto ?? '')
+  const [referencia, setReferencia] = useState(produto?.referencia ?? '')
   const [marca, setMarca] = useState(produto?.marca ?? '')
   const [tamanho, setTamanho] = useState(produto?.tamanho ?? '')
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? String(produto.m2PorCaixa) : '')
@@ -34,8 +35,9 @@ export function EditarProdutoDrawer({
 
   function salvar() {
     if (!produto || !valido) return
-    atualizarProduto(produto.referencia, {
+    atualizarProduto(produto.id, {
       produto: nome.trim(),
+      referencia: referencia.trim(),
       marca: marca.trim(),
       tamanho: tamanho.trim(),
       m2PorCaixa: m2Num,
@@ -49,7 +51,7 @@ export function EditarProdutoDrawer({
     <Drawer
       open={open}
       title="Editar produto"
-      description={produto ? `Ref. ${produto.referencia}` : undefined}
+      description={produto?.referencia ? `Ref. ${produto.referencia}` : undefined}
       onClose={onClose}
       footer={
         <div className="flex gap-3">
@@ -67,11 +69,22 @@ export function EditarProdutoDrawer({
             <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Porcelanato Branco Acetinado" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
+            <Field label="Referência (opcional)">
+              <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
+            </Field>
             <Field label="Marca">
               <Input value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="Ex: Portinari" />
             </Field>
-            <Field label="Tamanho (cm)">
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Tamanho (cm) — opcional">
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
+            </Field>
+            <Field label="Preço de venda (R$/m²)">
+              <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
+              {precoNum > 0 && m2Num > 0 ? (
+                <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Num)} por caixa</p>
+              ) : null}
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -82,12 +95,6 @@ export function EditarProdutoDrawer({
               <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="6" />
             </Field>
           </div>
-          <Field label="Preço de venda (R$/m²)">
-            <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
-            {precoNum > 0 && m2Num > 0 ? (
-              <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Num)} por caixa</p>
-            ) : null}
-          </Field>
 
           {variosLotes ? (
             <div className="flex gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">

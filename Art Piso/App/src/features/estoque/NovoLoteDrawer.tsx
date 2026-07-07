@@ -31,6 +31,7 @@ export function NovoLoteDrawer({
     if (!produto) return
     onSave({
       id: crypto.randomUUID(),
+      produtoId: produto.id,
       produto: produto.produto,
       referencia: produto.referencia,
       marca: produto.marca,
@@ -65,10 +66,10 @@ export function NovoLoteDrawer({
       {produto ? (
         <div className="flex flex-col gap-6">
           <div className="rounded-lg border bg-muted/30 p-4 text-sm">
-            <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p>
+            {produto.referencia ? <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p> : null}
             <p className="mt-1 font-bold">{produto.produto}</p>
             <p className="text-muted-foreground">
-              {produto.marca} - {produto.tamanho} · {formatM2(produto.m2PorCaixa)} m²/caixa · {produto.pecasPorCaixa} pç/caixa
+              {[[produto.marca, produto.tamanho].filter(Boolean).join(' - '), `${formatM2(produto.m2PorCaixa)} m²/caixa`, `${produto.pecasPorCaixa} pç/caixa`].join(' · ')}
             </p>
           </div>
 

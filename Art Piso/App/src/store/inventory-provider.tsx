@@ -142,7 +142,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const adicionarLote = useCallback((lote: LoteEstoque) => {
     // Estoque reposto (silencioso): produto que JA EXISTIA e estava a repor (baixo/esgotado)
     // recebe lote novo com disponivel. Produto totalmente novo nao conta como reposicao.
-    const lotesDoProduto = lotes.filter((item) => item.referencia === lote.referencia)
+    const lotesDoProduto = lotes.filter((item) => item.produtoId === lote.produtoId)
     const entrando = caixasDisponiveis(lote)
     if (lotesDoProduto.length > 0 && entrando > 0) {
       const disponivelAntes = lotesDoProduto.reduce((total, item) => total + caixasDisponiveis(item), 0)
@@ -163,8 +163,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.id !== loteId) }))
   }, [])
 
-  const removerProduto = useCallback((referencia: string) => {
-    setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.referencia !== referencia) }))
+  const removerProduto = useCallback((produtoId: string) => {
+    setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.produtoId !== produtoId) }))
   }, [])
 
   const atualizarLote = useCallback((loteId: string, patch: AtualizarLotePatch) => {
@@ -184,11 +184,11 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // Campos de produto vivem em cada lote (LoteEstoque); editar produto aplica a todos os lotes da referencia.
-  const atualizarProduto = useCallback((referencia: string, patch: AtualizarProdutoPatch) => {
+  // Campos de produto vivem em cada lote (LoteEstoque); editar produto aplica a todos os lotes do produtoId.
+  const atualizarProduto = useCallback((produtoId: string, patch: AtualizarProdutoPatch) => {
     setEstado((atual) => ({
       ...atual,
-      lotes: atual.lotes.map((item) => (item.referencia === referencia ? { ...item, ...patch } : item)),
+      lotes: atual.lotes.map((item) => (item.produtoId === produtoId ? { ...item, ...patch } : item)),
     }))
   }, [])
 
@@ -646,13 +646,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const statusProdutoAnterior = useRef<Map<string, StockStatus> | null>(null)
   useEffect(() => {
     const produtos = agruparPorProduto(lotes)
-    const atual = new Map(produtos.map((produto) => [produto.referencia, statusProduto(produto)]))
+    const atual = new Map(produtos.map((produto) => [produto.id, statusProduto(produto)]))
     const anterior = statusProdutoAnterior.current
     statusProdutoAnterior.current = atual
     if (anterior === null) return
     for (const produto of produtos) {
-      const depois = atual.get(produto.referencia)
-      const antes = anterior.get(produto.referencia)
+      const depois = atual.get(produto.id)
+      const antes = anterior.get(produto.id)
       if (!depois || antes === undefined) continue
       if (SEVERIDADE_ESTOQUE[depois] > SEVERIDADE_ESTOQUE[antes] && (depois === 'baixo' || depois === 'esgotado')) {
         notificar({
@@ -671,13 +671,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const furoProdutoAnterior = useRef<Map<string, number> | null>(null)
   useEffect(() => {
     const produtos = agruparPorProduto(lotes)
-    const atual = new Map(produtos.map((produto) => [produto.referencia, furoProduto(produto, reservas)]))
+    const atual = new Map(produtos.map((produto) => [produto.id, furoProduto(produto, reservas)]))
     const anterior = furoProdutoAnterior.current
     furoProdutoAnterior.current = atual
     if (anterior === null) return
     for (const produto of produtos) {
-      const depois = atual.get(produto.referencia) ?? 0
-      const antes = anterior.get(produto.referencia) ?? 0
+      const depois = atual.get(produto.id) ?? 0
+      const antes = anterior.get(produto.id) ?? 0
       if (antes === 0 && depois > 0) {
         notificar({
           tipo: 'estoque',

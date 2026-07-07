@@ -105,9 +105,11 @@ export function ProdutoDetalheDrawer({
         <div className="flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p>
+              {produto.referencia ? <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p> : null}
               <h3 className="mt-1 text-xl font-bold text-pretty">{produto.produto}</h3>
-              <p className="text-sm text-muted-foreground">{produto.marca} - {produto.tamanho}</p>
+              <p className="text-sm text-muted-foreground">
+                {[produto.marca, produto.tamanho].filter(Boolean).join(' - ')}
+              </p>
             </div>
             <Button
               variant="ghost"
@@ -264,7 +266,7 @@ export function ProdutoDetalheDrawer({
       cancelLabel="Voltar"
       tone="danger"
       onConfirm={() => {
-        removerProduto(produto.referencia)
+        removerProduto(produto.id)
         onClose()
       }}
       onClose={() => setConfirmarExcluirProduto(false)}
