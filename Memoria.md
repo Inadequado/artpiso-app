@@ -28,6 +28,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - Papeis do sistema: `admin`, `vendedor`, `gerente`.
 - Nada de `<select>`/`<input type=...>` cru: usar `SelectMenu` e demais componentes do design system. Padrao de UI repetivel (dropdown, menu, picker) vira componente reutilizavel em `components/ui/`.
 - Meta-regra: correcao/lapidacao do usuario vira REGRA persistente aqui (pra nao repetir o erro e reaplicar o recurso em casos semelhantes), nao ajuste pontual esquecido.
+- CADENCIA DE GIT (autorizacao permanente do usuario, 2026-07-07): commitar ao FIM DE CADA ETAPA concluida e verificada, sem pedir de novo a cada vez. Commits pequenos e bem-escopados (1 etapa = 1 commit). Push continua so por pedido explicito.
 - Stitch e norte de referencia, NAO spec fiel: serve para (1) direcao visual e (2) inventario do que falta ligar. Filtrar pelo escopo: o que o Stitch traz e nao existe pra gente (papel errado, botao fora de lugar) e descartado.
 
 ## Decisoes
