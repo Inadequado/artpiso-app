@@ -34,6 +34,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 
 ### Inventario / Estoque
 - Estoque e a TELA UNICA de inventario, por PRODUTO (agrupado por referencia). "Produtos e Lotes" foi eliminada (duplicava o detalhe do lote).
+- REFERENCIA E TAMANHO OPCIONAIS no cadastro de produto (decisao do usuario, IMPLEMENTADO 2026-07-07). Consequencia estrutural: a IDENTIDADE do produto migrou de `referencia` para `produtoId` (novo campo em `LoteEstoque`; `Produto.id`) — agrupamento (`agruparPorProduto`), selecao no Estoque, remover/atualizar produto e os observadores de notificacao agora usam o id (referencia virou DADO exibicional; some da UI quando vazia, junto com tamanho). Alinha o mock ao schema Supabase (`produtos.id uuid`). Referencia ficou EDITAVEL no `EditarProdutoDrawer` (da pra preencher depois num produto criado sem ela). Reaproveitamento no cadastro: match por referencia (quando digitada) OU nome exato — produto existente reusa o produtoId dele. PENDENCIA FASE 2: no schema, `produtos.referencia text not null unique` precisa virar nullable (ou unique parcial) pra acompanhar.
 - Status de lote/produto e DERIVADO do disponivel (nao gravado). Produto so fica esgotado quando o produto INTEIRO zera (lote esgotado nao rebaixa o produto). Card de alerta = "Estoque a repor", conta PRODUTOS baixo/esgotado (nao lotes — lote esgotado nunca e recomposto, entra lote novo).
 - Excluir lote/produto/cliente: BLOQUEAR quando ha reserva/pedido ATIVO (evita orfa). Renomear codigo de lote faz cascata no vinculo das reservas.
 - Perda = a CAIXA inteira vira perda; nº de pisos quebrados e informativo (nao recalcula disponivel fracionado).
@@ -144,6 +145,27 @@ Numeros/regras que CHUTAMOS; base do documento de perguntas pro Dev. Convem revi
 - **Controle HTML cru fora do design system**: antes de usar `<select>`/input cru, checar se ja existe padrao (ex.: `SelectMenu`); se nao, criar reutilizavel em `components/ui/`. `<label>` envolvendo botoes aninhados causa conflito de clique.
 - **Split do store**: `inventory.ts` (context/hook/tipos) + `inventory-provider.tsx` (Provider) por causa do `react-refresh/only-export-components`. NAO recriar `inventory.tsx` (um shim `export *` reapareceu e quebrou lint/resolucao).
 - **Windows**: Vite/Tailwind com `EPERM`/binario nativo -> rodar com permissao elevada. Mover pasta com `.git` interno (`Move-Item` nega acesso) -> copiar / validar contagem / remover origem.
+
+## Fase Atual de Trabalho (definida com o usuario em 2026-06-28)
+
+Jornada combinada: **Fase 1** = revisao do app tela por tela (UX, consistencia, bugs/falhas no MOCK), registrada em `art_piso_revisao_telas.md` — corrigir antes de tocar no banco. **Fase 2** = so depois da Fase 1 fechada, integracao com Supabase. Depois da Fase 1, usuario e agente definem juntos o **curso de trabalho** (ordem/cronograma) para a Fase 2 em diante. Motivo declarado pelo usuario: agilizar o processo futuro; usuario vem de chat com Opus 4.8 e esta comecando a usar o Claude Code agora (sem experiencia previa na ferramenta) — espera tambem ajuda nesse aprendizado, nao so no codigo.
+
+Primeira sessao revisada (2026-06-28): Estoque -> Novo Produto (`CadastroProdutoDrawer.tsx`). Achados no `art_piso_revisao_telas.md` (nao duplicar aqui): dados do produto nao travam ao reaproveitar produto existente (risco de inconsistencia entre lotes da mesma referencia), Quadra como input livre em vez de `SelectMenu` (inconsistente com `AjusteDrawer`), sem checagem de codigo de lote duplicado, comparacao de referencia fragil, foto vive por lote em vez de por produto. Fixes ainda NAO aplicados — so analise registrada.
+
+Contexto do time (esclarecido 2026-06-28): projeto feito em DUPLA. O parceiro montou o FRONTEND (mock atual) e entregou pro usuario continuar com o BACKEND. Explica achados de config apontando pra outra maquina (ver limpeza abaixo) — sao resquicio do ambiente do parceiro, nao erro do usuario.
+
+### Metodo de trabalho global + roteiro da Fase 1 (2026-07-07)
+
+- Criado `~/.claude/CLAUDE.md` GLOBAL (metodo de trabalho universal: postura critica, documentacao viva, ritual de plano antes de codar, cadencia de git, verificacao antes de "pronto"). O `CLAUDE.md` do projeto foi enxugado: secao 2 agora so aponta pro global (nao duplica); secao 8 corrigida (lista de skills fantasma da maquina do parceiro removida -> skills nativas do Claude Code; ordem de implementacao antiga marcada como CUMPRIDA).
+- DECIDIDO (usuario): Fase 1 segue no modo REVISAR + CORRIGIR POR TELA — cada sessao fecha completa (revisa, corrige, verifica, marca ✅ no `art_piso_revisao_telas.md`) antes de abrir a proxima. Comecar pelos 4 achados abertos do Novo Produto.
+- Commit SEGUE ADIADO por decisao do usuario (2026-07-07): working tree acumula a limpeza de 2026-06-28 + edicoes de CLAUDE.md/Memoria de hoje. Avisar de novo na proxima sessao se continuar pendente.
+
+### Limpeza da raiz (2026-06-28)
+Varredura da raiz a pedido do usuario; itens sem uso pra continuacao do projeto, REMOVIDOS/AJUSTADOS (mudancas feitas, COMMIT ADIADO pro usuario revisar amanha):
+- `.claude/settings.json`: removida a entrada `additionalDirectories` que apontava pra maquina do parceiro (`c:\Users\victo\...`) — nao existe/nao se aplica nesta maquina.
+- Worktree `.claude/worktrees/modest-brahmagupta-3de32e` (git worktree de sessao de agente anterior, identico ao `main`, sem commit proprio): removido via `git worktree remove`; branch orfa `claude/modest-brahmagupta-3de32e` tambem deletada (`git branch -d`).
+- `art_piso_mapa_de_regras.html`: deletado — era um render HTML estatico duplicado do `art_piso_mapa_de_regras.md` (mesma funcao, ia desatualizar a cada edicao do `.md`).
+- Estado: mudancas feitas no working tree, `git status` mostra modified/deleted/untracked, **NADA commitado ainda** — usuario pediu pra guardar o commit pra continuar amanha.
 
 ## Proximos Passos
 

@@ -9,27 +9,17 @@ Este arquivo e o cerebro/roteador do ambiente. Ele define como trabalhar, quais 
 Consultar nesta ordem:
 
 1. `Memoria.md`
-2. `Art Piso/Handoff/art_piso_0_0_1_handoff.md`
-3. `Art Piso/Handoff/art_piso_0_0_1_schema.sql`, quando o assunto envolver banco, colunas, permissoes ou calculos
-4. `Art Piso/Google Switch/`, quando o assunto envolver referencias visuais geradas pelo Stitch
-5. `.claude/skills/`, quando o assunto envolver stack, UI, revisao, debug, plano ou implementacao
+2. `art_piso_revisao_telas.md`, quando o assunto for a revisao tela-por-tela do app (Fase 1, pre-banco) em andamento
+3. `Art Piso/Handoff/art_piso_0_0_1_handoff.md`
+4. `Art Piso/Handoff/art_piso_0_0_1_schema.sql`, quando o assunto envolver banco, colunas, permissoes ou calculos
+5. `Art Piso/Google Switch/`, quando o assunto envolver referencias visuais geradas pelo Stitch
+6. `.claude/skills/`, quando o assunto envolver stack, UI, revisao, debug, plano ou implementacao
 
 Se algum caminho mudar, atualizar este arquivo e `Memoria.md`.
 
-## 2. Regra de colaboracao critica
+## 2. Metodo de trabalho
 
-As falas do usuario sao pensamento humano em construcao, nao verdades intocaveis.
-
-O agente deve:
-
-- ser critico com respeito;
-- apontar riscos e incoerencias;
-- sugerir alternativas melhores;
-- complementar ideias incompletas;
-- questionar decisoes quando houver impacto importante;
-- reformular propostas para chegar a uma versao mais forte.
-
-O objetivo e construir a melhor versao possivel do projeto, nao apenas obedecer literalmente.
+A postura de colaboracao (critica, nao literal), o ritual de planejamento, a cadencia de git e a verificacao antes de "pronto" sao regras UNIVERSAIS — vivem no `CLAUDE.md` global (`~/.claude/CLAUDE.md`), nao aqui, pra nao duplicar. Aplicam-se a este projeto como a qualquer outro.
 
 ## 3. Estado de postura do projeto
 
@@ -106,31 +96,17 @@ Next.js nao esta descartado, mas so deve entrar por decisao explicita de arquite
 
 ## 8. Uso das skills
 
-Skills disponiveis em `.claude/skills/`:
+Nao ha pasta `.claude/skills/` neste ambiente (a lista antiga — `superpowers`, `debugh`, `shadcn` etc. — era da maquina do parceiro e foi removida daqui). Usar as skills nativas do Claude Code, conforme a tarefa:
 
-- `find-skills`: buscar novas skills quando houver lacuna real.
-- `superpowers`: brainstorm, planos, execucao, TDD, debug, review e verificacao.
-- `debugh`: explorar codebase, revisar impacto, refatorar e depurar quando houver app real.
-- `next-best-practices`: usar se Next.js for escolhido ou para consulta pontual.
-- `shadcn`: guiar componentes reais de UI.
-- `tailwind-design-system`: guiar tokens, tema, design system e Tailwind.
-- `web-design-guidelines`: revisar UX/UI, acessibilidade e qualidade visual.
+- `code-review`: revisar o diff atual em busca de bugs e simplificacoes.
+- `verify`: exercitar uma mudanca de ponta a ponta antes de dar por pronta.
+- `run`: subir o app (Vite dev server) para ver uma mudanca funcionando.
+- `simplify`: aplicar limpezas de reuso/simplificacao no codigo alterado.
+- `security-review`: revisao de seguranca das mudancas pendentes (relevante na fase Supabase/RLS).
 
-Ordem recomendada para implementar futuramente:
+Se surgir lacuna real de skill, avaliar na hora — nao assumir que uma skill listada existe sem conferir.
 
-1. Fechar stack.
-2. Criar app React/Vite/TypeScript.
-3. Configurar Tailwind e shadcn.
-4. Definir tema/tokens.
-5. Criar AppShell, Sidebar e Topbar.
-6. Criar componentes base: Button, Badge, Card, Table, Sheet, Input, Select.
-7. Criar mocks.
-8. Migrar Estoque.
-9. Migrar Nova Reserva e Detalhe do Lote.
-10. Migrar Reservas.
-11. Migrar Produtos/Lotes.
-12. Migrar Ajustes e Configuracoes.
-13. Revisar UI e codigo.
+Nota de fase: a ordem de implementacao que vivia aqui (criar app, configurar Tailwind, migrar telas) ja foi CUMPRIDA — o mock existe com todas as telas. A fase atual e a Fase 1 (revisao tela a tela, `art_piso_revisao_telas.md`) e depois Fase 2 (Supabase); ver `Memoria.md`.
 
 ## 9. Responsabilidade do Memoria.md
 
