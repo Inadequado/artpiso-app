@@ -173,7 +173,7 @@ export function CadastroProdutoDrawer({
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Referência (opcional)">
+            <Field label="Referência">
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
             </Field>
             <Field label="Marca">
@@ -187,7 +187,7 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Tamanho (cm) — opcional">
+            <Field label="Tamanho (cm)">
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
             </Field>
             <Field label="Preço de venda (R$/m²)">
