@@ -248,10 +248,10 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola (opcional)">
+            <Field label="Bitola">
               <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade (opcional)">
+            <Field label="Tonalidade">
               <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
             </Field>
           </div>
