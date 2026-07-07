@@ -2,9 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(npx eslint *)"
-    ],
-    "additionalDirectories": [
-      "c:\\Users\\victo\\.claude\\projects\\c--Users-victo-Desktop-Art-Piso\\memory"
     ]
   }
 }
