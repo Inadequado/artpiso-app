@@ -38,6 +38,9 @@ export function HistoricoDrawer({ open, movimentos, onClose }: HistoricoDrawerPr
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{movimento.titulo}</p>
                   <p className="text-sm text-muted-foreground">{movimento.detalhe}</p>
+                  {movimento.observacao ? (
+                    <p className="mt-1 text-sm italic text-muted-foreground">“{movimento.observacao}”</p>
+                  ) : null}
                   <p className="mt-1 text-xs text-muted-foreground">
                     por {movimento.usuario} · {movimento.data}
                   </p>

@@ -117,6 +117,7 @@ export type NovoMovimento = {
   tipo: MovimentoTipo
   titulo: string
   detalhe: string
+  observacao?: string
 }
 
 export type InventoryContextValue = {
@@ -142,7 +143,7 @@ export type InventoryContextValue = {
   cancelarReserva: (id: string, motivo?: string) => void
   entregarReserva: (input: EntregarReservaInput) => void
   estornarReserva: (input: EstornarReservaInput) => void
-  registrarPerda: (loteId: string, caixas: number, pisos: number) => void
+  registrarPerda: (loteId: string, caixas: number, pisos: number, motivo?: string) => void
   moverQuadra: (loteId: string, novaQuadra: string) => void
   corrigirEstoque: (loteId: string, novoTotal: number) => void
 }

@@ -6,6 +6,7 @@ import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
+import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, formatM2 } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { Quadra } from '@/types/inventory'
@@ -50,6 +51,7 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
   const [loteId, setLoteId] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [pisos, setPisos] = useState('')
+  const [motivo, setMotivo] = useState('')
   const [novaQuadra, setNovaQuadra] = useState('')
 
   const lote = lotes.find((item) => item.id === loteId)
@@ -80,7 +82,7 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
     if (!lote || !tipo) return
     switch (tipo) {
       case 'perda':
-        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0)
+        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim() || undefined)
         break
       case 'quadra':
         moverQuadra(lote.id, novaQuadra)
@@ -170,21 +172,34 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
           )}
 
           {tipo === 'perda' ? (
-            <Field label="Pisos danificados (opcional)">
-              <Input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                value={pisos}
-                placeholder="0"
-                onChange={(event) => setPisos(event.target.value)}
-              />
-              {lote ? (
+            <>
+              <Field label="Pisos danificados (opcional)">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={pisos}
+                  placeholder="0"
+                  onChange={(event) => setPisos(event.target.value)}
+                />
+                {lote ? (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Total de peças quebradas dentro das caixas perdidas, não por caixa. Referência: {lote.pecasPorCaixa} peças por caixa.
+                  </p>
+                ) : null}
+              </Field>
+              <Field label="Motivo da perda">
+                <Textarea
+                  rows={3}
+                  value={motivo}
+                  onChange={(event) => setMotivo(event.target.value)}
+                  placeholder="Ex: caixa caiu da empilhadeira durante a descarga…"
+                />
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  Total de peças quebradas dentro das caixas perdidas, não por caixa. Referência: {lote.pecasPorCaixa} peças por caixa.
+                  Fica registrado no histórico de ajustes, junto de quem registrou e quando.
                 </p>
-              ) : null}
-            </Field>
+              </Field>
+            </>
           ) : null}
 
           {excedePerda && lote ? (

@@ -142,6 +142,8 @@ export type Movimento = {
   tipo: MovimentoTipo
   titulo: string
   detalhe: string
+  /** Motivo/observacao livre do ajuste (ex.: causa da perda). Opcional. */
+  observacao?: string
   /** Quem registrou (usuario logado simulado ate o Supabase). */
   usuario: string
   /** Quando (DD mes AAAA · HH:MM). */

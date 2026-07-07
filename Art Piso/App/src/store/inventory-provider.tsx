@@ -67,7 +67,7 @@ function agoraTexto() {
 const movimentosSeed: Movimento[] = [
   { id: 'mov-seed-1', tipo: 'correcao', titulo: 'Correção de quantidade', detalhe: 'L-3010 ajustado de 58 para 60 cx', usuario: 'Victor', data: '19 jun 2026 · 16:30' },
   { id: 'mov-seed-2', tipo: 'quadra', titulo: 'Lote movido de quadra', detalhe: 'L-2410: Q-03 → Q-08', usuario: 'Victor', data: '19 jun 2026 · 14:05' },
-  { id: 'mov-seed-3', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3050', usuario: 'Renata Costa', data: '19 jun 2026 · 09:15' },
+  { id: 'mov-seed-3', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3050', observacao: 'Caixa caiu da empilhadeira durante a descarga', usuario: 'Renata Costa', data: '19 jun 2026 · 09:15' },
   { id: 'mov-seed-4', tipo: 'perda', titulo: 'Perda registrada', detalhe: '3 cx em L-2410 · 5 pisos danificados', usuario: 'Renata Costa', data: '18 jun 2026 · 16:20' },
   { id: 'mov-seed-5', tipo: 'perda', titulo: 'Perda registrada', detalhe: '2 cx em L-2405 · 3 pisos danificados', usuario: 'Renata Costa', data: '18 jun 2026 · 10:40' },
   { id: 'mov-seed-6', tipo: 'quadra', titulo: 'Quadra registrada', detalhe: 'Q-08 adicionada ao depósito', usuario: 'Renata Costa', data: '18 jun 2026 · 08:55' },
@@ -134,7 +134,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   // Log de movimentacao do estoque (jornada/auditoria). Lado a lado com as acoes, como o notificar.
   const registrarMovimento = useCallback((input: NovoMovimento) => {
     setMovimentos((atual) => [
-      { id: crypto.randomUUID(), tipo: input.tipo, titulo: input.titulo, detalhe: input.detalhe, usuario: USUARIO_ATUAL, data: agoraTexto() },
+      { id: crypto.randomUUID(), tipo: input.tipo, titulo: input.titulo, detalhe: input.detalhe, observacao: input.observacao, usuario: USUARIO_ATUAL, data: agoraTexto() },
       ...atual,
     ])
   }, [])
@@ -560,7 +560,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     })
   }, [reservas, notificar])
 
-  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number) => {
+  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo?: string) => {
     const lote = lotes.find((item) => item.id === loteId)
     if (lote) {
       notificar({
@@ -572,6 +572,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         tipo: 'perda',
         titulo: 'Perda registrada',
         detalhe: `${caixas} cx em ${lote.lote}${pisos > 0 ? ` · ${pisos} piso${pisos === 1 ? '' : 's'} danificado${pisos === 1 ? '' : 's'}` : ''}`,
+        observacao: motivo,
       })
       // Pico de perda (silencioso): so quando a perda ACUMULADA do lote cruza o limite (1x, sem repetir).
       const perdaAntes = lote.caixasPerda
