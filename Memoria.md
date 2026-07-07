@@ -29,6 +29,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - Nada de `<select>`/`<input type=...>` cru: usar `SelectMenu` e demais componentes do design system. Padrao de UI repetivel (dropdown, menu, picker) vira componente reutilizavel em `components/ui/`.
 - Meta-regra: correcao/lapidacao do usuario vira REGRA persistente aqui (pra nao repetir o erro e reaplicar o recurso em casos semelhantes), nao ajuste pontual esquecido.
 - PADRAO DE LABEL (decisao do usuario, 2026-07-07): campo opcional NAO anuncia "(opcional)" no label — o rotulo fica limpo (ex.: "Bitola", "Referência", "Tamanho (cm)"). Obrigatoriedade e papel da validacao, nao do texto do campo. Excecao: hints/subtextos descritivos (ex.: "Opcional · JPG ou PNG" na foto) podem continuar.
+- APROVACAO ANTES DE EXECUTAR (regra do usuario, 2026-07-07): apresentar o plano do que sera feito e SO editar codigo depois do OK explicito do usuario. Ler/investigar e livre. (Tambem registrada no CLAUDE.md global.)
 - CADENCIA DE GIT (autorizacao permanente do usuario, 2026-07-07): commitar ao FIM DE CADA ETAPA concluida e verificada, sem pedir de novo a cada vez. Commits pequenos e bem-escopados (1 etapa = 1 commit). Push continua so por pedido explicito.
 - Stitch e norte de referencia, NAO spec fiel: serve para (1) direcao visual e (2) inventario do que falta ligar. Filtrar pelo escopo: o que o Stitch traz e nao existe pra gente (papel errado, botao fora de lugar) e descartado.
 
@@ -40,6 +41,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - Status de lote/produto e DERIVADO do disponivel (nao gravado). Produto so fica esgotado quando o produto INTEIRO zera (lote esgotado nao rebaixa o produto). Card de alerta = "Estoque a repor", conta PRODUTOS baixo/esgotado (nao lotes — lote esgotado nunca e recomposto, entra lote novo).
 - Excluir lote/produto/cliente: BLOQUEAR quando ha reserva/pedido ATIVO (evita orfa). Renomear codigo de lote faz cascata no vinculo das reservas.
 - Perda = a CAIXA inteira vira perda; nº de pisos quebrados e informativo (nao recalcula disponivel fracionado).
+- MOTIVO DA PERDA (2026-07-07): campo livre opcional no Registrar perda; vive no EVENTO do historico (`Movimento.observacao`), nao no lote (perda do lote e so acumulado). Exibido em italico no Historico recente e no HistoricoDrawer. NAO entra na notificacao do sino (H-03: sino curado; motivo e auditoria). `registrarPerda` ganhou param `motivo?`. Padrao reaplicavel: `Movimento.observacao` serve para qualquer ajuste futuro que precise de motivo.
 
 ### Quadras (Q-01, feito 2026-06-20)
 - Status DERIVADO, nao manual: **Disponivel** (ainda cabe estoque; junta vazia + parcial) x **Ocupada** (cheia, caixas >= capacidade) + BARRA DE PROGRESSO em % de ocupacao. Decisao do usuario simplificou o vazia/parcial/cheia.
