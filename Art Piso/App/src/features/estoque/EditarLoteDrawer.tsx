@@ -23,12 +23,19 @@ export function EditarLoteDrawer({
   const { atualizarLote } = useInventory()
   const [codigo, setCodigo] = useState(lote?.lote ?? '')
   const [quadra, setQuadra] = useState(lote?.quadra ?? '')
+  const [bitola, setBitola] = useState(lote?.bitola ?? '')
+  const [tonalidade, setTonalidade] = useState(lote?.tonalidade ?? '')
 
   const valido = Boolean(lote && codigo.trim() && quadra.trim())
 
   function salvar() {
     if (!lote || !valido) return
-    atualizarLote(lote.id, { lote: codigo.trim(), quadra: quadra.trim() })
+    atualizarLote(lote.id, {
+      lote: codigo.trim(),
+      quadra: quadra.trim(),
+      bitola: bitola.trim() || undefined,
+      tonalidade: tonalidade.trim() || undefined,
+    })
     onClose()
   }
 
@@ -56,6 +63,14 @@ export function EditarLoteDrawer({
           <Field label="Quadra">
             <Input value={quadra} onChange={(e) => setQuadra(e.target.value)} placeholder="Ex: Q-03" />
           </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Bitola (opcional)">
+              <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
+            </Field>
+            <Field label="Tonalidade (opcional)">
+              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
+            </Field>
+          </div>
         </div>
       ) : null}
     </Drawer>

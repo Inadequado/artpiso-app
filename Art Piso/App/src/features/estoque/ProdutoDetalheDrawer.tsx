@@ -158,7 +158,15 @@ export function ProdutoDetalheDrawer({
                 <div key={lote.id} className="flex items-center justify-between gap-3 rounded-lg border bg-muted/20 p-3">
                   <div className="min-w-0">
                     <p className="font-mono text-sm font-bold text-primary">{lote.lote}</p>
-                    <p className="text-xs text-muted-foreground">Quadra {lote.quadra}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {[
+                        `Quadra ${lote.quadra}`,
+                        lote.bitola ? `Bitola ${lote.bitola}` : '',
+                        lote.tonalidade ? `Ton. ${lote.tonalidade}` : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </p>
                     {perda ? (
                       <p className="mt-1 text-xs text-danger">
                         Perda: {perda.principal}

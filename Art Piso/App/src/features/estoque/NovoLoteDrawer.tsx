@@ -22,6 +22,8 @@ export function NovoLoteDrawer({
 }) {
   const [codigo, setCodigo] = useState('')
   const [quadra, setQuadra] = useState('')
+  const [bitola, setBitola] = useState('')
+  const [tonalidade, setTonalidade] = useState('')
   const [estoque, setEstoque] = useState(0)
 
   const valido = Boolean(produto && codigo.trim() && quadra.trim())
@@ -38,6 +40,8 @@ export function NovoLoteDrawer({
       tamanho: produto.tamanho,
       lote: codigo.trim(),
       quadra: quadra.trim(),
+      bitola: bitola.trim() || undefined,
+      tonalidade: tonalidade.trim() || undefined,
       m2PorCaixa: produto.m2PorCaixa,
       pecasPorCaixa: produto.pecasPorCaixa,
       precoM2: produto.precoM2,
@@ -79,6 +83,14 @@ export function NovoLoteDrawer({
           <Field label="Quadra">
             <Input value={quadra} onChange={(event) => setQuadra(event.target.value)} placeholder="Ex: Q-03" />
           </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Bitola (opcional)">
+              <Input className="font-mono" value={bitola} onChange={(event) => setBitola(event.target.value)} placeholder="Ex: 2" />
+            </Field>
+            <Field label="Tonalidade (opcional)">
+              <Input className="font-mono" value={tonalidade} onChange={(event) => setTonalidade(event.target.value)} placeholder="Ex: A3" />
+            </Field>
+          </div>
 
           <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
             <div className="flex items-center justify-between gap-3">

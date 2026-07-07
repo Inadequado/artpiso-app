@@ -30,6 +30,8 @@ export function CadastroProdutoDrawer({
   const [descricao, setDescricao] = useState('')
   const [lote, setLote] = useState('')
   const [quadra, setQuadra] = useState('')
+  const [bitola, setBitola] = useState('')
+  const [tonalidade, setTonalidade] = useState('')
   const [m2PorCaixa, setM2PorCaixa] = useState('')
   const [pecasPorCaixa, setPecasPorCaixa] = useState('')
   const [preco, setPreco] = useState('')
@@ -120,6 +122,8 @@ export function CadastroProdutoDrawer({
       tamanho: tamanho.trim(),
       lote: lote.trim(),
       quadra: quadra.trim(),
+      bitola: bitola.trim() || undefined,
+      tonalidade: tonalidade.trim() || undefined,
       m2PorCaixa: m2Caixa,
       pecasPorCaixa: pecasCaixa,
       precoM2: precoNum,
@@ -241,6 +245,14 @@ export function CadastroProdutoDrawer({
             </Field>
             <Field label="Quadra">
               <Input value={quadra} onChange={(e) => setQuadra(e.target.value)} placeholder="Ex: Q-03" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Bitola (opcional)">
+              <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
+            </Field>
+            <Field label="Tonalidade (opcional)">
+              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
             </Field>
           </div>
 

@@ -7,6 +7,8 @@ export type ClienteInput = Omit<Cliente, 'id'>
 export type AtualizarLotePatch = {
   lote: string
   quadra: string
+  bitola?: string
+  tonalidade?: string
 }
 
 export type AtualizarProdutoPatch = {

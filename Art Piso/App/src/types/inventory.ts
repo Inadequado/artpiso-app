@@ -45,6 +45,10 @@ export type LoteEstoque = {
   tamanho: string
   lote: string
   quadra: string
+  /** Bitola/calibre impresso na caixa (varia por lote). Opcional. */
+  bitola?: string
+  /** Tonalidade impressa na caixa (varia por lote). Opcional. */
+  tonalidade?: string
   m2PorCaixa: number
   /** Quantidade de pecas/pisos por caixa. Obrigatorio: base para registrar perda por unidade. */
   pecasPorCaixa: number
