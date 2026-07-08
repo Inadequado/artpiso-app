@@ -173,7 +173,7 @@ export function CadastroProdutoDrawer({
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Referência">
+            <Field label="Referência" optional>
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
             </Field>
             <Field label="Marca">
@@ -187,7 +187,7 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Tamanho (cm)">
+            <Field label="Tamanho (cm)" optional>
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
             </Field>
             <Field label="Preço de venda (R$/m²)">
@@ -197,7 +197,7 @@ export function CadastroProdutoDrawer({
               ) : null}
             </Field>
           </div>
-          <Field label="Descrição">
+          <Field label="Descrição" optional>
             <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
           </Field>
           <input
@@ -248,10 +248,10 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola">
+            <Field label="Bitola" optional>
               <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade">
+            <Field label="Tonalidade" optional>
               <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
             </Field>
           </div>

@@ -69,7 +69,7 @@ export function EditarProdutoDrawer({
             <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Porcelanato Branco Acetinado" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Referência">
+            <Field label="Referência" optional>
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
             </Field>
             <Field label="Marca">
@@ -77,7 +77,7 @@ export function EditarProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Tamanho (cm)">
+            <Field label="Tamanho (cm)" optional>
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
             </Field>
             <Field label="Preço de venda (R$/m²)">

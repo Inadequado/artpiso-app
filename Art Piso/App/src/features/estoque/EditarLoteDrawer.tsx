@@ -64,10 +64,10 @@ export function EditarLoteDrawer({
             <Input value={quadra} onChange={(e) => setQuadra(e.target.value)} placeholder="Ex: Q-03" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola">
+            <Field label="Bitola" optional>
               <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade">
+            <Field label="Tonalidade" optional>
               <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
             </Field>
           </div>

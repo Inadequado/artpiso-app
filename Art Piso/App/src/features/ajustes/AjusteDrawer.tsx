@@ -173,7 +173,7 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
 
           {tipo === 'perda' ? (
             <>
-              <Field label="Pisos danificados (opcional)">
+              <Field label="Pisos danificados" optional>
                 <Input
                   type="number"
                   inputMode="numeric"

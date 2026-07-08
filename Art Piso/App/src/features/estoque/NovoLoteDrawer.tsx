@@ -84,10 +84,10 @@ export function NovoLoteDrawer({
             <Input value={quadra} onChange={(event) => setQuadra(event.target.value)} placeholder="Ex: Q-03" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola">
+            <Field label="Bitola" optional>
               <Input className="font-mono" value={bitola} onChange={(event) => setBitola(event.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade">
+            <Field label="Tonalidade" optional>
               <Input className="font-mono" value={tonalidade} onChange={(event) => setTonalidade(event.target.value)} placeholder="Ex: A3" />
             </Field>
           </div>
