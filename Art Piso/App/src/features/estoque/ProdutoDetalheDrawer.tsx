@@ -1,4 +1,4 @@
-import { Boxes, CalendarPlus, ImageOff, Layers, PenLine, Plus, Trash2 } from 'lucide-react'
+import { Boxes, CalendarPlus, ImageOff, Layers, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -64,7 +64,7 @@ export function ProdutoDetalheDrawer({
   onEditarProduto: () => void
   onEditarLote: (lote: LoteEstoque) => void
 }) {
-  const { reservas, removerLote, removerProduto } = useInventory()
+  const { reservas, movimentos, removerLote, removerProduto } = useInventory()
   const [loteExcluir, setLoteExcluir] = useState<LoteEstoque | null>(null)
   const [confirmarExcluirProduto, setConfirmarExcluirProduto] = useState(false)
 
@@ -80,6 +80,11 @@ export function ProdutoDetalheDrawer({
   const pisosTotal = produto.lotes.reduce((total, lote) => total + (lote.pisosDanificados ?? 0), 0)
   const disponivelTotal = caixasDisponiveisProduto(produto)
   const perdaResumo = perdaTexto(perdaTotal, pisosTotal)
+  // Eventos de perda deste produto (mais recente primeiro, ordem do log). Perda semeada direto
+  // no lote sem evento correspondente nao aparece aqui — artefato do mock, some com o Supabase.
+  const perdasDoProduto = movimentos.filter(
+    (movimento) => movimento.tipo === 'perda' && movimento.produtoId === produto.id,
+  )
 
   return (
     <>
@@ -233,6 +238,26 @@ export function ProdutoDetalheDrawer({
             <Info label="Disponível" value={`${disponivelTotal} cx`} detail={`${formatM2(m2DisponivelProduto(produto))} m²`} />
           </div>
         </section>
+
+        {perdasDoProduto.length > 0 ? (
+          <section className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <TriangleAlert aria-hidden="true" className="size-4" />
+              <h4 className="text-xs font-bold uppercase tracking-[0.14em]">Histórico de perdas ({perdasDoProduto.length})</h4>
+            </div>
+            <ul className="flex flex-col gap-2">
+              {perdasDoProduto.map((movimento) => (
+                <li key={movimento.id} className="rounded-lg border bg-muted/20 p-3">
+                  <p className="text-sm font-semibold text-danger">{movimento.detalhe}</p>
+                  {movimento.observacao ? (
+                    <p className="mt-1 text-sm italic text-muted-foreground">“{movimento.observacao}”</p>
+                  ) : null}
+                  <p className="mt-1 text-xs text-muted-foreground">por {movimento.usuario} · {movimento.data}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         </div>
       </div>
     </Drawer>

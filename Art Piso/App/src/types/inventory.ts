@@ -144,6 +144,10 @@ export type Movimento = {
   detalhe: string
   /** Motivo/observacao livre do ajuste (ex.: causa da perda). Opcional. */
   observacao?: string
+  /** Lote alvo do ajuste (vinculo estruturado; o detalhe continua sendo o texto exibido). */
+  loteId?: string
+  /** Produto do lote alvo. Permite filtrar o historico por produto (ex.: perdas no detalhe). */
+  produtoId?: string
   /** Quem registrou (usuario logado simulado ate o Supabase). */
   usuario: string
   /** Quando (DD mes AAAA · HH:MM). */

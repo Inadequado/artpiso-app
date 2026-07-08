@@ -65,18 +65,18 @@ function agoraTexto() {
 // Espelha os formatos reais dos triggers (perda/quadra/correcao) e bate com
 // caixasPerda/pisosDanificados de cada lote para o historico "explicar" o estado atual.
 const movimentosSeed: Movimento[] = [
-  { id: 'mov-seed-1', tipo: 'correcao', titulo: 'Correção de quantidade', detalhe: 'L-3010 ajustado de 58 para 60 cx', usuario: 'Victor', data: '19 jun 2026 · 16:30' },
-  { id: 'mov-seed-2', tipo: 'quadra', titulo: 'Lote movido de quadra', detalhe: 'L-2410: Q-03 → Q-08', usuario: 'Victor', data: '19 jun 2026 · 14:05' },
-  { id: 'mov-seed-3', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3050', observacao: 'Caixa caiu da empilhadeira durante a descarga', usuario: 'Renata Costa', data: '19 jun 2026 · 09:15' },
-  { id: 'mov-seed-4', tipo: 'perda', titulo: 'Perda registrada', detalhe: '3 cx em L-2410 · 5 pisos danificados', usuario: 'Renata Costa', data: '18 jun 2026 · 16:20' },
-  { id: 'mov-seed-5', tipo: 'perda', titulo: 'Perda registrada', detalhe: '2 cx em L-2405 · 3 pisos danificados', usuario: 'Renata Costa', data: '18 jun 2026 · 10:40' },
+  { id: 'mov-seed-1', tipo: 'correcao', titulo: 'Correção de quantidade', detalhe: 'L-3010 ajustado de 58 para 60 cx', loteId: 'lote-3010', produtoId: 'prod-por-8080-cg', usuario: 'Victor', data: '19 jun 2026 · 16:30' },
+  { id: 'mov-seed-2', tipo: 'quadra', titulo: 'Lote movido de quadra', detalhe: 'L-2410: Q-03 → Q-08', loteId: 'lote-2410', produtoId: 'prod-bia-20120-cn', usuario: 'Victor', data: '19 jun 2026 · 14:05' },
+  { id: 'mov-seed-3', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3050', observacao: 'Caixa caiu da empilhadeira durante a descarga', loteId: 'lote-3050', produtoId: 'prod-lam-19120-cm', usuario: 'Renata Costa', data: '19 jun 2026 · 09:15' },
+  { id: 'mov-seed-4', tipo: 'perda', titulo: 'Perda registrada', detalhe: '3 cx em L-2410 · 5 pisos danificados', observacao: 'Palete tombou na movimentação interna', loteId: 'lote-2410', produtoId: 'prod-bia-20120-cn', usuario: 'Renata Costa', data: '18 jun 2026 · 16:20' },
+  { id: 'mov-seed-5', tipo: 'perda', titulo: 'Perda registrada', detalhe: '2 cx em L-2405 · 3 pisos danificados', observacao: 'Caixas violadas recebidas na entrega do fornecedor', loteId: 'lote-2405', produtoId: 'prod-por-6060-bl', usuario: 'Renata Costa', data: '18 jun 2026 · 10:40' },
   { id: 'mov-seed-6', tipo: 'quadra', titulo: 'Quadra registrada', detalhe: 'Q-08 adicionada ao depósito', usuario: 'Renata Costa', data: '18 jun 2026 · 08:55' },
-  { id: 'mov-seed-7', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3010 · 2 pisos danificados', usuario: 'Renata Costa', data: '17 jun 2026 · 17:40' },
-  { id: 'mov-seed-8', tipo: 'quadra', titulo: 'Lote movido de quadra', detalhe: 'L-3040: Q-09 → Q-10', usuario: 'Renata Costa', data: '17 jun 2026 · 11:20' },
-  { id: 'mov-seed-9', tipo: 'correcao', titulo: 'Correção de quantidade', detalhe: 'L-3020 ajustado de 36 para 38 cx', usuario: 'Victor', data: '16 jun 2026 · 15:00' },
-  { id: 'mov-seed-10', tipo: 'perda', titulo: 'Perda registrada', detalhe: '2 cx em L-3020', usuario: 'Renata Costa', data: '16 jun 2026 · 14:30' },
+  { id: 'mov-seed-7', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-3010 · 2 pisos danificados', observacao: 'Quebra no manuseio durante separação de pedido', loteId: 'lote-3010', produtoId: 'prod-por-8080-cg', usuario: 'Renata Costa', data: '17 jun 2026 · 17:40' },
+  { id: 'mov-seed-8', tipo: 'quadra', titulo: 'Lote movido de quadra', detalhe: 'L-3040: Q-09 → Q-10', loteId: 'lote-3040', produtoId: 'prod-vid-3030-az', usuario: 'Renata Costa', data: '17 jun 2026 · 11:20' },
+  { id: 'mov-seed-9', tipo: 'correcao', titulo: 'Correção de quantidade', detalhe: 'L-3020 ajustado de 36 para 38 cx', loteId: 'lote-3020', produtoId: 'prod-por-2090-am', usuario: 'Victor', data: '16 jun 2026 · 15:00' },
+  { id: 'mov-seed-10', tipo: 'perda', titulo: 'Perda registrada', detalhe: '2 cx em L-3020', observacao: 'Avaria constatada na conferência do estoque', loteId: 'lote-3020', produtoId: 'prod-por-2090-am', usuario: 'Renata Costa', data: '16 jun 2026 · 14:30' },
   { id: 'mov-seed-11', tipo: 'quadra', titulo: 'Quadra registrada', detalhe: 'Q-11 adicionada ao depósito', usuario: 'Victor', data: '16 jun 2026 · 08:10' },
-  { id: 'mov-seed-12', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-2391', usuario: 'Renata Costa', data: '15 jun 2026 · 14:00' },
+  { id: 'mov-seed-12', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-2391', observacao: 'Caixa esmagada no fundo da pilha', loteId: 'lote-2391', produtoId: 'prod-eli-1020-sg', usuario: 'Renata Costa', data: '15 jun 2026 · 14:00' },
 ]
 
 /** Soma as caixas em reservas ATIVAS (status reservado) de um lote, por codigo de lote. */
@@ -134,7 +134,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   // Log de movimentacao do estoque (jornada/auditoria). Lado a lado com as acoes, como o notificar.
   const registrarMovimento = useCallback((input: NovoMovimento) => {
     setMovimentos((atual) => [
-      { id: crypto.randomUUID(), tipo: input.tipo, titulo: input.titulo, detalhe: input.detalhe, observacao: input.observacao, usuario: USUARIO_ATUAL, data: agoraTexto() },
+      {
+        id: crypto.randomUUID(),
+        tipo: input.tipo,
+        titulo: input.titulo,
+        detalhe: input.detalhe,
+        observacao: input.observacao,
+        loteId: input.loteId,
+        produtoId: input.produtoId,
+        usuario: USUARIO_ATUAL,
+        data: agoraTexto(),
+      },
       ...atual,
     ])
   }, [])
@@ -560,7 +570,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     })
   }, [reservas, notificar])
 
-  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo?: string) => {
+  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo: string) => {
     const lote = lotes.find((item) => item.id === loteId)
     if (lote) {
       notificar({
@@ -573,6 +583,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         titulo: 'Perda registrada',
         detalhe: `${caixas} cx em ${lote.lote}${pisos > 0 ? ` · ${pisos} piso${pisos === 1 ? '' : 's'} danificado${pisos === 1 ? '' : 's'}` : ''}`,
         observacao: motivo,
+        loteId: lote.id,
+        produtoId: lote.produtoId,
       })
       // Pico de perda (silencioso): so quando a perda ACUMULADA do lote cruza o limite (1x, sem repetir).
       const perdaAntes = lote.caixasPerda
@@ -607,6 +619,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         tipo: 'quadra',
         titulo: 'Lote movido de quadra',
         detalhe: `${loteMov.lote}: ${loteMov.quadra} → ${novaQuadra}`,
+        loteId: loteMov.id,
+        produtoId: loteMov.produtoId,
       })
     }
     setEstado((atual) => {
@@ -633,6 +647,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         tipo: 'correcao',
         titulo: 'Correção de quantidade',
         detalhe: `${loteCorr.lote} ajustado de ${loteCorr.caixasEstoque} para ${novoTotal} cx`,
+        loteId: loteCorr.id,
+        produtoId: loteCorr.produtoId,
       })
     }
     setEstado((atual) => ({

@@ -74,7 +74,7 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
     if (!lote) return false
     if (tipo === 'quadra') return Boolean(novaQuadra) && novaQuadra !== lote.quadra
     if (tipo === 'correcao') return Number.isFinite(numero) && numero >= comprometido
-    if (tipo === 'perda') return quantidadeValida && !excedePerda && pisosValidos
+    if (tipo === 'perda') return quantidadeValida && !excedePerda && pisosValidos && motivo.trim() !== ''
     return quantidadeValida && !excedePerda
   })()
 
@@ -82,7 +82,7 @@ export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawer
     if (!lote || !tipo) return
     switch (tipo) {
       case 'perda':
-        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim() || undefined)
+        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim())
         break
       case 'quadra':
         moverQuadra(lote.id, novaQuadra)
