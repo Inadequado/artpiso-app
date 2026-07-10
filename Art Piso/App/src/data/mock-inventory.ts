@@ -1,3 +1,4 @@
+import { DIAS_ANTECEDENCIA_ENTREGA, diasAteEntrega } from '@/lib/reserva-regime'
 import type { Cliente, LoteEstoque, Produto, Quadra, QuadraStatus, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 export const lotes: LoteEstoque[] = [
@@ -327,6 +328,28 @@ export const reservas: Reserva[] = [
     vendedor: 'Vendedor',
   },
   {
+    // Demo E-03: encomenda rotacionando que JA envelheceu para dentro da janela de antecedencia
+    // (criada meses atras com entrega longa) e cujo produto nao cobre o pedido (disponivel 5 < 10).
+    id: 'res-1040',
+    pedido: 'PED-1040',
+    cliente: 'Construtora Vale',
+    clienteId: 'cli-003',
+    enderecoId: 'end-003a',
+    enderecoEntrega: 'Obra Torre Norte — Av. Amazonas, 4500 — Nova Suíça, Belo Horizonte',
+    telefone: '(31) 3334-0001',
+    produto: 'Revestimento Metro Sage',
+    lote: 'L-2391',
+    quadra: 'Q-01',
+    caixas: 10,
+    m2: 9,
+    status: 'reservado',
+    caixasTravadas: 0,
+    regime: 'rotacionando',
+    dataPrevista: '25/07/2026',
+    data: '20 abr 2026',
+    vendedor: 'Vendedor',
+  },
+  {
     id: 'res-1028',
     pedido: 'PED-1028',
     cliente: 'Roberto Dias',
@@ -632,6 +655,49 @@ export function prometidoProduto(produtoNome: string, reservas: Reserva[]) {
  */
 export function furoProduto(produto: Produto, reservas: Reserva[]) {
   return Math.max(0, prometidoProduto(produto.produto, reservas) - estoqueFisicoProduto(produto))
+}
+
+/** Um pedido rotacionando dentro da janela de antecedencia sem cobertura de estoque (E-03). */
+export type EncomendaEmRisco = {
+  reserva: Reserva
+  /** Dias ate a entrega (0 = hoje). */
+  dias: number
+  /** Caixas que faltam para cobrir o saldo do pedido. */
+  faltam: number
+}
+
+/**
+ * Encomendas em risco (E-03): pedidos ROTACIONANDO ativos com entrega em ate
+ * DIAS_ANTECEDENCIA_ENTREGA dias cuja cobertura nao fecha. Fila por URGENCIA: ordena pela data e
+ * vai alocando o disponivel do produto; pedido que nao coube (nem parcialmente) entra em risco —
+ * pega inclusive o caso de dois pedidos que individualmente cabem mas juntos nao. Vencidas
+ * (dias < 0) ficam de fora: encomenda vencida e outro tema (E-07).
+ */
+export function encomendasEmRisco(produtos: Produto[], reservas: Reserva[], base = new Date()): EncomendaEmRisco[] {
+  const riscos: EncomendaEmRisco[] = []
+  for (const produto of produtos) {
+    const naJanela = reservas
+      .map((reserva) => ({ reserva, dias: diasAteEntrega(reserva, base) }))
+      .filter(
+        (item): item is { reserva: Reserva; dias: number } =>
+          item.reserva.produto === produto.produto &&
+          item.reserva.regime === 'rotacionando' &&
+          (item.reserva.status === 'reservado' || item.reserva.status === 'parcial') &&
+          item.dias !== null &&
+          item.dias >= 0 &&
+          item.dias <= DIAS_ANTECEDENCIA_ENTREGA,
+      )
+      .sort((a, b) => a.dias - b.dias)
+    if (naJanela.length === 0) continue
+
+    let disponivel = caixasDisponiveisProduto(produto)
+    for (const { reserva, dias } of naJanela) {
+      const faltam = Math.max(0, reserva.caixas - Math.max(0, disponivel))
+      disponivel -= reserva.caixas
+      if (faltam > 0) riscos.push({ reserva, dias, faltam })
+    }
+  }
+  return riscos
 }
 
 /**

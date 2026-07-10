@@ -8,6 +8,7 @@ import {
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
+  encomendasEmRisco,
   furoProduto,
   proximoNumeroPedido,
   statusPorDisponivel,
@@ -727,6 +728,28 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           descricao: `${produto.produto} — a reposição cobriu o que faltava; dá pra separar os pedidos`,
         })
       }
+    }
+  }, [lotes, reservas, notificar])
+
+  // Encomenda em risco (E-03): pedido ROTACIONANDO com entrega em ate DIAS_ANTECEDENCIA_ENTREGA
+  // dias e sem cobertura de estoque. Dispara na VIRADA (pedido sai de coberto -> em risco) e
+  // TAMBEM no load (as notificacoes nao persistem; recriar o estado de risco atual e correto).
+  // O disparo por PASSAGEM DE TEMPO (virar o dia 30 sem nada mudar no estado) e papel do
+  // backend/cron na Fase 2 — aqui a checagem roda quando lotes/reservas mudam.
+  const encomendaRiscoAnterior = useRef<Map<string, boolean>>(new Map())
+  useEffect(() => {
+    const produtos = agruparPorProduto(lotes)
+    const riscos = encomendasEmRisco(produtos, reservas)
+    const anterior = encomendaRiscoAnterior.current
+    encomendaRiscoAnterior.current = new Map(riscos.map((risco) => [risco.reserva.id, true]))
+    for (const risco of riscos) {
+      if (anterior.get(risco.reserva.id)) continue
+      const prazo = risco.dias === 0 ? 'a entrega é hoje' : `entrega em ${risco.dias} ${risco.dias === 1 ? 'dia' : 'dias'}`
+      notificar({
+        tipo: 'reserva',
+        titulo: 'Encomenda em risco',
+        descricao: `${risco.reserva.pedido} · ${risco.reserva.produto} — faltam ${risco.faltam} cx e ${prazo}`,
+      })
     }
   }, [lotes, reservas, notificar])
 
