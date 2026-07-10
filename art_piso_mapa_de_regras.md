@@ -90,7 +90,7 @@ Valores que **chutamos** para o app rodar — não significam que estão certos.
 
 **`E-02`** 🟢 **O que importa é a urgência de guardar, não o lote.** Pode-se **substituir por outro lote** na entrega (recomprar o mesmo lote é quase impossível). "Travar" = guardar estas caixas; "rotacionar" = deixar girar e entregar no fim.
 
-**`E-03`** 🟡 **Antecedência do aviso — hoje 45 dias.** O sistema avisa "este pedido precisa de X caixas em N dias" faltando 45 dias. **O número certo depende de `N-03`.**
+**`E-03`** 🟢 **IMPLEMENTADO (2026-07-09) — Antecedência do aviso: 30 dias (era proposta de 45).** Pedido **rotacionando** com entrega em até **30 dias** e **sem cobertura de estoque** dispara **"Encomenda em risco — faltam N cx e entrega em D dias"** (sino). Vale nas duas direções: entrar na janela já em déficit, ou entrar em déficit já dentro da janela. Cobertura por fila de urgência (pedidos mais próximos primeiro). **O número certo ainda depende de `N-03`.** *Limite atual do mock: a checagem roda a cada mudança de estado e no load do app; disparo por passagem de tempo (cron) entra com o backend.*
 
 **`E-04`** 🟢 **DECIDIDO — O override "não rotacionar este pedido" fica (é necessário).** É a exceção para forçar **HOLD num pedido específico urgente** ("segura estas caixas para este cliente"): **off por padrão** e **editável depois** (não só na criação). A regra da data segue decidindo o regime geral; o override é a saída manual para casos urgentes. *(Confirmado pelo usuário em 2026-06-20.)*
 
@@ -160,8 +160,9 @@ Tudo que pode cair no modal do sino, hoje, está aqui. Serve para **bater a cura
 
 | Notificação | Quando deveria disparar | Liga com |
 |---|---|---|
-| **Encomenda se aproximando** | A data prevista de uma encomenda (rotacionando) entra na janela de antecedência — hoje proposto em **45 dias** (depende de `N-03`). Avisa "este pedido precisa de X cx em N dias". | `E-03` |
 | **Encomenda vencida** | A data prevista passou **sem entrega**. (Formato do alerta a definir — atraso? marcação "vencida"?) | `E-07` |
+
+*A **"Encomenda se aproximando"** saiu desta lista de propostas — foi implementada (2026-07-09) como **"Encomenda em risco"** no sino: janela de **30 dias** × déficit de cobertura (`E-03`).*
 
 *O **anti-furo reativo** já saiu daqui — virou as notificações "Promessa em risco" e "Estoque cobre os pedidos" (acima, no sino). O que falta é a versão **proativa** (avisar com antecedência), que depende do `N-03`.*
 
