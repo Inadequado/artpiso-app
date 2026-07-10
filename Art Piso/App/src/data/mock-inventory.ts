@@ -243,6 +243,8 @@ export const reservas: Reserva[] = [
     pedido: 'PED-1024',
     cliente: 'Carlos Almeida',
     clienteId: 'cli-001',
+    enderecoId: 'end-001a',
+    enderecoEntrega: 'Casa — Rua das Acácias, 120 — Castelo, Belo Horizonte',
     telefone: '(31) 94421-1880',
     produto: 'Porcelanato Branco Acetinado',
     lote: 'L-2405',
@@ -470,9 +472,26 @@ export const usuarios: Usuario[] = [
 ]
 
 export const clientes: Cliente[] = [
-  { id: 'cli-001', nome: 'Carlos Almeida', documento: '123.456.789-09', telefone: '(31) 94421-1880' },
+  {
+    id: 'cli-001',
+    nome: 'Carlos Almeida',
+    documento: '123.456.789-09',
+    telefone: '(31) 94421-1880',
+    enderecos: [
+      { id: 'end-001a', apelido: 'Casa', endereco: 'Rua das Acácias, 120 — Castelo, Belo Horizonte' },
+    ],
+  },
   { id: 'cli-002', nome: 'Mariana Souza', documento: '987.654.321-00', telefone: '(31) 91092-8801' },
-  { id: 'cli-003', nome: 'Construtora Vale', documento: '12.345.678/0001-95', telefone: '(31) 3334-0001' },
+  {
+    id: 'cli-003',
+    nome: 'Construtora Vale',
+    documento: '12.345.678/0001-95',
+    telefone: '(31) 3334-0001',
+    enderecos: [
+      { id: 'end-003a', apelido: 'Obra Torre Norte', endereco: 'Av. Amazonas, 4500 — Nova Suíça, Belo Horizonte' },
+      { id: 'end-003b', apelido: 'Obra Residencial Lago', endereco: 'Rua dos Ipês, 88 — Jardim Canadá, Nova Lima' },
+    ],
+  },
   { id: 'cli-004', nome: 'Fernanda Lima', documento: '111.444.777-35', telefone: '(31) 98812-4471' },
   { id: 'cli-005', nome: 'Construtora Horizonte', documento: '11.222.333/0001-81', telefone: '(31) 3201-7788' },
   { id: 'cli-006', nome: 'Roberto Dias', documento: '222.333.444-05', telefone: '(31) 99654-2210' },
@@ -623,6 +642,23 @@ export function furoProduto(produto: Produto, reservas: Reserva[]) {
 export function clienteDaReserva(reserva: Reserva, clientes: Cliente[]): Cliente | undefined {
   if (reserva.clienteId) return clientes.find((cliente) => cliente.id === reserva.clienteId)
   return clientes.find((cliente) => cliente.nome === reserva.cliente)
+}
+
+/** Texto de exibicao de um endereco: "Apelido — endereco" ou so o endereco. */
+export function enderecoLabel(endereco: { apelido?: string; endereco: string }) {
+  return endereco.apelido ? `${endereco.apelido} — ${endereco.endereco}` : endereco.endereco
+}
+
+/**
+ * Endereco de entrega da reserva. Prefere a ENTIDADE (id em Cliente.enderecos: editar o
+ * endereco reflete nos pedidos); cai no snapshot se o endereco foi removido do cadastro.
+ * undefined = retirada na loja.
+ */
+export function enderecoEntregaDaReserva(reserva: Reserva, clientes: Cliente[]): string | undefined {
+  if (!reserva.enderecoId) return reserva.enderecoEntrega
+  const cliente = clienteDaReserva(reserva, clientes)
+  const endereco = cliente?.enderecos?.find((item) => item.id === reserva.enderecoId)
+  return endereco ? enderecoLabel(endereco) : reserva.enderecoEntrega
 }
 
 /** Lotes fisicamente guardados na quadra (ligacao por numero da quadra). */

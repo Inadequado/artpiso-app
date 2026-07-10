@@ -103,6 +103,10 @@ export type Reserva = {
   status: ReservaStatus
   /** Cliente vinculado por id (entidade). Reservas antigas/mock podem nao ter (casam por nome). */
   clienteId?: string
+  /** Endereco de entrega escolhido (id em Cliente.enderecos). Ausente = retirada na loja. Nivel do PEDIDO (R-07). */
+  enderecoId?: string
+  /** Snapshot do endereco na criacao (fallback se o endereco for removido do cadastro). */
+  enderecoEntrega?: string
   /** Regime de travamento (eixo separado do status). Ausente = 'aguardando' (modelo atual). */
   regime?: ReservaRegime
   data: string
@@ -122,6 +126,18 @@ export type Usuario = {
 }
 
 /**
+ * Endereco de entrega do cliente (construcao civil: um cliente pode ter varias obras).
+ * Vinculado por id na reserva (fonte unica), com snapshot de fallback (mesmo padrao do cliente).
+ */
+export type EnderecoCliente = {
+  id: string
+  /** Nome curto da obra/local (ex.: "Obra Centro"). Opcional. */
+  apelido?: string
+  /** Endereco em texto livre: rua, numero, bairro, cidade. */
+  endereco: string
+}
+
+/**
  * Cliente como ENTIDADE (R-06): no lugar de texto livre redigitado a cada reserva.
  * A reserva passa a referenciar o cliente por id (fonte unica; editar o cliente reflete em tudo).
  * Campos minimos por decisao do usuario (2026-06-20): nome, documento (CPF/CNPJ) e telefone.
@@ -132,6 +148,8 @@ export type Cliente = {
   /** CPF ou CNPJ (com mascara). */
   documento: string
   telefone: string
+  /** Enderecos de entrega (obras). Opcional: cliente pode nao ter nenhum (retirada na loja). */
+  enderecos?: EnderecoCliente[]
 }
 
 export type MovimentoTipo = 'perda' | 'quadra' | 'correcao'

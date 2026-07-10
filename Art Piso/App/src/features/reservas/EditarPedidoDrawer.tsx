@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, formatM2, formatPreco } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -59,6 +60,8 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
   const [cliente, setCliente] = useState<Cliente | null>(() =>
     reserva ? clienteDaReserva(reserva, clientes) ?? null : null,
   )
+  // Sentinela 'retirada' = sem endereco (retirada na loja).
+  const [enderecoId, setEnderecoId] = useState(reserva?.enderecoId ?? 'retirada')
   const [cadastroAberto, setCadastroAberto] = useState(false)
   const [dataPrevista, setDataPrevista] = useState(reserva?.dataPrevista ?? '')
   const [manterReservadoAgora, setManterReservadoAgora] = useState(reserva?.regime === 'travado')
@@ -140,12 +143,16 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
 
   function confirmar() {
     if (!reserva || !valido || !cliente) return
+    const enderecoEscolhido =
+      enderecoId !== 'retirada' ? cliente.enderecos?.find((item) => item.id === enderecoId) : undefined
     onConfirm({
       pedidoOriginal: reserva.pedido,
       clienteId: cliente.id,
       cliente: cliente.nome,
       documento: cliente.documento,
       telefone: cliente.telefone,
+      enderecoId: enderecoEscolhido?.id,
+      enderecoEntrega: enderecoEscolhido ? enderecoLabel(enderecoEscolhido) : undefined,
       observacoes,
       dataPrevista,
       manterReservadoAgora: entregaLonga ? manterReservadoAgora : undefined,
@@ -174,7 +181,30 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
             <SectionLabel icon={UserRound}>Cliente</SectionLabel>
-            <ClienteSelector cliente={cliente} onChange={setCliente} onCadastroOpenChange={setCadastroAberto} hideLabel />
+            <ClienteSelector
+              cliente={cliente}
+              onChange={(novo) => {
+                setCliente(novo)
+                setEnderecoId('retirada')
+              }}
+              onCadastroOpenChange={setCadastroAberto}
+              hideLabel
+            />
+            {cliente?.enderecos?.length ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  Endereço de entrega
+                </span>
+                <SelectMenu
+                  value={enderecoId}
+                  onChange={setEnderecoId}
+                  options={[
+                    { value: 'retirada', label: 'Retirada na loja (sem entrega)' },
+                    ...cliente.enderecos.map((item) => ({ value: item.id, label: enderecoLabel(item) })),
+                  ]}
+                />
+              </div>
+            ) : null}
           </section>
 
           <section className="flex flex-col gap-4">

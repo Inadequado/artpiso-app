@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { RegimeTag } from '@/features/reservas/RegimeTag'
-import { clienteDaReserva } from '@/data/mock-inventory'
+import { clienteDaReserva, enderecoEntregaDaReserva } from '@/data/mock-inventory'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { useInventory } from '@/store/inventory'
 import type { Reserva, ReservaStatus } from '@/types/inventory'
@@ -42,6 +42,7 @@ export function DetalhesReservaDrawer({ reserva, onClose, onEdit }: DetalhesRese
   const clienteNome = cli?.nome ?? reserva?.cliente ?? ''
   const clienteDoc = cli?.documento ?? reserva?.documento
   const clienteTel = cli?.telefone ?? reserva?.telefone ?? ''
+  const enderecoEntrega = reserva ? enderecoEntregaDaReserva(reserva, clientes) : undefined
 
   // Todas as linhas do MESMO pedido. Ordena por lote para estabilidade visual.
   const linhas = reserva
@@ -89,6 +90,9 @@ export function DetalhesReservaDrawer({ reserva, onClose, onEdit }: DetalhesRese
                 tone={reserva.regime === 'rotacionando' ? 'lowstock' : undefined}
               />
             ) : null}
+            <div className="col-span-full">
+              <DetailItem label="Endereço de entrega" value={enderecoEntrega ?? 'Retirada na loja'} />
+            </div>
           </dl>
 
           {reserva.observacoes ? (

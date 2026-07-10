@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ClienteDrawer } from '@/features/clientes/ClienteDrawer'
 import { useGsapListRefresh } from '@/lib/animations'
+import { enderecoEntregaDaReserva } from '@/data/mock-inventory'
 import { onlyDigits } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
@@ -276,6 +277,7 @@ function PedidosDoCliente({
   pedidoExpandido: string | null
   onTogglePedido: (id: string) => void
 }) {
+  const { clientes } = useInventory()
   if (pedidos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhum pedido para este cliente ainda.</p>
   }
@@ -317,6 +319,7 @@ function PedidosDoCliente({
                   <Detalhe label="Criado em" value={pedido.data} />
                   {pedido.dataPrevista ? <Detalhe label="Entrega prevista" value={pedido.dataPrevista} /> : null}
                   {pedido.caixasEntregues ? <Detalhe label="Já entregue" value={`${pedido.caixasEntregues} cx`} numeric /> : null}
+                  <Detalhe label="Endereço de entrega" value={enderecoEntregaDaReserva(pedido, clientes) ?? 'Retirada na loja'} />
                   {pedido.observacoes ? (
                     <div className="col-span-full">
                       <dt className="text-[0.62rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">Observações</dt>

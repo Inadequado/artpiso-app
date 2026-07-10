@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, formatM2, formatPreco, proximoNumeroPedido } from '@/data/mock-inventory'
+import { caixasDisponiveis, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -45,6 +46,8 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
   const [caixas, setCaixas] = useState('')
   // Nivel do pedido.
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null)
+  // Sentinela 'retirada' = sem endereco (retirada na loja).
+  const [enderecoId, setEnderecoId] = useState('retirada')
   const [cadastroAberto, setCadastroAberto] = useState(false)
   const [dataPrevista, setDataPrevista] = useState('')
   const [manterReservadoAgora, setManterReservadoAgora] = useState(false)
@@ -109,12 +112,16 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
 
   function confirmar() {
     if (!valido || !clienteSelecionado) return
+    const enderecoEscolhido =
+      enderecoId !== 'retirada' ? clienteSelecionado.enderecos?.find((item) => item.id === enderecoId) : undefined
     onConfirm({
       pedido: pedido.trim() || undefined,
       clienteId: clienteSelecionado.id,
       cliente: clienteSelecionado.nome,
       documento: clienteSelecionado.documento,
       telefone: clienteSelecionado.telefone,
+      enderecoId: enderecoEscolhido?.id,
+      enderecoEntrega: enderecoEscolhido ? enderecoLabel(enderecoEscolhido) : undefined,
       dataPrevista,
       manterReservadoAgora: entregaLonga ? manterReservadoAgora : undefined,
       observacoes,
@@ -144,10 +151,31 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
           <SectionLabel icon={UserRound}>Cliente</SectionLabel>
           <ClienteSelector
             cliente={clienteSelecionado}
-            onChange={setClienteSelecionado}
+            onChange={(novo) => {
+              setClienteSelecionado(novo)
+              setEnderecoId('retirada')
+            }}
             onCadastroOpenChange={setCadastroAberto}
             hideLabel
           />
+          {clienteSelecionado?.enderecos?.length ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                Endereço de entrega
+              </span>
+              <SelectMenu
+                value={enderecoId}
+                onChange={setEnderecoId}
+                options={[
+                  { value: 'retirada', label: 'Retirada na loja (sem entrega)' },
+                  ...clienteSelecionado.enderecos.map((item) => ({
+                    value: item.id,
+                    label: enderecoLabel(item),
+                  })),
+                ]}
+              />
+            </div>
+          ) : null}
         </section>
 
         <section className="flex flex-col gap-4">

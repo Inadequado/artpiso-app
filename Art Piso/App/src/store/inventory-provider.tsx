@@ -112,6 +112,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       nome: input.nome.trim(),
       documento: input.documento.trim(),
       telefone: input.telefone.trim(),
+      enderecos: input.enderecos,
     }
     setClientes((atual) => [novo, ...atual])
     return novo
@@ -121,7 +122,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setClientes((atual) =>
       atual.map((cliente) =>
         cliente.id === id
-          ? { ...cliente, nome: input.nome.trim(), documento: input.documento.trim(), telefone: input.telefone.trim() }
+          ? {
+              ...cliente,
+              nome: input.nome.trim(),
+              documento: input.documento.trim(),
+              telefone: input.telefone.trim(),
+              enderecos: input.enderecos,
+            }
           : cliente,
       ),
     )
@@ -225,6 +232,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         cliente: input.cliente.trim(),
         documento: input.documento?.trim() || undefined,
         telefone: input.telefone?.trim() ?? '',
+        enderecoId: input.enderecoId,
+        enderecoEntrega: input.enderecoEntrega?.trim() || undefined,
         produto: lote.produto,
         lote: lote.lote,
         quadra: lote.quadra,
@@ -261,6 +270,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const documento = input.documento?.trim() || undefined
       const telefone = input.telefone?.trim() ?? ''
       const cliente = input.cliente.trim()
+      const enderecoId = input.enderecoId
+      const enderecoEntrega = input.enderecoEntrega?.trim() || undefined
 
       // Acumula as caixas travadas por lote (lotes distintos por item; o Map e so um guard).
       const acumuladoPorLote = new Map<string, number>()
@@ -279,6 +290,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           cliente,
           documento,
           telefone,
+          enderecoId,
+          enderecoEntrega,
           produto: lote.produto,
           lote: lote.lote,
           quadra: lote.quadra,
@@ -387,6 +400,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const telefone = input.telefone?.trim() ?? ''
       const cliente = input.cliente.trim()
       const clienteId = input.clienteId
+      const enderecoId = input.enderecoId
+      const enderecoEntrega = input.enderecoEntrega?.trim() || undefined
       const itensPorId = new Map(
         input.itens.filter((item) => item.reservaId).map((item) => [item.reservaId as string, item]),
       )
@@ -410,6 +425,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           cliente,
           documento,
           telefone,
+          enderecoId,
+          enderecoEntrega,
           caixas: item.caixas,
           m2: item.caixas * m2PorCaixa,
           caixasTravadas: regime === 'rotacionando' ? 0 : item.caixas,
@@ -429,6 +446,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           cliente,
           documento,
           telefone,
+          enderecoId,
+          enderecoEntrega,
           produto: lote.produto,
           lote: lote.lote,
           quadra: lote.quadra,

@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva } from '@/data/mock-inventory'
 import { useInventory, type EntregarReservaInput } from '@/store/inventory'
 import type { Reserva } from '@/types/inventory'
 
@@ -20,6 +20,7 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
   const { lotes, clientes } = useInventory()
   const loteOriginal = lotes.find((l) => l.lote === reserva?.lote)
   const clienteNome = reserva ? (clienteDaReserva(reserva, clientes)?.nome ?? reserva.cliente) : ''
+  const enderecoEntrega = reserva ? enderecoEntregaDaReserva(reserva, clientes) : undefined
 
   const [responsavel, setResponsavel] = useState('')
   const [caixas, setCaixas] = useState(reserva ? String(reserva.caixas) : '')
@@ -103,6 +104,7 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
             <div className="rounded-lg border bg-muted/30 p-4">
               <h4 className="font-bold">{reserva.produto}</h4>
               <p className="text-sm text-muted-foreground">Cliente: {clienteNome}</p>
+              <p className="text-sm text-muted-foreground">Entrega: {enderecoEntrega ?? 'Retirada na loja'}</p>
               <div className="mt-3 grid grid-cols-3 gap-3">
                 <ResumoItem label="Saldo em aberto" value={`${saldo} cx`} />
                 <ResumoItem label="Equivale a" value={`${reserva.m2.toLocaleString('pt-BR')} m²`} />

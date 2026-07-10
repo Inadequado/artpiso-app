@@ -31,6 +31,10 @@ export type NovaReservaInput = {
   documento?: string
   telefone?: string
   pedido?: string
+  /** Endereco de entrega escolhido (id em Cliente.enderecos). Ausente = retirada na loja. */
+  enderecoId?: string
+  /** Snapshot do texto do endereco (fallback). */
+  enderecoEntrega?: string
   observacoes?: string
   dataPrevista?: string
   manterReservadoAgora?: boolean
@@ -53,6 +57,9 @@ export type NovoPedidoInput = {
   cliente: string
   documento?: string
   telefone?: string
+  /** Endereco de entrega do PEDIDO inteiro (id em Cliente.enderecos). Ausente = retirada na loja. */
+  enderecoId?: string
+  enderecoEntrega?: string
   observacoes?: string
   dataPrevista?: string
   manterReservadoAgora?: boolean
@@ -92,6 +99,9 @@ export type EditarPedidoInput = {
   cliente: string
   documento?: string
   telefone?: string
+  /** Endereco de entrega do PEDIDO inteiro. Ausente = retirada na loja. */
+  enderecoId?: string
+  enderecoEntrega?: string
   observacoes?: string
   dataPrevista?: string
   manterReservadoAgora?: boolean
