@@ -1,4 +1,4 @@
-import { ArrowRightLeft, ChevronLeft, ChevronRight, History, MapPinned, PackagePlus, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowRightLeft, History, MapPinned, PackagePlus, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,6 @@ const actions: AjusteAction[] = [
   { tipo: 'correcao', label: 'Corrigir quantidade', description: 'Ajuste administrativo controlado', icon: PenLine },
 ]
 
-const quadrasPorPagina = 4
 const historicoRecenteLimite = 6
 
 export function AjustesPage() {
@@ -36,16 +35,8 @@ export function AjustesPage() {
   const [quadraOpen, setQuadraOpen] = useState(false)
   const [quadraEdit, setQuadraEdit] = useState<Quadra | null>(null)
   const [quadraExcluir, setQuadraExcluir] = useState<Quadra | null>(null)
-  const [quadraPage, setQuadraPage] = useState(0)
   const [historicoOpen, setHistoricoOpen] = useState(false)
 
-  const totalQuadraPages = Math.max(1, Math.ceil(quadras.length / quadrasPorPagina))
-  const quadraPageAtual = Math.min(quadraPage, totalQuadraPages - 1)
-  const quadrasVisiveis = quadras.slice(
-    quadraPageAtual * quadrasPorPagina,
-    quadraPageAtual * quadrasPorPagina + quadrasPorPagina,
-  )
-  const mostrarNavegacaoQuadras = totalQuadraPages > 1
   const historicoRecente = movimentos.slice(0, historicoRecenteLimite)
   const mostrarHistoricoCompleto = movimentos.length > historicoRecenteLimite
 
@@ -63,7 +54,6 @@ export function AjustesPage() {
     if (quadraEdit) {
       atualizarQuadra(quadraEdit.id, dados)
     } else {
-      setQuadraPage(Math.floor(quadras.length / quadrasPorPagina))
       adicionarQuadra(dados)
     }
     setQuadraOpen(false)
@@ -104,39 +94,15 @@ export function AjustesPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <MapPinned aria-hidden="true" className="size-4 text-primary" />
-                <CardTitle>Quadras</CardTitle>
-              </div>
-              <CardDescription>Localizações físicas do depósito usadas nos lotes.</CardDescription>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <MapPinned aria-hidden="true" className="size-4 text-primary" />
+              <CardTitle>Quadras</CardTitle>
             </div>
-            {mostrarNavegacaoQuadras ? (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  disabled={quadraPageAtual === 0}
-                  aria-label="Quadras anteriores"
-                  onClick={() => setQuadraPage((page) => Math.max(0, page - 1))}
-                >
-                  <ChevronLeft aria-hidden="true" className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  disabled={quadraPageAtual >= totalQuadraPages - 1}
-                  aria-label="Próximas quadras"
-                  onClick={() => setQuadraPage((page) => Math.min(totalQuadraPages - 1, page + 1))}
-                >
-                  <ChevronRight aria-hidden="true" className="size-4" />
-                </Button>
-              </div>
-            ) : null}
+            <CardDescription>Localizações físicas do depósito usadas nos lotes.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-4 gap-3">
-            {quadrasVisiveis.map((quadra) => (
+            {quadras.map((quadra) => (
               <QuadraCard
                 key={quadra.id}
                 quadra={quadra}

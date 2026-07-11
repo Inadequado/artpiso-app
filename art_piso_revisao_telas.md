@@ -76,10 +76,10 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 Registradas antes da sessão de revisão da tela; entram no escopo quando a sessão de Ajustes abrir.
 
 ### 🧩 MELHORIA — Máscara para o nome das quadras
-- Definir uma máscara/formato padrão para o identificador da quadra (hoje o `QuadraDrawer` aceita texto livre, ex.: "Q-13" vs "q13" vs "Quadra 13"). **Formato exato a definir com o usuário.**
+- Definir uma máscara/formato padrão para o identificador da quadra (hoje o `QuadraDrawer` aceita texto livre, ex.: "Q-13" vs "q13" vs "Quadra 13"). **Aguardando o usuário confirmar os dados reais do depósito para definir o formato.**
 
-### 🧩 MELHORIA — Quadras sem paginação
-- Hoje os cards de quadra ficam em 1 linha de 4 com seletor de páginas (`quadrasPorPagina = 4` na `AjustesPage`). **Decidido:** remover a paginação e listar todas as quadras em grid corrido, mantendo 4 por linha.
+### ✅ RESOLVIDO (2026-07-11) — Quadras sem paginação
+- **Era:** cards de quadra em 1 linha de 4 com seletor de páginas. **Feito:** paginação removida (estado `quadraPage`, setas e fatiamento saíram da `AjustesPage`); todas as quadras em grid corrido de 4 por linha.
 
 ---
 
