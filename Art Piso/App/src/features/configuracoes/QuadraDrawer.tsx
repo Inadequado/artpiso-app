@@ -14,11 +14,10 @@ export function QuadraDrawer({
   open: boolean
   quadra?: Quadra | null
   onClose: () => void
-  onSave: (dados: Pick<Quadra, 'numero' | 'descricao' | 'capacidade'>) => void
+  onSave: (dados: Pick<Quadra, 'numero' | 'descricao'>) => void
 }) {
   const [numero, setNumero] = useState(quadra?.numero ?? '')
   const [descricao, setDescricao] = useState(quadra?.descricao ?? '')
-  const [capacidade, setCapacidade] = useState(quadra?.capacidade ? String(quadra.capacidade) : '')
 
   const valido = numero.trim().length > 0 && descricao.trim().length > 0
 
@@ -34,14 +33,7 @@ export function QuadraDrawer({
           <Button
             className="flex-[2]"
             disabled={!valido}
-            onClick={() => {
-              const cap = Number.parseInt(capacidade, 10)
-              onSave({
-                numero: numero.trim(),
-                descricao: descricao.trim(),
-                capacidade: Number.isFinite(cap) && cap > 0 ? cap : undefined,
-              })
-            }}
+            onClick={() => onSave({ numero: numero.trim(), descricao: descricao.trim() })}
           >
             {quadra ? 'Salvar alterações' : 'Criar quadra'}
           </Button>
@@ -54,16 +46,6 @@ export function QuadraDrawer({
         </Field>
         <Field label="Descrição">
           <Input value={descricao} onChange={(event) => setDescricao(event.target.value)} placeholder="Ex.: Corredor 3" />
-        </Field>
-        <Field label="Capacidade (caixas)" hint="Opcional. Define a % de ocupação. Em branco = sem barra, só a contagem.">
-          <Input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={capacidade}
-            onChange={(event) => setCapacidade(event.target.value)}
-            placeholder="Ex.: 80"
-          />
         </Field>
       </div>
     </Drawer>

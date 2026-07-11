@@ -59,7 +59,7 @@ export function AjustesPage() {
     setQuadraOpen(true)
   }
 
-  function salvarQuadra(dados: Pick<Quadra, 'numero' | 'descricao' | 'capacidade'>) {
+  function salvarQuadra(dados: Pick<Quadra, 'numero' | 'descricao'>) {
     if (quadraEdit) {
       setListaQuadras((atual) =>
         atual.map((item) => (item.id === quadraEdit.id ? { ...item, ...dados } : item)),
@@ -76,6 +76,17 @@ export function AjustesPage() {
   function excluirQuadra(quadra: Quadra) {
     setListaQuadras((atual) => atual.filter((item) => item.id !== quadra.id))
     registrarMovimento({ tipo: 'quadra', titulo: 'Quadra removida', detalhe: `${quadra.numero} removida do depósito` })
+  }
+
+  // Ocupacao MANUAL (reverte Q-01): o gerente alterna no card; cada virada fica no historico.
+  function alternarStatusQuadra(quadra: Quadra) {
+    const novo = quadra.status === 'ocupado' ? 'disponivel' : 'ocupado'
+    setListaQuadras((atual) => atual.map((item) => (item.id === quadra.id ? { ...item, status: novo } : item)))
+    registrarMovimento({
+      tipo: 'quadra',
+      titulo: novo === 'ocupado' ? 'Quadra marcada como ocupada' : 'Quadra marcada como disponível',
+      detalhe: `${quadra.numero} — ${quadra.descricao}`,
+    })
   }
 
   return (
@@ -152,6 +163,7 @@ export function AjustesPage() {
                 lotes={lotes}
                 onEdit={() => abrirEdicaoQuadra(quadra)}
                 onDelete={() => setQuadraExcluir(quadra)}
+                onToggleStatus={() => alternarStatusQuadra(quadra)}
               />
             ))}
           </CardContent>
@@ -230,15 +242,17 @@ function QuadraCard({
   lotes,
   onEdit,
   onDelete,
+  onToggleStatus,
 }: {
   quadra: Quadra
   lotes: LoteEstoque[]
   onEdit: () => void
   onDelete: () => void
+  onToggleStatus: () => void
 }) {
   const ocupacao = ocupacaoQuadra(quadra, lotes)
   const temLotes = ocupacao.lotes > 0
-  const cheia = ocupacao.status === 'ocupado'
+  const ocupada = quadra.status === 'ocupado'
 
   return (
     <div className="rounded-lg border bg-muted/20 p-4">
@@ -276,34 +290,18 @@ function QuadraCard({
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-2">
-            <Badge variant={cheia ? 'warning' : 'success'}>{cheia ? 'Ocupada' : 'Disponível'}</Badge>
-            {ocupacao.percentual !== undefined ? (
-              <span className="text-xs font-bold text-muted-foreground">{ocupacao.percentual}%</span>
-            ) : null}
-          </div>
-
-          {ocupacao.capacidade !== undefined ? (
-            <div
-              className="h-2 overflow-hidden rounded-full bg-muted"
-              role="progressbar"
-              aria-valuenow={ocupacao.percentual}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Ocupação da quadra ${quadra.numero}`}
-            >
-              <div
-                className={cn('h-full rounded-full transition-[width]', cheia ? 'bg-warning' : 'bg-primary')}
-                style={{ width: `${ocupacao.percentual}%` }}
-              />
-            </div>
-          ) : null}
+          <button
+            type="button"
+            className="self-start rounded-md transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60"
+            aria-pressed={ocupada}
+            title={ocupada ? 'Marcar como disponível' : 'Marcar como ocupada'}
+            onClick={onToggleStatus}
+          >
+            <Badge variant={ocupada ? 'warning' : 'success'}>{ocupada ? 'Ocupada' : 'Disponível'}</Badge>
+          </button>
 
           <p className="text-xs text-muted-foreground">
-            {ocupacao.lotes} {ocupacao.lotes === 1 ? 'lote' : 'lotes'} ·{' '}
-            {ocupacao.capacidade !== undefined
-              ? `${ocupacao.caixas}/${ocupacao.capacidade} cx`
-              : `${ocupacao.caixas} cx · sem capacidade`}
+            {ocupacao.lotes} {ocupacao.lotes === 1 ? 'lote' : 'lotes'} · {ocupacao.caixas} cx
           </p>
         </div>
       </div>

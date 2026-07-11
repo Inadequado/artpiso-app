@@ -172,13 +172,16 @@ export type Movimento = {
   data: string
 }
 
-/** Ocupacao derivada da quadra. Nao e mais um campo gravado: vem das caixas dos lotes na quadra. */
 export type QuadraStatus = 'disponivel' | 'ocupado'
 
 export type Quadra = {
   id: string
   numero: string
   descricao: string
-  /** Capacidade em caixas. Opcional ate ser configurada; sem ela nao ha % de ocupacao (so contagem). */
-  capacidade?: number
+  /**
+   * Ocupacao MANUAL (decisao do usuario, 2026-07-11, reverte Q-01): o gerente marca no card.
+   * Caixas tem tamanhos variados, entao capacidade/percentual automatico fingia precisao;
+   * o campo `capacidade` foi removido junto. Ausente = 'disponivel'.
+   */
+  status?: QuadraStatus
 }

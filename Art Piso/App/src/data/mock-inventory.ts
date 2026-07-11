@@ -1,5 +1,5 @@
 import { DIAS_ANTECEDENCIA_ENTREGA, diasAteEntrega } from '@/lib/reserva-regime'
-import type { Cliente, LoteEstoque, Produto, Quadra, QuadraStatus, Reserva, StockStatus, Usuario } from '@/types/inventory'
+import type { Cliente, LoteEstoque, Produto, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 export const lotes: LoteEstoque[] = [
   {
@@ -527,18 +527,18 @@ export const clientes: Cliente[] = [
 ]
 
 export const quadras: Quadra[] = [
-  { id: 'q-01', numero: 'Q-01', descricao: 'Quadra Norte', capacidade: 12 },
-  { id: 'q-02', numero: 'Q-02', descricao: 'Corredor de revestimentos', capacidade: 40 },
-  { id: 'q-03', numero: 'Q-03', descricao: 'Quadra Sul', capacidade: 100 },
-  { id: 'q-04', numero: 'Q-04', descricao: 'Área de grandes formatos', capacidade: 90 },
-  { id: 'q-05', numero: 'Q-05', descricao: 'Pulmão sem capacidade definida' },
-  { id: 'q-06', numero: 'Q-06', descricao: 'Corredor amadeirados A', capacidade: 80 },
-  { id: 'q-07', numero: 'Q-07', descricao: 'Corredor amadeirados B', capacidade: 40 },
-  { id: 'q-08', numero: 'Q-08', descricao: 'Corredor 2', capacidade: 60 },
-  { id: 'q-09', numero: 'Q-09', descricao: 'Laminados e vinílicos', capacidade: 70 },
-  { id: 'q-10', numero: 'Q-10', descricao: 'Pastilhas e peças especiais', capacidade: 50 },
-  { id: 'q-11', numero: 'Q-11', descricao: 'Quadra vazia para expansão', capacidade: 30 },
-  { id: 'q-12', numero: 'Q-12', descricao: 'Área de separação', capacidade: 80 },
+  { id: 'q-01', numero: 'Q-01', descricao: 'Quadra Norte', status: 'ocupado' },
+  { id: 'q-02', numero: 'Q-02', descricao: 'Corredor de revestimentos' },
+  { id: 'q-03', numero: 'Q-03', descricao: 'Quadra Sul' },
+  { id: 'q-04', numero: 'Q-04', descricao: 'Área de grandes formatos' },
+  { id: 'q-05', numero: 'Q-05', descricao: 'Pulmão do depósito' },
+  { id: 'q-06', numero: 'Q-06', descricao: 'Corredor amadeirados A' },
+  { id: 'q-07', numero: 'Q-07', descricao: 'Corredor amadeirados B' },
+  { id: 'q-08', numero: 'Q-08', descricao: 'Corredor 2' },
+  { id: 'q-09', numero: 'Q-09', descricao: 'Laminados e vinílicos' },
+  { id: 'q-10', numero: 'Q-10', descricao: 'Pastilhas e peças especiais' },
+  { id: 'q-11', numero: 'Q-11', descricao: 'Quadra vazia para expansão' },
+  { id: 'q-12', numero: 'Q-12', descricao: 'Área de separação', status: 'ocupado' },
 ]
 
 export function caixasDisponiveis(lote: LoteEstoque) {
@@ -742,23 +742,16 @@ export type OcupacaoQuadra = {
   caixas: number
   /** Quantidade de lotes distintos na quadra. */
   lotes: number
-  /** Capacidade configurada (caixas). undefined enquanto nao definida. */
-  capacidade?: number
-  /** Percentual 0-100 de ocupacao; so existe quando ha capacidade. */
-  percentual?: number
-  /** Ocupado = cheio (caixas >= capacidade). Disponivel = ainda cabe estoque (inclui vazia). */
-  status: QuadraStatus
 }
 
 /**
- * Ocupacao derivada da quadra a partir das caixas dos lotes nela.
- * Sem capacidade definida nao ha %: a quadra fica sempre "disponivel" (nao da pra saber se esta cheia).
+ * Contagem INFORMATIVA da quadra (lotes e caixas fisicas). Nao determina o status:
+ * a ocupacao e marcada MANUALMENTE pelo gerente (`Quadra.status`) — caixas de tamanhos
+ * variados tornavam o calculo por capacidade impreciso (decisao 2026-07-11, reverte Q-01).
  */
 export function ocupacaoQuadra(quadra: Quadra, lista: LoteEstoque[]): OcupacaoQuadra {
-  const caixas = caixasNaQuadra(quadra.numero, lista)
-  const lotes = lotesNaQuadra(quadra.numero, lista).length
-  const capacidade = quadra.capacidade && quadra.capacidade > 0 ? quadra.capacidade : undefined
-  const percentual = capacidade ? Math.min(100, Math.round((caixas / capacidade) * 100)) : undefined
-  const status: QuadraStatus = capacidade && caixas >= capacidade ? 'ocupado' : 'disponivel'
-  return { caixas, lotes, capacidade, percentual, status }
+  return {
+    caixas: caixasNaQuadra(quadra.numero, lista),
+    lotes: lotesNaQuadra(quadra.numero, lista).length,
+  }
 }
