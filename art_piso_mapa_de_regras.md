@@ -110,11 +110,11 @@ Valores que **chutamos** para o app rodar — não significam que estão certos.
 
 > **Onde fica (decidido):** a configuração de quadra **não tem tela própria** — vive **dentro de Ajustes de Estoque**, junto com perda, mover lote e corrigir. Não criar seção/menu separado.
 
-**`Q-01`** 🟢 **IMPLEMENTADO — Status da quadra é automático (derivado), com barra de ocupação.** Vem das caixas físicas dos lotes na quadra (não é escolhido na mão): **Disponível** (ainda cabe estoque) × **Ocupada** (cheia, caixas ≥ capacidade) + **barra de % de ocupação**. Simplificou o Vazia/Parcial/Cheia (decisão do usuário). O % só existe quando há **capacidade** definida (`Q-03`).
+**`Q-01`** 🟢 **REVISTO (2026-07-11) — Status da quadra é MANUAL: o gerente marca.** A versão automática (caixas × capacidade, com barra de %) foi **revertida**: caixas têm **tamanhos variados**, então o cálculo por capacidade fingia precisão. O gerente alterna **Disponível × Ocupada** clicando no badge do card (Ajustes); cada virada fica no **Histórico de Ajustes**. O card mantém a contagem informativa ("N lotes · M cx"). *Impacto no schema (Dev): `quadras` NÃO precisa de coluna `capacidade`; precisa de `status` (disponivel/ocupado).*
 
 **`Q-02`** 🟢 Uma quadra pode conter **vários lotes**; **excluir** quadra é bloqueado se houver lote nela; mover lote de quadra atualiza a quadra nas reservas ativas.
 
-**`Q-03`** 🟡 **DECIDIR — Capacidade da quadra (em caixas).** O **campo já existe** (opcional) e é o que destrava a barra de % e o status "Ocupada". **Falta definir** os valores por quadra (e se a capacidade deve ser obrigatória). Sem capacidade, a quadra fica sempre "Disponível" e mostra só a contagem.
+**`Q-03`** 🟢 **RESOLVIDA POR REMOÇÃO (2026-07-11).** O campo capacidade **deixou de existir** junto com a reversão do `Q-01` — não há mais valor por quadra a definir.
 
 *(Liga com `C-01`: se um lote pode se dividir em várias quadras, a gestão de quadra fica mais rica.)*
 

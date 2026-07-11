@@ -45,10 +45,11 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - HISTORICO DE PERDAS NO DETALHE DO PRODUTO (2026-07-07): `Movimento` ganhou vinculo ESTRUTURADO `loteId?`/`produtoId?` (preenchidos nos 3 ajustes de lote: perda, quadra, correcao; `detalhe` segue sendo o texto exibido). `ProdutoDetalheDrawer` mostra secao "Historico de perdas" filtrando `tipo === 'perda' && produtoId === produto.id` (so aparece se houver evento). LIMITE conhecido do mock: perda semeada em `caixasPerda` sem evento no log nao aparece na lista (no Supabase todo registro passa pelo fluxo). Seeds de perda ganharam loteId/produtoId + motivo.
 - EXCECAO DE LABEL (2026-07-07): "Pisos danificados (opcional)" MANTEM o sufixo no label (decisao do usuario) — excecao consciente a regra do label limpo; nao replicar em campos novos.
 
-### Quadras (Q-01, feito 2026-06-20)
-- Status DERIVADO, nao manual: **Disponivel** (ainda cabe estoque; junta vazia + parcial) x **Ocupada** (cheia, caixas >= capacidade) + BARRA DE PROGRESSO em % de ocupacao. Decisao do usuario simplificou o vazia/parcial/cheia.
-- Campo `Quadra.capacidade?` (caixas, OPCIONAL): sem ela nao ha %, so contagem ("N lotes · M cx · sem capacidade") e fica sempre Disponivel. Ocupacao usa CAIXAS FISICAS (`caixasEstoque`) — caixa reservada ainda ocupa espaco.
-- Quadras vivem em Ajustes de Estoque (sem tela propria). Capacidade configurada no `QuadraDrawer`.
+### Quadras
+- Q-01 REVERTIDA (2026-07-11, decisao do usuario): ocupacao agora e MANUAL, nao derivada. Motivo de dominio NOVO: caixas tem tamanhos variados, entao capacidade em caixas / % automatico fingia precisao que nao existe — o GERENTE e o responsavel por esse controle. `Quadra.capacidade` REMOVIDA (campo saiu do QuadraDrawer, do tipo e dos seeds; barra de % e percentual sairam do card); entrou `Quadra.status?: 'disponivel' | 'ocupado'` gravado (ausente = disponivel).
+- Toggle no PROPRIO CARD (Ajustes): o badge Disponivel/Ocupada e um botao (`aria-pressed`) — 1 clique alterna, sem dialogo (reversivel), e cada virada entra no Historico de Ajustes ("Quadra marcada como ocupada/disponivel"). Racional: e acao operacional de dia a dia, nao cadastro — nao merece abrir o drawer de edicao.
+- Contagem "N lotes · M cx" MANTIDA no card como informacao (caixas sao contadas com precisao; so nao determinam mais o status).
+- Quadras vivem em Ajustes de Estoque (sem tela propria). Historico anterior (para referencia): Q-01 original (2026-06-20) tinha status derivado de caixas x capacidade com barra de %.
 
 ### Reservas
 - `ReservaDrawer` e unico: Estoque abre com lote fixo, Reservas com seletor de lote. m2 sempre derivado (nao digitavel); bloqueio acima do disponivel (Q5). Entrega pode ser parcial (Q6). CPF/CNPJ obrigatorio (PH-10).
@@ -142,7 +143,7 @@ Numeros/regras que CHUTAMOS; base do documento de perguntas pro Dev. Convem revi
 
 - Q16 (Dev) - Prazo real de reposicao de porcelanato/pisos (pedido -> chegada). Sazonalidade? Produtos mais lentos? Define a antecedencia segura do modelo de encomenda. (= PH-5)
 - R-08 RESOLVIDO (2026-06-25) — ver decisao R-08 em Reservas acima.
-- Q-03 - CAPACIDADE da quadra: hoje campo opcional; e o que destrava o nivel cheia/parcial. Como definir o valor padrao / por quadra.
+- Q-03 RESOLVIDA POR REMOCAO (2026-07-11): capacidade da quadra deixou de existir (ver Quadras em Decisoes) — nao ha mais valor a definir.
 - E-07 - ENCOMENDA VENCIDA quando a data prevista passa (ligado ao modelo de encomenda).
 - Status de produto ESGOTADO preso no visual: tratar o caso "produto inteiro esgotado" sabendo que o Dev nao recadastra o mesmo lote (entra lote novo). Liga a PH-8.
 - RESOLVIDOS recentemente (nao reabrir): Q10 historico (log `movimentos` so de perda/quadra/correcao + `HistoricoDrawer`; reserva/entrega/cadastro vivem so como notificacao), R-06 clientes (fase 1), Q-01 quadra, R-05 editar parcial (decidido 2026-06-25, IMPLEMENTADO 2026-06-25), R-07 pedido multi-item carrinho (2026-06-25, decisao + impl na secao Reservas), seed clienteId (CONFIRMADO FEITO 2026-06-25), R-09 agrupamento por cliente em Reservas (ARQUIVADO 2026-06-25, ClientesPage ja atende), troca de lote na entrega rotacionando (IMPLEMENTADO 2026-06-25).
