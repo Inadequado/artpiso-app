@@ -136,6 +136,9 @@ export function ProdutoDetalheDrawer({
               </div>
             )}
           </div>
+          {produto.descricao ? (
+            <p className="whitespace-pre-line text-sm text-muted-foreground">{produto.descricao}</p>
+          ) : null}
           <Button
             variant="ghost"
             size="sm"

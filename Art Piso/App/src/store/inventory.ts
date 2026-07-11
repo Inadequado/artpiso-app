@@ -23,6 +23,8 @@ export type AtualizarProdutoPatch = {
   m2PorCaixa: number
   pecasPorCaixa: number
   precoM2: number
+  /** Descricao livre do produto. Enviar sempre (undefined limpa a descricao). */
+  descricao?: string
 }
 
 export type NovaReservaInput = {

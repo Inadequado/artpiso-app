@@ -603,6 +603,7 @@ export function agruparPorProduto(lista: LoteEstoque[]): Produto[] {
         m2PorCaixa: lote.m2PorCaixa,
         pecasPorCaixa: lote.pecasPorCaixa,
         precoM2: lote.precoM2,
+        descricao: lote.descricao,
         foto: lote.foto,
         lotes: [lote],
       })

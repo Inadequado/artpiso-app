@@ -42,11 +42,13 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 
 > **Mudança estrutural posterior (2026-07-07, pedido do usuário):** referência e tamanho viraram **opcionais** no cadastro. A identidade do produto migrou de `referencia` para `produtoId` (`LoteEstoque.produtoId` / `Produto.id`) em agrupamento, seleção, editar/excluir e notificações; referência agora é dado exibicional (some da UI quando vazia) e ficou editável no `EditarProdutoDrawer`. Os achados abaixo continuam valendo — ler "referência" como "produto" onde for identidade.
 
-### 🔴 BUG — Dados do produto não ficam travados ao reaproveitar produto existente
-- **Onde:** `CadastroProdutoDrawer.tsx:67-82` (detecção de `produtoExistente` + `selecionarProduto`).
-- **Problema:** quando a referência já existe, aparece o aviso "você está adicionando um novo lote; os dados do produto serão mantidos" — mas nome/referência/marca/tamanho/preço continuam editáveis depois do autocomplete preencher. Se o usuário mexer neles (ou digitar a referência igual sem clicar na sugestão), o novo lote é salvo com valores **diferentes** dos lotes-irmãos da mesma referência.
-- **Por que importa:** `agruparPorProduto` (`data/mock-inventory.ts:516`) monta a exibição do produto a partir do **primeiro** lote daquela referência — a inconsistência fica enterrada no dado, não aparece na tela. Quebra o princípio "Produto + Lote define a unidade real de estoque".
-- **Fix proposto:** quando `produtoExistente` for detectado, travar (read-only) nome/referência/marca/tamanho/preço — mesmo padrão que o `ClienteSelector` já usa para cliente existente (trava campos + botão "Trocar").
+### ✅ RESOLVIDO (2026-07-11) — Dados do produto não ficavam travados ao reaproveitar produto existente
+- **Era:** com `produtoExistente` detectado, marca/tamanho/preço/etc. continuavam editáveis e o salvar usava o que estivesse digitado — novo lote podia nascer com dados diferentes dos lotes-irmãos do mesmo `produtoId` (inconsistência enterrada: `agruparPorProduto` exibe o primeiro lote).
+- **Feito:** com match ativo, os campos de produto (marca, tamanho, preço, descrição, foto, m²/caixa, peças/caixa) **somem** e viram card resumo read-only; o salvar usa **sempre os dados da entidade existente**, nunca os inputs (cobre também digitar a referência igual sem clicar na sugestão). Nome e referência continuam editáveis de propósito — são a saída do match ("altere o nome ou a referência" no lugar de botão "Trocar") e evitam travar a digitação num match transitório (ex.: "Metro" a caminho de "Metro Sage"). `selecionarProduto` (clique na sugestão) agora só preenche nome+referência, sem carryover de marca/foto se o usuário desfizer o match depois.
+
+### ✅ RESOLVIDO (2026-07-11) — Campo "Descrição" era digitado e descartado (achado novo do mesmo dia)
+- **Era:** o formulário coletava "Descrição (opcional)", mas o `salvar()` não a enviava e o tipo nem tinha o campo — texto perdido silenciosamente.
+- **Decisão do usuário:** persistir. **Feito:** `descricao` virou atributo de produto (vive em cada lote, como marca/preço): salva no cadastro, herdada pelo `NovoLoteDrawer`, editável no `EditarProdutoDrawer` (aplica a todos os lotes) e exibida no `ProdutoDetalheDrawer` (abaixo da foto). No reaproveitamento de produto existente, vem da entidade como os demais campos. PENDÊNCIA FASE 2: coluna `descricao` no schema de produtos.
 
 ### ✅ RESOLVIDO (2026-07-11) — Quadra é texto livre, não `SelectMenu`
 - **Era:** quadra como `<Input>` livre em `CadastroProdutoDrawer` e `NovoLoteDrawer`, sem validar contra as quadras reais (risco de quadra fantasma "Q-3" vs "Q-03"); a lista de `Quadra[]` vivia como estado local da `AjustesPage`.

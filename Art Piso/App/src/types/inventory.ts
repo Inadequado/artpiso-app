@@ -54,6 +54,8 @@ export type LoteEstoque = {
   pecasPorCaixa: number
   /** Preco de venda por m2 (R$). Atributo de produto: igual para todos os lotes da referencia. */
   precoM2: number
+  /** Descricao livre (acabamento, detalhes tecnicos). Atributo de produto: igual em todos os lotes. Opcional. */
+  descricao?: string
   caixasEstoque: number
   caixasReserva: number
   caixasPerda: number
@@ -73,6 +75,7 @@ export type Produto = {
   m2PorCaixa: number
   pecasPorCaixa: number
   precoM2: number
+  descricao?: string
   foto?: string
   lotes: LoteEstoque[]
 }

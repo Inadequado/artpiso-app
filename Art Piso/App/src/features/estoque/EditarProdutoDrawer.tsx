@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { formatPreco } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
@@ -26,6 +27,7 @@ export function EditarProdutoDrawer({
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? String(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? String(produto.precoM2) : '')
+  const [descricao, setDescricao] = useState(produto?.descricao ?? '')
 
   const m2Num = Number(m2PorCaixa)
   const pecasNum = Number(pecasPorCaixa)
@@ -43,6 +45,7 @@ export function EditarProdutoDrawer({
       m2PorCaixa: m2Num,
       pecasPorCaixa: pecasNum,
       precoM2: precoNum,
+      descricao: descricao.trim() || undefined,
     })
     onClose()
   }
@@ -87,6 +90,9 @@ export function EditarProdutoDrawer({
               ) : null}
             </Field>
           </div>
+          <Field label="Descrição" optional>
+            <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
+          </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="m² por caixa">
               <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />

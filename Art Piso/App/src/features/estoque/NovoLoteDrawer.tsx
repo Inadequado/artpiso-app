@@ -48,6 +48,7 @@ export function NovoLoteDrawer({
       m2PorCaixa: produto.m2PorCaixa,
       pecasPorCaixa: produto.pecasPorCaixa,
       precoM2: produto.precoM2,
+      descricao: produto.descricao,
       caixasEstoque: estoque,
       caixasReserva: 0,
       caixasPerda: 0,

@@ -77,17 +77,14 @@ export function CadastroProdutoDrawer({
         produto.referencia.trim().toLowerCase() === referencia.trim().toLowerCase() && referencia.trim() !== '',
     ) ?? produtosExistentes.find((produto) => produto.produto.trim().toLowerCase() === termo && termo !== '')
 
+  // Basta nome+referencia para ativar o match (produtoExistente); os demais dados do produto
+  // NAO entram nos inputs — com match ativo eles vem da entidade no salvar. Assim, desfazer o
+  // match (mudar o nome) nao deixa marca/preco/foto do produto antigo pre-preenchidos.
   function selecionarProduto(id: string) {
     const produto = produtosExistentes.find((item) => item.id === id)
     if (!produto) return
     setNome(produto.produto)
     setReferencia(produto.referencia)
-    setMarca(produto.marca)
-    setTamanho(produto.tamanho)
-    setM2PorCaixa(String(produto.m2PorCaixa))
-    setPecasPorCaixa(String(produto.pecasPorCaixa))
-    setPreco(String(produto.precoM2))
-    if (produto.foto) setFoto(produto.foto)
   }
 
   function onFotoSelecionada(event: React.ChangeEvent<HTMLInputElement>) {
@@ -98,29 +95,27 @@ export function CadastroProdutoDrawer({
     reader.readAsDataURL(arquivo)
   }
 
-  const m2Caixa = Number(m2PorCaixa)
-  const pecasCaixa = Number(pecasPorCaixa)
-  const precoNum = Number(preco)
+  // Com produto existente, os dados do produto vem da ENTIDADE, nunca dos inputs: os campos
+  // ficam ocultos (viram resumo read-only) e o salvar ignora o que estiver digitado neles.
+  // Evita lote-irmao com dados divergentes do mesmo produtoId (achado da revisao de telas).
+  const m2Caixa = produtoExistente ? produtoExistente.m2PorCaixa : Number(m2PorCaixa)
+  const pecasCaixa = produtoExistente ? produtoExistente.pecasPorCaixa : Number(pecasPorCaixa)
+  const precoNum = produtoExistente ? produtoExistente.precoM2 : Number(preco)
   const totalM2 = Number.isFinite(m2Caixa) && m2Caixa > 0 ? estoque * m2Caixa : 0
-  const valido = Boolean(
-    nome.trim() &&
-      marca.trim() &&
-      lote.trim() &&
-      quadra.trim() &&
-      m2Caixa > 0 &&
-      pecasCaixa > 0 &&
-      precoNum > 0,
-  )
+  const dadosProdutoValidos = produtoExistente
+    ? true
+    : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0)
+  const valido = Boolean(dadosProdutoValidos && lote.trim() && quadra.trim())
 
   function salvar() {
     onSave({
       id: crypto.randomUUID(),
       // Novo lote de produto existente herda o produtoId dele; produto novo ganha id proprio.
       produtoId: produtoExistente?.id ?? crypto.randomUUID(),
-      produto: nome.trim(),
-      referencia: referencia.trim(),
-      marca: marca.trim(),
-      tamanho: tamanho.trim(),
+      produto: produtoExistente ? produtoExistente.produto : nome.trim(),
+      referencia: produtoExistente ? produtoExistente.referencia : referencia.trim(),
+      marca: produtoExistente ? produtoExistente.marca : marca.trim(),
+      tamanho: produtoExistente ? produtoExistente.tamanho : tamanho.trim(),
       lote: lote.trim(),
       quadra: quadra.trim(),
       bitola: bitola.trim() || undefined,
@@ -128,10 +123,11 @@ export function CadastroProdutoDrawer({
       m2PorCaixa: m2Caixa,
       pecasPorCaixa: pecasCaixa,
       precoM2: precoNum,
+      descricao: produtoExistente ? produtoExistente.descricao : descricao.trim() || undefined,
       caixasEstoque: estoque,
       caixasReserva: 0,
       caixasPerda: 0,
-      foto,
+      foto: produtoExistente ? produtoExistente.foto : foto,
     })
   }
 
@@ -164,43 +160,68 @@ export function CadastroProdutoDrawer({
             />
           </Field>
           {produtoExistente ? (
-            <div className="-mt-1 flex gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <InfoIcon aria-hidden="true" className="size-4 shrink-0 text-primary" />
-              <p className="text-xs text-muted-foreground">
-                Produto já cadastrado (<strong className="text-foreground">{produtoExistente.produto}</strong>
-                {produtoExistente.referencia ? `, Ref. ${produtoExistente.referencia}` : ''}). Você está adicionando um{' '}
-                <strong className="text-foreground">novo lote</strong> a ele; os dados do produto serão mantidos.
-              </p>
+            <div className="-mt-1 flex gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+              {produtoExistente.foto ? (
+                <img src={produtoExistente.foto} alt="" className="size-16 shrink-0 rounded-md border object-cover" />
+              ) : (
+                <InfoIcon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+              )}
+              <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                <p>
+                  Produto já cadastrado — você está adicionando um <strong className="text-foreground">novo lote</strong> a ele.
+                </p>
+                <p className="text-sm font-bold text-foreground">
+                  {produtoExistente.produto}
+                  {produtoExistente.referencia ? (
+                    <span className="ml-2 font-mono text-xs font-normal text-primary">Ref. {produtoExistente.referencia}</span>
+                  ) : null}
+                </p>
+                <p>
+                  {[
+                    [produtoExistente.marca, produtoExistente.tamanho].filter(Boolean).join(' - '),
+                    `${formatM2(produtoExistente.m2PorCaixa)} m²/caixa`,
+                    `${produtoExistente.pecasPorCaixa} pç/caixa`,
+                    `${formatPreco(produtoExistente.precoM2)}/m²`,
+                  ].join(' · ')}
+                </p>
+                <p>Os dados acima serão mantidos. Para cadastrar um produto diferente, altere o nome ou a referência.</p>
+              </div>
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Referência" optional>
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
             </Field>
-            <Field label="Marca">
-              <Autocomplete
-                value={marca}
-                onChange={setMarca}
-                onSelect={setMarca}
-                options={sugestoesMarca}
-                placeholder="Ex: Portinari"
-              />
-            </Field>
+            {produtoExistente ? null : (
+              <Field label="Marca">
+                <Autocomplete
+                  value={marca}
+                  onChange={setMarca}
+                  onSelect={setMarca}
+                  options={sugestoesMarca}
+                  placeholder="Ex: Portinari"
+                />
+              </Field>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tamanho (cm)" optional>
-              <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
+          {produtoExistente ? null : (
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Tamanho (cm)" optional>
+                <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
+              </Field>
+              <Field label="Preço de venda (R$/m²)">
+                <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
+                {precoNum > 0 && m2Caixa > 0 ? (
+                  <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Caixa)} por caixa</p>
+                ) : null}
+              </Field>
+            </div>
+          )}
+          {produtoExistente ? null : (
+            <Field label="Descrição" optional>
+              <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
             </Field>
-            <Field label="Preço de venda (R$/m²)">
-              <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
-              {precoNum > 0 && m2Caixa > 0 ? (
-                <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Caixa)} por caixa</p>
-              ) : null}
-            </Field>
-          </div>
-          <Field label="Descrição" optional>
-            <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
-          </Field>
+          )}
           <input
             ref={fileRef}
             type="file"
@@ -210,7 +231,7 @@ export function CadastroProdutoDrawer({
             tabIndex={-1}
             onChange={onFotoSelecionada}
           />
-          {foto ? (
+          {produtoExistente ? null : foto ? (
             <div className="flex items-center gap-3 rounded-lg border p-3">
               <img src={foto} alt="Prévia do produto" className="size-16 rounded-md border object-cover" />
               <div className="flex flex-col gap-1">
@@ -276,14 +297,16 @@ export function CadastroProdutoDrawer({
               <Stepper value={estoque} onChange={setEstoque} label="Caixas em estoque" />
             </div>
 
-            <div className="grid grid-cols-2 gap-3 border-t pt-4">
-              <Field label="Peças por caixa" labelClassName="whitespace-nowrap tracking-[0.08em]">
-                <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="6" />
-              </Field>
-              <Field label="m² por caixa" labelClassName="tracking-[0.12em]">
-                <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />
-              </Field>
-            </div>
+            {produtoExistente ? null : (
+              <div className="grid grid-cols-2 gap-3 border-t pt-4">
+                <Field label="Peças por caixa" labelClassName="whitespace-nowrap tracking-[0.08em]">
+                  <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="6" />
+                </Field>
+                <Field label="m² por caixa" labelClassName="tracking-[0.12em]">
+                  <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />
+                </Field>
+              </div>
+            )}
             <div className="flex items-center justify-between border-t pt-3">
               <span className="text-xs font-medium text-muted-foreground">Total estimado:</span>
               <span className="numeric text-lg font-bold text-success">{formatM2(totalM2)} m²</span>
