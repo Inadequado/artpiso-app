@@ -166,6 +166,8 @@ export type InventoryContextValue = {
   cancelarReserva: (id: string, motivo?: string) => void
   entregarReserva: (input: EntregarReservaInput) => void
   estornarReserva: (input: EstornarReservaInput) => void
+  /** Entrada de remessa em lote existente (mesmo codigo + mesmas bitola/tonalidade): soma caixas ao estoque. */
+  registrarEntrada: (loteId: string, caixas: number) => void
   registrarPerda: (loteId: string, caixas: number, pisos: number, motivo: string) => void
   moverQuadra: (loteId: string, novaQuadra: string) => void
   corrigirEstoque: (loteId: string, novoTotal: number) => void

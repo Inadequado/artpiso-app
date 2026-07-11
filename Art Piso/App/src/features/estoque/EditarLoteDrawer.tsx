@@ -5,6 +5,7 @@ import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
+import { loteComCodigo } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
 
@@ -21,13 +22,14 @@ export function EditarLoteDrawer({
   lote: LoteEstoque | null
   onClose: () => void
 }) {
-  const { atualizarLote, quadras } = useInventory()
+  const { atualizarLote, lotes, quadras } = useInventory()
   const [codigo, setCodigo] = useState(lote?.lote ?? '')
   const [quadra, setQuadra] = useState(lote?.quadra ?? '')
   const [bitola, setBitola] = useState(lote?.bitola ?? '')
   const [tonalidade, setTonalidade] = useState(lote?.tonalidade ?? '')
 
-  const valido = Boolean(lote && codigo.trim() && quadra.trim())
+  const loteDuplicado = lote ? loteComCodigo(codigo, lotes, lote.id) : undefined
+  const valido = Boolean(lote && codigo.trim() && !loteDuplicado && quadra.trim())
 
   function salvar() {
     if (!lote || !valido) return
@@ -60,6 +62,11 @@ export function EditarLoteDrawer({
         <div className="flex flex-col gap-6">
           <Field label="Código do lote">
             <Input className="font-mono" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: L-2405" />
+            {loteDuplicado ? (
+              <p className="mt-1.5 text-xs font-semibold text-danger">
+                Código já usado em {loteDuplicado.produto}. Escolha outro.
+              </p>
+            ) : null}
           </Field>
           <Field label="Quadra">
             <SelectMenu

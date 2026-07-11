@@ -10,6 +10,7 @@ import {
   caixasDisponiveisProduto,
   encomendasEmRisco,
   furoProduto,
+  loteComCodigo,
   proximoNumeroPedido,
   statusPorDisponivel,
   statusProduto,
@@ -190,6 +191,9 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [quadras, registrarMovimento])
 
   const adicionarLote = useCallback((lote: LoteEstoque) => {
+    // Guard defensivo: codigo de lote e global e vincula reservas — duplicar mesclaria lotes.
+    // A validacao com mensagem fica na UI (drawers); aqui so recusa se ela for burlada.
+    if (loteComCodigo(lote.lote, lotes)) return
     // Estoque reposto (silencioso): produto que JA EXISTIA e estava a repor (baixo/esgotado)
     // recebe lote novo com disponivel. Produto totalmente novo nao conta como reposicao.
     const lotesDoProduto = lotes.filter((item) => item.produtoId === lote.produtoId)
@@ -221,6 +225,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setEstado((atual) => {
       const alvo = atual.lotes.find((item) => item.id === loteId)
       if (!alvo) return atual
+      // Guard defensivo: renomear para codigo ja usado mesclaria as reservas dos dois lotes.
+      if (loteComCodigo(patch.lote, atual.lotes, loteId)) return atual
       const codigoMudou = patch.lote !== alvo.lote
       return {
         lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, ...patch } : item)),
@@ -622,6 +628,40 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     })
   }, [reservas, quadras, notificar])
 
+  // Entrada de remessa no MESMO lote (mesmo codigo, mesmas bitola/tonalidade). Remessa com
+  // specs diferentes e LOTE NOVO com sufixo no codigo (ver PH-12 no Memoria.md).
+  const registrarEntrada = useCallback((loteId: string, caixas: number) => {
+    const lote = lotes.find((item) => item.id === loteId)
+    if (lote && caixas > 0) {
+      registrarMovimento({
+        tipo: 'entrada',
+        titulo: 'Entrada de estoque',
+        detalhe: `+${caixas} cx em ${lote.lote}`,
+        loteId: lote.id,
+        produtoId: lote.produtoId,
+      })
+      // Estoque reposto (silencioso): mesmo criterio do adicionarLote — o produto estava
+      // a repor (baixo/esgotado) e a entrada trouxe caixas de volta.
+      const lotesDoProduto = lotes.filter((item) => item.produtoId === lote.produtoId)
+      const disponivelAntes = lotesDoProduto.reduce((total, item) => total + caixasDisponiveis(item), 0)
+      const statusAntes = statusPorDisponivel(disponivelAntes)
+      if (statusAntes === 'baixo' || statusAntes === 'esgotado') {
+        notificar({
+          tipo: 'estoque',
+          titulo: 'Estoque reposto',
+          descricao: `${lote.produto} voltou ao estoque (+${caixas} cx)`,
+          silencioso: true,
+        })
+      }
+    }
+    setEstado((atual) => ({
+      ...atual,
+      lotes: atual.lotes.map((item) =>
+        item.id === loteId ? { ...item, caixasEstoque: item.caixasEstoque + caixas } : item,
+      ),
+    }))
+  }, [lotes, notificar, registrarMovimento])
+
   const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo: string) => {
     const lote = lotes.find((item) => item.id === loteId)
     if (lote) {
@@ -812,6 +852,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       cancelarReserva,
       entregarReserva,
       estornarReserva,
+      registrarEntrada,
       registrarPerda,
       moverQuadra,
       corrigirEstoque,
@@ -842,6 +883,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       cancelarReserva,
       entregarReserva,
       estornarReserva,
+      registrarEntrada,
       registrarPerda,
       moverQuadra,
       corrigirEstoque,

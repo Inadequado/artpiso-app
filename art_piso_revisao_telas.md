@@ -56,9 +56,10 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 - **Bônus:** `EstornoDrawer` e `estornarReserva` liam o seed do mock direto (quadra criada em Ajustes não aparecia na devolução) — agora leem do store.
 - **Limite conhecido (Fase 2):** renomear quadra não faz cascata nos lotes (lote guarda o texto `Q-03`, não o id) — resolve com FK no schema, junto do Q1 (lote × quadra).
 
-### 🔴 BUG — Sem checagem de código de lote duplicado
-- **Onde:** `adicionarLote` em `store/inventory-provider.tsx:142-160`.
-- **Problema:** não valida se o código do lote já existe (nem globalmente, nem dentro do mesmo produto). Hoje é possível cadastrar dois lotes "L-2405" sem aviso.
+### ✅ RESOLVIDO (2026-07-11) — Sem checagem de código de lote duplicado
+- **Era:** `adicionarLote` não validava código repetido — dois lotes "L-2405" passavam sem aviso. Pior que estético: `reserva.lote` vincula por código, então duplicar mescla as reservas de lotes distintos.
+- **Feito:** helper `loteComCodigo(codigo, lotes, ignorarLoteId?)` em `mock-inventory` (comparação normalizada, escopo GLOBAL do depósito; retorna o lote conflitante). Erro inline + salvar desabilitado em `CadastroProdutoDrawer`, `NovoLoteDrawer` e `EditarLoteDrawer` (renomear para código existente era o mesmo buraco). Guards defensivos silenciosos no provider (`adicionarLote` recusa duplicado; `atualizarLote` recusa renomeação duplicada) caso a UI seja burlada.
+- **Complemento (mesma data, pergunta do usuário "e se chegar remessa do mesmo lote?"):** nova ação **Adicionar estoque** na Central de Ajustes (movimento tipo `entrada`, "+N cx em L-XXXX", notificação silenciosa de reposição) para remessa com mesmas bitola/tonalidade; specs diferentes = lote novo com sufixo (ex.: L-2405-B). A mensagem de duplicado nos dois cadastros orienta os dois caminhos; no Editar lote segue curta (contexto é renomear). Decisão de domínio e PH-12 registrados no `Memoria.md`.
 
 ### 🟡 INCONSISTÊNCIA — Comparação de referência é frágil
 - **Onde:** `CadastroProdutoDrawer.tsx:67-69`.

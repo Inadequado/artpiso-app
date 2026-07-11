@@ -1,4 +1,4 @@
-import { ArrowRightLeft, PenLine, TriangleAlert } from 'lucide-react'
+import { ArrowRightLeft, PackagePlus, PenLine, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -10,12 +10,18 @@ import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, formatM2 } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 
-export type AjusteTipo = 'perda' | 'quadra' | 'correcao'
+export type AjusteTipo = 'entrada' | 'perda' | 'quadra' | 'correcao'
 
 const config: Record<
   AjusteTipo,
   { title: string; description: string; icon: LucideIcon; confirmar: string }
 > = {
+  entrada: {
+    title: 'Adicionar estoque',
+    description: 'Entrada de remessa em um lote existente.',
+    icon: PackagePlus,
+    confirmar: 'Registrar entrada',
+  },
   perda: {
     title: 'Registrar perda',
     description: 'Quebra, avaria ou ajuste de perda.',
@@ -45,7 +51,7 @@ type AjusteDrawerProps = {
 
 /** Drawer unico para ajustes em lote existente (perda, mudanca de quadra e correcao). */
 export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
-  const { lotes, quadras, registrarPerda, moverQuadra, corrigirEstoque } = useInventory()
+  const { lotes, quadras, registrarEntrada, registrarPerda, moverQuadra, corrigirEstoque } = useInventory()
   const [loteId, setLoteId] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [pisos, setPisos] = useState('')
@@ -79,6 +85,9 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   function confirmar() {
     if (!lote || !tipo) return
     switch (tipo) {
+      case 'entrada':
+        registrarEntrada(lote.id, numero)
+        break
       case 'perda':
         registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim())
         break
@@ -152,7 +161,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              <Field label={tipo === 'correcao' ? 'Novo total (caixas)' : 'Quantidade (caixas)'}>
+              <Field label={tipo === 'correcao' ? 'Novo total (caixas)' : tipo === 'entrada' ? 'Caixas recebidas' : 'Quantidade (caixas)'}>
                 <Input
                   type="number"
                   min={tipo === 'correcao' ? 0 : 1}

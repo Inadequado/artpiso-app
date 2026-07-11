@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
-import { formatM2 } from '@/data/mock-inventory'
+import { formatM2, loteComCodigo } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque, Produto } from '@/types/inventory'
 
@@ -22,14 +22,15 @@ export function NovoLoteDrawer({
   onClose: () => void
   onSave: (lote: LoteEstoque) => void
 }) {
-  const { quadras } = useInventory()
+  const { lotes, quadras } = useInventory()
   const [codigo, setCodigo] = useState('')
   const [quadra, setQuadra] = useState('')
   const [bitola, setBitola] = useState('')
   const [tonalidade, setTonalidade] = useState('')
   const [estoque, setEstoque] = useState(0)
 
-  const valido = Boolean(produto && codigo.trim() && quadra.trim())
+  const loteDuplicado = loteComCodigo(codigo, lotes)
+  const valido = Boolean(produto && codigo.trim() && !loteDuplicado && quadra.trim())
   const totalM2 = produto ? estoque * produto.m2PorCaixa : 0
 
   function salvar() {
@@ -83,6 +84,12 @@ export function NovoLoteDrawer({
 
           <Field label="Código do lote">
             <Input className="font-mono" value={codigo} onChange={(event) => setCodigo(event.target.value)} placeholder="Ex: L-2407" />
+            {loteDuplicado ? (
+              <p className="mt-1.5 text-xs font-semibold text-danger">
+                Código já usado em {loteDuplicado.produto}. Remessa do mesmo lote? Use Ajustes → Adicionar
+                estoque. Bitola/tonalidade diferente? Cadastre com sufixo (ex.: {codigo.trim()}-B).
+              </p>
+            ) : null}
           </Field>
           <Field label="Quadra">
             <SelectMenu
