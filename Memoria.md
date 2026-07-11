@@ -14,6 +14,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - Localhost: `http://localhost:5173/` (Vite 8 nao responde em `127.0.0.1`; usar `localhost`).
 - Implementado em jun/2026 (detalhe nas Decisoes): ocupacao derivada das Quadras (REVERTIDA em jul — ver abaixo), tag de regime da reserva, Secao de Clientes (entidade), R-07 PEDIDO MULTI-ITEM (carrinho na Nova reserva, criarPedido, Ver pedido nivel-pedido, editor de pedido `editarPedido`, ordenacao/elo/agrupamento na lista), R-08 ESTORNO/DEVOLUCAO (status `estornado`, EstornoDrawer, historico de devolucoes no Ver pedido).
 - Implementado em jul/2026 (detalhe nas Decisoes de cada secao): referencia/tamanho OPCIONAIS com identidade por `produtoId`; campos Bitola/Tonalidade no lote; motivo OBRIGATORIO na perda + historico de perdas no detalhe do produto (`Movimento.loteId/produtoId`); padrao de campo opcional via prop `optional` do Field; MULTIPLOS ENDERECOS por cliente com escolha na reserva (nivel pedido); E-03 encomenda em risco (janela 30 dias x deficit); ocupacao de quadra MANUAL (capacidade removida, toggle-botao no card); Stepper com campo digitavel explicito.
+- SESSAO 1 DA FASE 1 FECHADA (2026-07-11, detalhe no `art_piso_revisao_telas.md` — nao duplicar aqui): quadras no STORE compartilhado + SelectMenu de quadra nos cadastros; reaproveitar produto trava dados na entidade; descricao PERSISTIDA (atributo de produto); codigo de lote UNICO global; acao "Adicionar estoque" (movimento `entrada`) p/ remessa do mesmo lote; match de produto por chave normalizada (`chaveNome`/`chaveReferencia`); foto/descricao herdadas no novo lote.
 - Vendedor: campo "Vendedor" REMOVIDO da visualizacao de pedidos (nao agrega — um unico acesso compartilhado). Cadastro de usuarios em Configuracoes continua intacto; `vendedor_id` permanece no schema. Mock renomeado de "Lucas Martins" para "Vendedor" / vendedor@artpiso.com.br.
 
 ## Regras Persistentes
@@ -181,7 +182,7 @@ Varredura da raiz a pedido do usuario; itens sem uso pra continuacao do projeto,
 
 ## Proximos Passos
 
-1. **Fase 1 — retomar a revisao tela a tela** (`art_piso_revisao_telas.md`): aplicar os 4 fixes pendentes da sessao 1 (Novo Produto) e revisar as 6 telas restantes. NOTA: o fix do SelectMenu de quadra ficou mais simples (quadra manual, sem capacidade), mas a lista de quadras ainda e estado LOCAL da AjustesPage — subir pro store continua pre-requisito.
+1. **Fase 1 — revisar as telas restantes** (`art_piso_revisao_telas.md`): sessao 1 (Novo Produto) FECHADA em 2026-07-11. Proximas: Editar produto/lote, Reservas, Clientes, Ajustes (ja tem 2 anotacoes antecipadas: mascara do nome da quadra a definir + remover paginacao das quadras), Configuracoes. Lacuna conhecida pra sessao Editar produto: nao ha como trocar a FOTO de produto ja cadastrado.
 2. **Refinar modelo de encomenda/regime**: override E-04 (decidido, nao construido), E-07 encomenda vencida; E-03 FEITO (30 dias, 2026-07-09); fechar numeros restantes (PH-4/5) com o Dev.
 3. **Revisao de DESIGN VISUAL/estetico e UX de produto** (a revisao de engenharia/acessibilidade ja foi feita).
 4. **Consolidar componentes**: extrair o map de status da reserva (label/variant), hoje duplicado em ReservasPage/DetalhesReservaDrawer/ClientesPage/EditarPedidoDrawer, para um modulo compartilhado — quando a WIP de reservas assentar.

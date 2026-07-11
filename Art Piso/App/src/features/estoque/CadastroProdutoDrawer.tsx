@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { Textarea } from '@/components/ui/textarea'
-import { agruparPorProduto, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
+import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -42,14 +42,18 @@ export function CadastroProdutoDrawer({
   const { lotes, quadras } = useInventory()
 
   const produtosExistentes = agruparPorProduto(lotes)
-  const termo = nome.trim().toLowerCase()
-  const sugestoes = termo
+  // Chaves normalizadas (sem acento/caixa/espaco duplo; referencia ignora separadores):
+  // variacao de digitacao nao pode criar produto duplicado em vez de reaproveitar.
+  const nomeChave = chaveNome(nome)
+  const refChave = chaveReferencia(referencia)
+  const sugestoes = nomeChave
     ? produtosExistentes
         .filter(
           (produto) =>
-            produto.produto.toLowerCase().includes(termo) || produto.referencia.toLowerCase().includes(termo),
+            chaveNome(produto.produto).includes(nomeChave) ||
+            chaveReferencia(produto.referencia).includes(chaveReferencia(nome)),
         )
-        .filter((produto) => produto.produto.toLowerCase() !== termo)
+        .filter((produto) => chaveNome(produto.produto) !== nomeChave)
         .slice(0, 6)
         .map((produto) => ({
           value: produto.id,
@@ -72,10 +76,8 @@ export function CadastroProdutoDrawer({
   // Reaproveitamento de produto existente: pela referencia (quando digitada) ou pelo nome exato
   // (cobre produto sem referencia). A identidade que vale no save e o produtoId do match.
   const produtoExistente =
-    produtosExistentes.find(
-      (produto) =>
-        produto.referencia.trim().toLowerCase() === referencia.trim().toLowerCase() && referencia.trim() !== '',
-    ) ?? produtosExistentes.find((produto) => produto.produto.trim().toLowerCase() === termo && termo !== '')
+    (refChave ? produtosExistentes.find((produto) => chaveReferencia(produto.referencia) === refChave) : undefined) ??
+    (nomeChave ? produtosExistentes.find((produto) => chaveNome(produto.produto) === nomeChave) : undefined)
 
   // Basta nome+referencia para ativar o match (produtoExistente); os demais dados do produto
   // NAO entram nos inputs — com match ativo eles vem da entidade no salvar. Assim, desfazer o

@@ -26,8 +26,8 @@
 
 | Sessão / tela | Status |
 |---|---|
-| Estoque → Novo produto (cadastro) | 🔄 Revisado, achados abaixo — fixes ainda não aplicados |
-| Estoque → Novo lote | ⏳ Não revisado |
+| Estoque → Novo produto (cadastro) | ✅ Revisado e corrigido (2026-07-11) — 5 achados + 1 novo, todos resolvidos |
+| Estoque → Novo lote | ⏳ Não revisado formalmente (vários fixes da sessão 1 já o cobriram: quadra SelectMenu, código duplicado, herança de descrição/foto) |
 | Estoque → Editar produto / Editar lote | ⏳ Não revisado |
 | Reservas (criar / editar / entregar / estornar) | ⏳ Não revisado |
 | Clientes | ⏳ Não revisado |
@@ -61,13 +61,13 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 - **Feito:** helper `loteComCodigo(codigo, lotes, ignorarLoteId?)` em `mock-inventory` (comparação normalizada, escopo GLOBAL do depósito; retorna o lote conflitante). Erro inline + salvar desabilitado em `CadastroProdutoDrawer`, `NovoLoteDrawer` e `EditarLoteDrawer` (renomear para código existente era o mesmo buraco). Guards defensivos silenciosos no provider (`adicionarLote` recusa duplicado; `atualizarLote` recusa renomeação duplicada) caso a UI seja burlada.
 - **Complemento (mesma data, pergunta do usuário "e se chegar remessa do mesmo lote?"):** nova ação **Adicionar estoque** na Central de Ajustes (movimento tipo `entrada`, "+N cx em L-XXXX", notificação silenciosa de reposição) para remessa com mesmas bitola/tonalidade; specs diferentes = lote novo com sufixo (ex.: L-2405-B). A mensagem de duplicado nos dois cadastros orienta os dois caminhos; no Editar lote segue curta (contexto é renomear). Decisão de domínio e PH-12 registrados no `Memoria.md`.
 
-### 🟡 INCONSISTÊNCIA — Comparação de referência é frágil
-- **Onde:** `CadastroProdutoDrawer.tsx:67-69`.
-- **Problema:** compara `referencia.trim().toLowerCase()` de forma exata. Pequenas variações de digitação (espaço duplo, hífen vs underline) não batem e criam produto duplicado em vez de reaproveitar o existente.
+### ✅ RESOLVIDO (2026-07-11) — Comparação de referência era frágil
+- **Era:** match exato por `trim().toLowerCase()` — espaço duplo, acento ou hífen vs underline criavam produto duplicado em vez de reaproveitar.
+- **Feito:** helpers `chaveNome` (minúsculas, sem acentos, espaços colapsados) e `chaveReferencia` (idem + ignora separadores `-`/`_`/`.`/espaço) em `mock-inventory`, aplicados no match de `produtoExistente` E nas sugestões do autocomplete (busca ficou acento-insensível). "POR 6060_BL" agora bate com "POR-6060-BL".
 
-### 🧩 MELHORIA — Foto vive por lote, não por produto
-- **Onde:** campo `foto` está em `LoteEstoque`, não em `Produto` (`types/inventory.ts`).
-- **Observação:** cada lote carrega seu próprio campo de foto; hoje só é copiado manualmente dentro de `selecionarProduto`. Funciona, mas é redundante — foto é claramente um atributo de produto, não de lote.
+### ✅ RESOLVIDO (2026-07-11) — Foto vive por lote, não por produto
+- **Era:** `foto` em `LoteEstoque`; lote novo criado pelo `NovoLoteDrawer` nascia sem a foto do produto.
+- **Feito (mínimo coerente com a arquitetura atual):** `NovoLoteDrawer` herda `produto.foto` (e `descricao`), como já herda m²/peças/preço; no reaproveitamento do cadastro a foto vem da entidade. Mover foto/descrição para uma entidade `Produto` de verdade é decisão de schema da FASE 2 (hoje produto é derivado dos lotes). Lacuna conhecida assumida: não há como TROCAR a foto de um produto já cadastrado (o `EditarProdutoDrawer` não edita foto) — entra na revisão da tela Editar produto.
 
 ---
 

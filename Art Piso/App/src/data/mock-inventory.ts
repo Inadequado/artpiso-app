@@ -558,6 +558,21 @@ export function m2Disponivel(lote: LoteEstoque) {
   return caixasDisponiveis(lote) * lote.m2PorCaixa
 }
 
+/** Chave de comparacao de NOME: minusculas, sem acentos, espacos colapsados ("Céu  Azul" bate com "ceu azul"). */
+export function chaveNome(texto: string) {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '') // diacriticos soltos pelo NFD
+    .replace(/\s+/g, ' ')
+}
+
+/** Chave de comparacao de REFERENCIA: alem da normalizacao de nome, ignora separadores ("POR 6060_BL" bate com "por-6060-bl"). */
+export function chaveReferencia(texto: string) {
+  return chaveNome(texto).replace(/[\s._-]/g, '')
+}
+
 /**
  * Lote cujo codigo ja esta em uso (comparacao normalizada: "l-2405" bate com "L-2405").
  * Codigo de lote e GLOBAL no deposito e tambem e o vinculo das reservas (reserva.lote),
