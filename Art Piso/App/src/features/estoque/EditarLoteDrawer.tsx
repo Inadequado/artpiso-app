@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SelectMenu } from '@/components/ui/select-menu'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
 
@@ -20,7 +21,7 @@ export function EditarLoteDrawer({
   lote: LoteEstoque | null
   onClose: () => void
 }) {
-  const { atualizarLote } = useInventory()
+  const { atualizarLote, quadras } = useInventory()
   const [codigo, setCodigo] = useState(lote?.lote ?? '')
   const [quadra, setQuadra] = useState(lote?.quadra ?? '')
   const [bitola, setBitola] = useState(lote?.bitola ?? '')
@@ -61,7 +62,12 @@ export function EditarLoteDrawer({
             <Input className="font-mono" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: L-2405" />
           </Field>
           <Field label="Quadra">
-            <Input value={quadra} onChange={(e) => setQuadra(e.target.value)} placeholder="Ex: Q-03" />
+            <SelectMenu
+              value={quadra}
+              onChange={setQuadra}
+              placeholder="Selecione…"
+              options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
+            />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Bitola" optional>

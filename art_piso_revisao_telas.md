@@ -48,11 +48,11 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 - **Por que importa:** `agruparPorProduto` (`data/mock-inventory.ts:516`) monta a exibição do produto a partir do **primeiro** lote daquela referência — a inconsistência fica enterrada no dado, não aparece na tela. Quebra o princípio "Produto + Lote define a unidade real de estoque".
 - **Fix proposto:** quando `produtoExistente` for detectado, travar (read-only) nome/referência/marca/tamanho/preço — mesmo padrão que o `ClienteSelector` já usa para cliente existente (trava campos + botão "Trocar").
 
-### 🟡 INCONSISTÊNCIA — Quadra é texto livre, não `SelectMenu`
-- **Onde:** `CadastroProdutoDrawer.tsx:235-237`; mesmo padrão em `NovoLoteDrawer.tsx:78-80`.
-- **Problema:** `AjusteDrawer.tsx:142-151` (mover lote de quadra) usa `SelectMenu` alimentado pela lista real de `Quadra[]`. Aqui é `<Input>` livre, sem validar contra quadras já cadastradas — quebra a regra do projeto de não usar input cru pra esse tipo de seleção.
-- **Risco:** digitar "Q-3" em vez de "Q-03" cria quadra fantasma — não aparece na gestão de Quadras (Ajustes de Estoque) nem entra na % de ocupação.
-- **Obstáculo conhecido:** a lista real de `Quadra[]` (com capacidade) hoje vive como estado **local** em `AjustesPage.tsx` (`listaQuadras`), não está no store global (`useInventory`). Pra usar `SelectMenu` aqui, essa lista precisa subir pro store compartilhado primeiro.
+### ✅ RESOLVIDO (2026-07-11) — Quadra é texto livre, não `SelectMenu`
+- **Era:** quadra como `<Input>` livre em `CadastroProdutoDrawer` e `NovoLoteDrawer`, sem validar contra as quadras reais (risco de quadra fantasma "Q-3" vs "Q-03"); a lista de `Quadra[]` vivia como estado local da `AjustesPage`.
+- **Feito:** quadras subiram pro store compartilhado (`InventoryProvider`: `quadras` + `adicionarQuadra`/`atualizarQuadra`/`removerQuadra`/`alternarStatusQuadra`, todas registrando movimento no histórico). Campo Quadra virou `SelectMenu` alimentado pelo store em **três** drawers: `CadastroProdutoDrawer`, `NovoLoteDrawer` e `EditarLoteDrawer` (este não estava no achado, mas tinha o mesmo input cru).
+- **Bônus:** `EstornoDrawer` e `estornarReserva` liam o seed do mock direto (quadra criada em Ajustes não aparecia na devolução) — agora leem do store.
+- **Limite conhecido (Fase 2):** renomear quadra não faz cascata nos lotes (lote guarda o texto `Q-03`, não o id) — resolve com FK no schema, junto do Q1 (lote × quadra).
 
 ### 🔴 BUG — Sem checagem de código de lote duplicado
 - **Onde:** `adicionarLote` em `store/inventory-provider.tsx:142-160`.
@@ -65,6 +65,18 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 ### 🧩 MELHORIA — Foto vive por lote, não por produto
 - **Onde:** campo `foto` está em `LoteEstoque`, não em `Produto` (`types/inventory.ts`).
 - **Observação:** cada lote carrega seu próprio campo de foto; hoje só é copiado manualmente dentro de `selecionarProduto`. Funciona, mas é redundante — foto é claramente um atributo de produto, não de lote.
+
+---
+
+## Anotações antecipadas — Ajustes de Estoque (pedidos do usuário, 2026-07-11)
+
+Registradas antes da sessão de revisão da tela; entram no escopo quando a sessão de Ajustes abrir.
+
+### 🧩 MELHORIA — Máscara para o nome das quadras
+- Definir uma máscara/formato padrão para o identificador da quadra (hoje o `QuadraDrawer` aceita texto livre, ex.: "Q-13" vs "q13" vs "Quadra 13"). **Formato exato a definir com o usuário.**
+
+### 🧩 MELHORIA — Quadras sem paginação
+- Hoje os cards de quadra ficam em 1 linha de 4 com seletor de páginas (`quadrasPorPagina = 4` na `AjustesPage`). **Decidido:** remover a paginação e listar todas as quadras em grid corrido, mantendo 4 por linha.
 
 ---
 

@@ -9,7 +9,6 @@ import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, formatM2 } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
-import type { Quadra } from '@/types/inventory'
 
 export type AjusteTipo = 'perda' | 'quadra' | 'correcao'
 
@@ -39,15 +38,14 @@ const config: Record<
 
 type AjusteDrawerProps = {
   tipo: AjusteTipo | null
-  quadras: Quadra[]
   onClose: () => void
   /** Apenas sinaliza que a acao foi aplicada (o store ja registrou o movimento). */
   onConfirm: () => void
 }
 
 /** Drawer unico para ajustes em lote existente (perda, mudanca de quadra e correcao). */
-export function AjusteDrawer({ tipo, quadras, onClose, onConfirm }: AjusteDrawerProps) {
-  const { lotes, registrarPerda, moverQuadra, corrigirEstoque } = useInventory()
+export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
+  const { lotes, quadras, registrarPerda, moverQuadra, corrigirEstoque } = useInventory()
   const [loteId, setLoteId] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [pisos, setPisos] = useState('')

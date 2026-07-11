@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { formatM2 } from '@/data/mock-inventory'
+import { useInventory } from '@/store/inventory'
 import type { LoteEstoque, Produto } from '@/types/inventory'
 
 /** Vincula um novo lote a um produto existente (herda m²/caixa e peças/caixa do produto). */
@@ -20,6 +22,7 @@ export function NovoLoteDrawer({
   onClose: () => void
   onSave: (lote: LoteEstoque) => void
 }) {
+  const { quadras } = useInventory()
   const [codigo, setCodigo] = useState('')
   const [quadra, setQuadra] = useState('')
   const [bitola, setBitola] = useState('')
@@ -81,7 +84,12 @@ export function NovoLoteDrawer({
             <Input className="font-mono" value={codigo} onChange={(event) => setCodigo(event.target.value)} placeholder="Ex: L-2407" />
           </Field>
           <Field label="Quadra">
-            <Input value={quadra} onChange={(event) => setQuadra(event.target.value)} placeholder="Ex: Q-03" />
+            <SelectMenu
+              value={quadra}
+              onChange={setQuadra}
+              placeholder="Selecione…"
+              options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
+            />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Bitola" optional>

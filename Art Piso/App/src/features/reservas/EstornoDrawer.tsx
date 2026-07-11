@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { clienteDaReserva, quadras } from '@/data/mock-inventory'
+import { clienteDaReserva } from '@/data/mock-inventory'
 import { useInventory, type EstornarReservaInput } from '@/store/inventory'
 import type { Reserva } from '@/types/inventory'
 
@@ -17,7 +17,7 @@ type EstornoDrawerProps = {
 }
 
 export function EstornoDrawer({ reserva, onClose, onConfirm }: EstornoDrawerProps) {
-  const { lotes, clientes } = useInventory()
+  const { lotes, clientes, quadras } = useInventory()
   const lote = lotes.find((l) => l.lote === reserva?.lote)
   const clienteNome = reserva ? (clienteDaReserva(reserva, clientes)?.nome ?? reserva.cliente) : ''
 

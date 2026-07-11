@@ -1,8 +1,11 @@
 ﻿import { createContext, useContext } from 'react'
-import type { Cliente, LoteEstoque, Movimento, MovimentoTipo, Reserva } from '@/types/inventory'
+import type { Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva } from '@/types/inventory'
 
 /** Dados de cadastro do cliente (sem id; gerado no store). */
 export type ClienteInput = Omit<Cliente, 'id'>
+
+/** Dados de cadastro/edicao da quadra (id e status vivem no store). */
+export type QuadraInput = Pick<Quadra, 'numero' | 'descricao'>
 
 export type AtualizarLotePatch = {
   lote: string
@@ -136,8 +139,14 @@ export type InventoryContextValue = {
   lotes: LoteEstoque[]
   reservas: Reserva[]
   clientes: Cliente[]
+  quadras: Quadra[]
   movimentos: Movimento[]
   registrarMovimento: (input: NovoMovimento) => void
+  adicionarQuadra: (dados: QuadraInput) => void
+  atualizarQuadra: (id: string, dados: QuadraInput) => void
+  removerQuadra: (id: string) => void
+  /** Alterna o status manual da quadra (disponivel <-> ocupado) e registra no historico. */
+  alternarStatusQuadra: (id: string) => void
   adicionarCliente: (input: ClienteInput) => Cliente
   atualizarCliente: (id: string, input: ClienteInput) => void
   removerCliente: (id: string) => void

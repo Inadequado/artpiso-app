@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { ocupacaoQuadra, quadras as quadrasMock } from '@/data/mock-inventory'
+import { ocupacaoQuadra } from '@/data/mock-inventory'
 import { AjusteDrawer, type AjusteTipo } from '@/features/ajustes/AjusteDrawer'
 import { HistoricoDrawer } from '@/features/ajustes/HistoricoDrawer'
 import { movimentoIcon, movimentoTone } from '@/features/ajustes/movimento-style'
@@ -28,19 +28,19 @@ const quadrasPorPagina = 4
 const historicoRecenteLimite = 6
 
 export function AjustesPage() {
-  const { lotes, movimentos, registrarMovimento } = useInventory()
+  const { lotes, movimentos, quadras, adicionarQuadra, atualizarQuadra, removerQuadra, alternarStatusQuadra } =
+    useInventory()
   const [ajusteAberto, setAjusteAberto] = useState<AjusteTipo | null>(null)
   const [ajusteSeq, setAjusteSeq] = useState(0)
   const [quadraOpen, setQuadraOpen] = useState(false)
   const [quadraEdit, setQuadraEdit] = useState<Quadra | null>(null)
   const [quadraExcluir, setQuadraExcluir] = useState<Quadra | null>(null)
   const [quadraPage, setQuadraPage] = useState(0)
-  const [listaQuadras, setListaQuadras] = useState<Quadra[]>(quadrasMock)
   const [historicoOpen, setHistoricoOpen] = useState(false)
 
-  const totalQuadraPages = Math.max(1, Math.ceil(listaQuadras.length / quadrasPorPagina))
+  const totalQuadraPages = Math.max(1, Math.ceil(quadras.length / quadrasPorPagina))
   const quadraPageAtual = Math.min(quadraPage, totalQuadraPages - 1)
-  const quadrasVisiveis = listaQuadras.slice(
+  const quadrasVisiveis = quadras.slice(
     quadraPageAtual * quadrasPorPagina,
     quadraPageAtual * quadrasPorPagina + quadrasPorPagina,
   )
@@ -60,32 +60,12 @@ export function AjustesPage() {
 
   function salvarQuadra(dados: Pick<Quadra, 'numero' | 'descricao'>) {
     if (quadraEdit) {
-      setListaQuadras((atual) =>
-        atual.map((item) => (item.id === quadraEdit.id ? { ...item, ...dados } : item)),
-      )
-      registrarMovimento({ tipo: 'quadra', titulo: 'Quadra atualizada', detalhe: `${dados.numero} atualizada no depósito` })
+      atualizarQuadra(quadraEdit.id, dados)
     } else {
-      setQuadraPage(Math.floor(listaQuadras.length / quadrasPorPagina))
-      setListaQuadras((atual) => [...atual, { id: crypto.randomUUID(), ...dados }])
-      registrarMovimento({ tipo: 'quadra', titulo: 'Quadra registrada', detalhe: `${dados.numero} registrada no depósito` })
+      setQuadraPage(Math.floor(quadras.length / quadrasPorPagina))
+      adicionarQuadra(dados)
     }
     setQuadraOpen(false)
-  }
-
-  function excluirQuadra(quadra: Quadra) {
-    setListaQuadras((atual) => atual.filter((item) => item.id !== quadra.id))
-    registrarMovimento({ tipo: 'quadra', titulo: 'Quadra removida', detalhe: `${quadra.numero} removida do depósito` })
-  }
-
-  // Ocupacao MANUAL (reverte Q-01): o gerente alterna no card; cada virada fica no historico.
-  function alternarStatusQuadra(quadra: Quadra) {
-    const novo = quadra.status === 'ocupado' ? 'disponivel' : 'ocupado'
-    setListaQuadras((atual) => atual.map((item) => (item.id === quadra.id ? { ...item, status: novo } : item)))
-    registrarMovimento({
-      tipo: 'quadra',
-      titulo: novo === 'ocupado' ? 'Quadra marcada como ocupada' : 'Quadra marcada como disponível',
-      detalhe: `${quadra.numero} — ${quadra.descricao}`,
-    })
   }
 
   return (
@@ -162,7 +142,7 @@ export function AjustesPage() {
                 lotes={lotes}
                 onEdit={() => abrirEdicaoQuadra(quadra)}
                 onDelete={() => setQuadraExcluir(quadra)}
-                onToggleStatus={() => alternarStatusQuadra(quadra)}
+                onToggleStatus={() => alternarStatusQuadra(quadra.id)}
               />
             ))}
           </CardContent>
@@ -194,7 +174,6 @@ export function AjustesPage() {
       <AjusteDrawer
         key={ajusteSeq}
         tipo={ajusteAberto}
-        quadras={listaQuadras}
         onClose={() => setAjusteAberto(null)}
         onConfirm={() => setAjusteAberto(null)}
       />
@@ -228,7 +207,7 @@ export function AjustesPage() {
         cancelLabel="Voltar"
         tone="danger"
         onConfirm={() => {
-          if (quadraExcluir) excluirQuadra(quadraExcluir)
+          if (quadraExcluir) removerQuadra(quadraExcluir.id)
         }}
         onClose={() => setQuadraExcluir(null)}
       />

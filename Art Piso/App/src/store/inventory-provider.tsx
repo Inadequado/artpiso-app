@@ -4,7 +4,7 @@ import {
   clientes as clientesSeed,
   lotes as lotesSeed,
   reservas as reservasSeed,
-  quadras,
+  quadras as quadrasSeed,
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
@@ -29,8 +29,9 @@ import {
   type NovaReservaInput,
   type NovoMovimento,
   type NovoPedidoInput,
+  type QuadraInput,
 } from '@/store/inventory'
-import type { Cliente, EstornoReserva, LoteEstoque, Movimento, Reserva, StockStatus } from '@/types/inventory'
+import type { Cliente, EstornoReserva, LoteEstoque, Movimento, Quadra, Reserva, StockStatus } from '@/types/inventory'
 
 // Severidade de estoque para detectar PIORA (ok -> baixo -> esgotado).
 const SEVERIDADE_ESTOQUE: Record<StockStatus, number> = {
@@ -106,6 +107,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const { notificar } = useNotifications()
   const [movimentos, setMovimentos] = useState<Movimento[]>(movimentosSeed)
   const [clientes, setClientes] = useState<Cliente[]>(clientesSeed)
+  const [quadras, setQuadras] = useState<Quadra[]>(quadrasSeed)
 
   const adicionarCliente = useCallback((input: ClienteInput): Cliente => {
     const novo: Cliente = {
@@ -156,6 +158,36 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       ...atual,
     ])
   }, [])
+
+  const adicionarQuadra = useCallback((dados: QuadraInput) => {
+    setQuadras((atual) => [...atual, { id: crypto.randomUUID(), ...dados }])
+    registrarMovimento({ tipo: 'quadra', titulo: 'Quadra registrada', detalhe: `${dados.numero} registrada no depósito` })
+  }, [registrarMovimento])
+
+  const atualizarQuadra = useCallback((id: string, dados: QuadraInput) => {
+    setQuadras((atual) => atual.map((item) => (item.id === id ? { ...item, ...dados } : item)))
+    registrarMovimento({ tipo: 'quadra', titulo: 'Quadra atualizada', detalhe: `${dados.numero} atualizada no depósito` })
+  }, [registrarMovimento])
+
+  const removerQuadra = useCallback((id: string) => {
+    const quadra = quadras.find((item) => item.id === id)
+    if (!quadra) return
+    setQuadras((atual) => atual.filter((item) => item.id !== id))
+    registrarMovimento({ tipo: 'quadra', titulo: 'Quadra removida', detalhe: `${quadra.numero} removida do depósito` })
+  }, [quadras, registrarMovimento])
+
+  // Ocupacao MANUAL (reverte Q-01): o gerente alterna direto no card; cada virada fica no historico.
+  const alternarStatusQuadra = useCallback((id: string) => {
+    const quadra = quadras.find((item) => item.id === id)
+    if (!quadra) return
+    const novo = quadra.status === 'ocupado' ? 'disponivel' : 'ocupado'
+    setQuadras((atual) => atual.map((item) => (item.id === id ? { ...item, status: novo } : item)))
+    registrarMovimento({
+      tipo: 'quadra',
+      titulo: novo === 'ocupado' ? 'Quadra marcada como ocupada' : 'Quadra marcada como disponível',
+      detalhe: `${quadra.numero} — ${quadra.descricao}`,
+    })
+  }, [quadras, registrarMovimento])
 
   const adicionarLote = useCallback((lote: LoteEstoque) => {
     // Estoque reposto (silencioso): produto que JA EXISTIA e estava a repor (baixo/esgotado)
@@ -588,7 +620,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         ),
       }
     })
-  }, [reservas, notificar])
+  }, [reservas, quadras, notificar])
 
   const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo: string) => {
     const lote = lotes.find((item) => item.id === loteId)
@@ -758,8 +790,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       lotes,
       reservas,
       clientes,
+      quadras,
       movimentos,
       registrarMovimento,
+      adicionarQuadra,
+      atualizarQuadra,
+      removerQuadra,
+      alternarStatusQuadra,
       adicionarCliente,
       atualizarCliente,
       removerCliente,
@@ -783,8 +820,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       lotes,
       reservas,
       clientes,
+      quadras,
       movimentos,
       registrarMovimento,
+      adicionarQuadra,
+      atualizarQuadra,
+      removerQuadra,
+      alternarStatusQuadra,
       adicionarCliente,
       atualizarCliente,
       removerCliente,

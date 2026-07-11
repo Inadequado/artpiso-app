@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { Textarea } from '@/components/ui/textarea'
 import { agruparPorProduto, formatM2, formatPreco } from '@/data/mock-inventory'
@@ -38,7 +39,7 @@ export function CadastroProdutoDrawer({
   const [estoque, setEstoque] = useState(0)
   const [foto, setFoto] = useState<string | undefined>(undefined)
   const fileRef = useRef<HTMLInputElement>(null)
-  const { lotes } = useInventory()
+  const { lotes, quadras } = useInventory()
 
   const produtosExistentes = agruparPorProduto(lotes)
   const termo = nome.trim().toLowerCase()
@@ -244,7 +245,12 @@ export function CadastroProdutoDrawer({
               <Input className="font-mono" value={lote} onChange={(e) => setLote(e.target.value)} placeholder="Ex: L-2405" />
             </Field>
             <Field label="Quadra">
-              <Input value={quadra} onChange={(e) => setQuadra(e.target.value)} placeholder="Ex: Q-03" />
+              <SelectMenu
+                value={quadra}
+                onChange={setQuadra}
+                placeholder="Selecione…"
+                options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
+              />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
