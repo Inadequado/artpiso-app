@@ -26,7 +26,8 @@ export function Stepper({ value, onChange, min = 0, label = 'Quantidade' }: Step
         aria-label={label}
         value={value}
         onChange={(event) => onChange(Math.max(min, Number(event.target.value) || 0))}
-        className="numeric w-14 bg-transparent text-center text-xl font-bold text-primary outline-none"
+        onFocus={(event) => event.target.select()}
+        className="numeric h-9 w-20 rounded-md border bg-background px-2 text-center text-lg font-bold text-primary outline-none transition-colors focus-visible:border-primary/60"
       />
       <button
         type="button"

@@ -1,7 +1,6 @@
 import { ArrowRightLeft, ChevronLeft, ChevronRight, History, MapPinned, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -292,12 +291,19 @@ function QuadraCard({
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="self-start rounded-md transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60"
             aria-pressed={ocupada}
             title={ocupada ? 'Marcar como disponível' : 'Marcar como ocupada'}
             onClick={onToggleStatus}
+            className={cn(
+              'flex items-center gap-2 self-start rounded-md border px-2.5 py-1.5 text-xs font-bold transition-colors',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60',
+              ocupada
+                ? 'border-warning/40 bg-warning/10 text-warning hover:bg-warning/20'
+                : 'border-success/40 bg-success/10 text-success hover:bg-success/20',
+            )}
           >
-            <Badge variant={ocupada ? 'warning' : 'success'}>{ocupada ? 'Ocupada' : 'Disponível'}</Badge>
+            {ocupada ? 'Ocupada' : 'Disponível'}
+            <ArrowRightLeft aria-hidden="true" className="size-3.5 opacity-70" />
           </button>
 
           <p className="text-xs text-muted-foreground">
