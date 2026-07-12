@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva, quadraLabel } from '@/data/mock-inventory'
 import { useInventory, type EntregarReservaInput } from '@/store/inventory'
 import type { Reserva } from '@/types/inventory'
 
@@ -154,7 +154,7 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
                     placeholder="Selecione um lote..."
                     options={lotesAlternativos.map((l) => ({
                       value: l.id,
-                      label: `${l.lote} · ${l.quadra} — ${caixasDisponiveis(l)} cx disponíveis`,
+                      label: `${l.lote} · ${quadraLabel(l)} — ${caixasDisponiveis(l)} cx disponíveis`,
                     }))}
                   />
                 </Field>

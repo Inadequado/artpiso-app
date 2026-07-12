@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { RegimeTag } from '@/features/reservas/RegimeTag'
-import { clienteDaReserva, enderecoEntregaDaReserva } from '@/data/mock-inventory'
+import { clienteDaReserva, enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { useInventory } from '@/store/inventory'
 import type { Reserva, ReservaStatus } from '@/types/inventory'
@@ -124,6 +124,7 @@ export function DetalhesReservaDrawer({ reserva, onClose, onEdit }: DetalhesRese
 
 /** Card (somente leitura) de uma linha (1 lote) dentro do pedido. */
 function ItemPedidoCard({ linha }: { linha: Reserva }) {
+  const { lotes } = useInventory()
   const caixasTravadas = caixasTravadasReserva(linha)
   const ativo = linha.status === 'reservado' || linha.status === 'parcial'
   const mostraRegime = ativo && (linha.regime === 'rotacionando' || linha.regime === 'travado')
@@ -133,7 +134,7 @@ function ItemPedidoCard({ linha }: { linha: Reserva }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-bold">{linha.produto}</p>
-          <p className="font-mono text-xs text-muted-foreground">{linha.lote} · {linha.quadra}</p>
+          <p className="font-mono text-xs text-muted-foreground">{linha.lote} · {quadraDaReserva(linha, lotes)}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           <Badge variant={statusVariant[linha.status]}>{statusLabel[linha.status]}</Badge>

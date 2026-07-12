@@ -49,6 +49,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - EXCECAO DE LABEL (2026-07-07): "Pisos danificados (opcional)" MANTEM o sufixo no label (decisao do usuario) — excecao consciente a regra do label limpo; nao replicar em campos novos.
 
 ### Quadras
+- MULTI-QUADRA / Q1 NO MOCK (2026-07-12, etapa 0 da Fase 2 — M1 FEITA): `LoteEstoque.quadra` virou `alocacoes: { quadra, caixas }[]` com INVARIANTE soma = caixasEstoque (no schema 0.0.2 vira tabela `lote_quadras`). Decisoes de fluxo: cadastro nasce com 1 alocacao; ENTRADA pergunta quadra de destino (e como o lote passa a ocupar 2+); CORRECAO e por quadra (novo total da alocacao; lote = soma; PH-9 checado no total do lote); ESTORNO aloca DE VERDADE na quadra de destino (supera a nota antiga do R-08); Editar lote PERDEU o campo quadra (caminho unico = Ajustes -> Mover, que na M1 move o lote INTEIRO); reserva ATIVA deriva a localizacao do lote AO VIVO (`quadraDaReserva`; snapshot so p/ historicas — cascatas de rename/mover em reservas foram REMOVIDAS por desnecessarias). PENDENTE: M2 = mover PARCIAL (origem -> destino, N caixas) + perda perguntando quadra de origem (informativo); M3 = ENTREGA perguntando quadra(s) COM DIVISAO entre multiplas (decisao do usuario — nao auto-drenar; hoje drena maior-primeiro como interim). Seed demo: L-2410 em Q-08 (30) + Q-11 (15).
 - Q-01 REVERTIDA (2026-07-11, decisao do usuario): ocupacao agora e MANUAL, nao derivada. Motivo de dominio NOVO: caixas tem tamanhos variados, entao capacidade em caixas / % automatico fingia precisao que nao existe — o GERENTE e o responsavel por esse controle. `Quadra.capacidade` REMOVIDA (campo saiu do QuadraDrawer, do tipo e dos seeds; barra de % e percentual sairam do card); entrou `Quadra.status?: 'disponivel' | 'ocupado'` gravado (ausente = disponivel).
 - Toggle no PROPRIO CARD (Ajustes): o badge Disponivel/Ocupada e um botao (`aria-pressed`) — 1 clique alterna, sem dialogo (reversivel), e cada virada entra no Historico de Ajustes ("Quadra marcada como ocupada/disponivel"). Racional: e acao operacional de dia a dia, nao cadastro — nao merece abrir o drawer de edicao.
 - Contagem "N lotes · M cx" MANTIDA no card como informacao (caixas sao contadas com precisao; so nao determinam mais o status).
@@ -98,7 +99,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 
 ## Decisoes de Escopo (respondidas pelo usuario em 2026-06-18)
 
-- Q1 - Um lote PODE ficar dividido em mais de uma quadra. Impacto: estoque passa a ser por (lote x quadra). (Modelo atual ainda trata quadra como propriedade unica do lote — divergencia a resolver no schema.)
+- Q1 - RESPONDIDA EM DEFINITIVO (2026-07-12): um lote PODE ficar em 2+ quadras quando necessario (caso de EXCESSO de caixas do mesmo lote que nao cabe numa quadra so). Estoque passa a ser por (lote x quadra). DECISAO DO USUARIO: arrumar isso NO MOCK antes de comecar a Fase 2 de verdade (o schema 0.0.2 ja nasce com o modelo certo).
 - Q2 - Controla pelos DOIS (caixa e m2), mas caixas continuam a FONTE DA VERDADE; m2 e derivado (m2_por_caixa). "Pelos dois" = exibir/operar nas duas unidades.
 - Q3 - Quadra basta como localizacao (sem rua/prateleira/posicao na v1).
 - Q4 - Vendedor escolhe o lote especifico ao reservar (sem sugestao automatica).
@@ -182,11 +183,11 @@ Varredura da raiz a pedido do usuario; itens sem uso pra continuacao do projeto,
 
 ## Proximos Passos
 
-1. **Definir com o usuario o curso de trabalho da Fase 2** (Supabase): ordem/cronograma, conforme combinado na jornada. Antes de mexer no schema, resolver as Perguntas em Aberto que o afetam (Q1 lote x quadra; enderecos do cliente; referencia nullable; quadras com status em vez de capacidade; coluna descricao em produtos; PH-12 unicidade composta de lote). FASE 1 CONCLUIDA em 2026-07-11 — pendente só a mascara da quadra (dados do usuario).
-2. **Refinar modelo de encomenda/regime**: override E-04 (decidido, nao construido), E-07 encomenda vencida; E-03 FEITO (30 dias, 2026-07-09); fechar numeros restantes (PH-4/5) com o Dev.
-3. **Revisao de DESIGN VISUAL/estetico e UX de produto** (a revisao de engenharia/acessibilidade ja foi feita).
-4. **Consolidar componentes**: extrair o map de status da reserva (label/variant), hoje duplicado em ReservasPage/DetalhesReservaDrawer/ClientesPage/EditarPedidoDrawer, para um modulo compartilhado — quando a WIP de reservas assentar.
-5. **Persistencia**: integrar Supabase (sair do mock), confirmando antes as Perguntas em Aberto que afetam o schema (Q1 lote x quadra — impacta estorno de devolucao tambem; schema de quadras troca capacidade por status; enderecos do cliente; referencia nullable).
+1. **CURSO DA FASE 2 DEFINIDO (2026-07-12, decisoes do usuario):** (a) Q1 respondida — lote pode 2+ quadras; ARRUMAR NO MOCK antes da Fase 2 (proximo trabalho); (b) Supabase PRO cloud — usuario vai criar um projeto novo la (nao CLI local, nao VPS por ora; self-hosted/VPS reavaliado no deploy); (c) cadencia mantida = etapa por etapa, usuario testa, 1 commit por etapa. Roteiro acordado: 0. multi-quadra no mock -> 1. schema 0.0.2 (documento p/ validacao, alinhado ao mock; levar junto perguntas restantes ao Dev: PH-12, mascara de quadra, Q16) -> 2. projeto Supabase Pro -> 3. camada de dados atras do InventoryContext (telas nao mudam; flag mock/supabase na transicao) -> 4. auth real + papeis (PH-11) -> 5. migracao por dominio em fatias verticais (catalogo -> clientes -> reservas -> movimentos -> notificacoes/cron E-03) -> 6. security-review da RLS + deploy.
+2. **Mascara da quadra**: aguardando dados reais do usuario (unico pendente da Fase 1).
+3. **Refinar modelo de encomenda/regime**: override E-04 (decidido, nao construido), E-07 encomenda vencida; E-03 FEITO (30 dias, 2026-07-09); fechar numeros restantes (PH-4/5) com o Dev.
+4. **Revisao de DESIGN VISUAL/estetico e UX de produto** (a revisao de engenharia/acessibilidade ja foi feita).
+5. **Consolidar componentes**: extrair o map de status da reserva (label/variant), hoje duplicado em ReservasPage/DetalhesReservaDrawer/ClientesPage/EditarPedidoDrawer, para um modulo compartilhado — quando a WIP de reservas assentar.
 6. **P2**: suporte a tablet (hoje desktop-only, `min-width: 1180px`) e navegacao `<button>` -> router.
 
 (Semear clienteId nas reservas do mock: FEITO 2026-06-25; pendente real so no Supabase.)

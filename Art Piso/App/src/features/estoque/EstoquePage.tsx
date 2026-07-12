@@ -16,6 +16,7 @@ import {
   m2Disponivel,
   m2DisponivelProduto,
   precoPorCaixa,
+  quadrasDoLote,
   reservasAtivasDoProduto,
   statusProduto,
 } from '@/data/mock-inventory'
@@ -71,18 +72,18 @@ export function EstoquePage() {
   })
 
   const produtos = useMemo(() => agruparPorProduto(listaLotes), [listaLotes])
-  const quadras = useMemo(() => Array.from(new Set(listaLotes.map((lote) => lote.quadra))), [listaLotes])
+  const quadras = useMemo(() => Array.from(new Set(listaLotes.flatMap((lote) => quadrasDoLote(lote)))), [listaLotes])
   const marcas = useMemo(() => Array.from(new Set(produtos.map((produto) => produto.marca))), [produtos])
 
   const produtosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
     return produtos.filter((produto) => {
-      const okQuadra = quadraFiltro === 'todas' || produto.lotes.some((lote) => lote.quadra === quadraFiltro)
+      const okQuadra = quadraFiltro === 'todas' || produto.lotes.some((lote) => quadrasDoLote(lote).includes(quadraFiltro))
       const okMarca = marcaFiltro === 'todas' || produto.marca === marcaFiltro
       const okStatus = statusFiltro === 'todas' || statusProduto(produto) === statusFiltro
       const okBusca =
         termo === '' ||
-        [produto.produto, produto.referencia, produto.marca, ...produto.lotes.flatMap((l) => [l.lote, l.quadra])].some(
+        [produto.produto, produto.referencia, produto.marca, ...produto.lotes.flatMap((l) => [l.lote, ...quadrasDoLote(l)])].some(
           (campo) => campo.toLowerCase().includes(termo),
         )
       return okQuadra && okMarca && okStatus && okBusca

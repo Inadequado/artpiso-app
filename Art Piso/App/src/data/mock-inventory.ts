@@ -1,5 +1,5 @@
 import { DIAS_ANTECEDENCIA_ENTREGA, diasAteEntrega } from '@/lib/reserva-regime'
-import type { Cliente, LoteEstoque, Produto, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
+import type { AlocacaoQuadra, Cliente, LoteEstoque, Produto, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 export const lotes: LoteEstoque[] = [
   {
@@ -12,7 +12,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Portinari',
     tamanho: '60x60',
     lote: 'L-2405',
-    quadra: 'Q-03',
+    alocacoes: [{ quadra: 'Q-03', caixas: 40 }],
     bitola: '2',
     tonalidade: 'A3',
     m2PorCaixa: 2.16,
@@ -34,7 +34,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Portinari',
     tamanho: '60x60',
     lote: 'L-2406',
-    quadra: 'Q-05',
+    alocacoes: [{ quadra: 'Q-05', caixas: 18 }],
     bitola: '3',
     tonalidade: 'A4',
     m2PorCaixa: 2.16,
@@ -53,7 +53,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Eliane',
     tamanho: '10x20',
     lote: 'L-2391',
-    quadra: 'Q-01',
+    alocacoes: [{ quadra: 'Q-01', caixas: 12 }],
     m2PorCaixa: 0.9,
     pecasPorCaixa: 45,
     caixasEstoque: 12,
@@ -70,7 +70,11 @@ export const lotes: LoteEstoque[] = [
     marca: 'Biancogres',
     tamanho: '20x120',
     lote: 'L-2410',
-    quadra: 'Q-08',
+    // Demo do Q1 (lote em 2+ quadras): excesso de caixas transbordou para a quadra de expansao.
+    alocacoes: [
+      { quadra: 'Q-08', caixas: 30 },
+      { quadra: 'Q-11', caixas: 15 },
+    ],
     m2PorCaixa: 1.8,
     pecasPorCaixa: 8,
     caixasEstoque: 45,
@@ -88,7 +92,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Ceusa',
     tamanho: '20x20',
     lote: 'L-2200',
-    quadra: 'Q-12',
+    alocacoes: [{ quadra: 'Q-12', caixas: 12 }],
     bitola: '1',
     tonalidade: 'C2',
     m2PorCaixa: 1.2,
@@ -108,7 +112,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Ceusa',
     tamanho: '20x20',
     lote: 'L-2201',
-    quadra: 'Q-12',
+    alocacoes: [{ quadra: 'Q-12', caixas: 40 }],
     m2PorCaixa: 1.2,
     pecasPorCaixa: 30,
     caixasEstoque: 40,
@@ -125,7 +129,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Portinari',
     tamanho: '80x80',
     lote: 'L-3010',
-    quadra: 'Q-04',
+    alocacoes: [{ quadra: 'Q-04', caixas: 60 }],
     m2PorCaixa: 2.04,
     pecasPorCaixa: 3,
     caixasEstoque: 60,
@@ -144,7 +148,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Portinari',
     tamanho: '80x80',
     lote: 'L-3011',
-    quadra: 'Q-04',
+    alocacoes: [{ quadra: 'Q-04', caixas: 25 }],
     m2PorCaixa: 2.04,
     pecasPorCaixa: 3,
     caixasEstoque: 25,
@@ -161,7 +165,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Biancogres',
     tamanho: '20x90',
     lote: 'L-3020',
-    quadra: 'Q-06',
+    alocacoes: [{ quadra: 'Q-06', caixas: 38 }],
     m2PorCaixa: 1.62,
     pecasPorCaixa: 9,
     caixasEstoque: 38,
@@ -178,7 +182,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Biancogres',
     tamanho: '20x90',
     lote: 'L-3021',
-    quadra: 'Q-07',
+    alocacoes: [{ quadra: 'Q-07', caixas: 14 }],
     m2PorCaixa: 1.62,
     pecasPorCaixa: 9,
     caixasEstoque: 14,
@@ -195,7 +199,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Eliane',
     tamanho: '30x60',
     lote: 'L-3030',
-    quadra: 'Q-02',
+    alocacoes: [{ quadra: 'Q-02', caixas: 16 }],
     m2PorCaixa: 1.44,
     pecasPorCaixa: 8,
     caixasEstoque: 16,
@@ -212,7 +216,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Atlas',
     tamanho: '30x30',
     lote: 'L-3040',
-    quadra: 'Q-10',
+    alocacoes: [{ quadra: 'Q-10', caixas: 25 }],
     m2PorCaixa: 0.9,
     pecasPorCaixa: 10,
     caixasEstoque: 25,
@@ -229,7 +233,7 @@ export const lotes: LoteEstoque[] = [
     marca: 'Durafloor',
     tamanho: '19x120',
     lote: 'L-3050',
-    quadra: 'Q-09',
+    alocacoes: [{ quadra: 'Q-09', caixas: 41 }],
     m2PorCaixa: 2.3,
     pecasPorCaixa: 10,
     caixasEstoque: 41,
@@ -754,14 +758,74 @@ export function enderecoEntregaDaReserva(reserva: Reserva, clientes: Cliente[]):
   return endereco ? enderecoLabel(endereco) : reserva.enderecoEntrega
 }
 
-/** Lotes fisicamente guardados na quadra (ligacao por numero da quadra). */
-export function lotesNaQuadra(numero: string, lista: LoteEstoque[]) {
-  return lista.filter((lote) => lote.quadra === numero)
+/** Numeros das quadras que o lote ocupa (Q1: pode ser mais de uma). */
+export function quadrasDoLote(lote: LoteEstoque) {
+  return lote.alocacoes.map((alocacao) => alocacao.quadra)
 }
 
-/** Caixas fisicas (estoque) presentes na quadra, somando os lotes nela. */
+/** Label curto da localizacao do lote: "Q-03" ou "Q-08 · Q-11". */
+export function quadraLabel(lote: LoteEstoque) {
+  return quadrasDoLote(lote).join(' · ') || '—'
+}
+
+/** Label detalhado com as caixas por quadra: "Q-08 (30 cx) · Q-11 (15 cx)". */
+export function quadraLabelDetalhada(lote: LoteEstoque) {
+  return lote.alocacoes.map((alocacao) => `${alocacao.quadra} (${alocacao.caixas} cx)`).join(' · ') || '—'
+}
+
+/**
+ * Localizacao de exibicao da reserva. Fonte unica (mesmo padrao do cliente): reserva ATIVA
+ * deriva do lote AO VIVO (mover/renomear quadra reflete na hora); historica usa o snapshot.
+ */
+export function quadraDaReserva(reserva: Reserva, lotes: LoteEstoque[]) {
+  if (reserva.status === 'reservado' || reserva.status === 'parcial') {
+    const lote = lotes.find((item) => item.lote === reserva.lote)
+    if (lote) return quadraLabel(lote)
+  }
+  return reserva.quadra
+}
+
+/**
+ * Drena caixas das alocacoes (maior alocacao primeiro) preservando o invariante
+ * soma = caixasEstoque. Retorna nova lista, sem entradas zeradas.
+ */
+export function drenarAlocacoes(alocacoes: AlocacaoQuadra[], caixas: number): AlocacaoQuadra[] {
+  let restante = Math.max(0, caixas)
+  return [...alocacoes]
+    .sort((a, b) => b.caixas - a.caixas)
+    .map((alocacao) => {
+      const retirar = Math.min(alocacao.caixas, restante)
+      restante -= retirar
+      return { ...alocacao, caixas: alocacao.caixas - retirar }
+    })
+    .filter((alocacao) => alocacao.caixas > 0)
+}
+
+/** Soma caixas na alocacao da quadra (cria a alocacao se o lote ainda nao ocupa a quadra). */
+export function somarAlocacao(alocacoes: AlocacaoQuadra[], quadra: string, caixas: number): AlocacaoQuadra[] {
+  if (caixas <= 0) return alocacoes
+  const existente = alocacoes.find((alocacao) => alocacao.quadra === quadra)
+  if (!existente) return [...alocacoes, { quadra, caixas }]
+  return alocacoes.map((alocacao) => (alocacao.quadra === quadra ? { ...alocacao, caixas: alocacao.caixas + caixas } : alocacao))
+}
+
+/** Quadra com mais caixas do lote (destino padrao de ajustes automaticos). */
+export function maiorAlocacao(lote: LoteEstoque): AlocacaoQuadra | undefined {
+  return [...lote.alocacoes].sort((a, b) => b.caixas - a.caixas)[0]
+}
+
+/** Lotes fisicamente guardados na quadra (com alocacao nela). */
+export function lotesNaQuadra(numero: string, lista: LoteEstoque[]) {
+  return lista.filter((lote) => lote.alocacoes.some((alocacao) => alocacao.quadra === numero))
+}
+
+/** Caixas fisicas presentes na quadra: soma so a PARTE alocada nela de cada lote. */
 export function caixasNaQuadra(numero: string, lista: LoteEstoque[]) {
-  return lotesNaQuadra(numero, lista).reduce((total, lote) => total + lote.caixasEstoque, 0)
+  return lista.reduce(
+    (total, lote) =>
+      total + lote.alocacoes.filter((alocacao) => alocacao.quadra === numero).reduce((soma, alocacao) => soma + alocacao.caixas, 0),
+    0,
+  )
 }
 
 export type OcupacaoQuadra = {

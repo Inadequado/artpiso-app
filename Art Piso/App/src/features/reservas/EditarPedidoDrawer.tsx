@@ -10,7 +10,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -114,7 +114,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
     .filter((l) => !lotesNoPedido.has(l.id) && caixasDisponiveis(l) > 0)
     .filter((l) => (buscaTrim === '' ? true : `${l.produto} ${l.lote}`.toLowerCase().includes(buscaTrim)))
     .slice(0, 8)
-    .map((l) => ({ value: l.id, label: `${l.produto} - ${l.lote}`, hint: `${caixasDisponiveis(l)} cx · ${l.quadra}` }))
+    .map((l) => ({ value: l.id, label: `${l.produto} - ${l.lote}`, hint: `${caixasDisponiveis(l)} cx · ${quadraLabel(l)}` }))
 
   const builderLote = loteById(builderLoteId)
   const builderDisp = builderLote ? caixasDisponiveis(builderLote) : 0
@@ -230,7 +230,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{lote.produto}</p>
-                          <p className="font-mono text-xs text-muted-foreground">{lote.lote} · {lote.quadra}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{lote.lote} · {quadraLabel(lote)}</p>
                         </div>
                         <Button
                           type="button"

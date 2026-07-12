@@ -10,9 +10,9 @@ export type QuadraInput = Pick<Quadra, 'numero' | 'descricao'>
 /** Dados de cadastro/edicao do usuario (id e status vivem no store). */
 export type UsuarioInput = Omit<Usuario, 'id' | 'status'>
 
+/** Quadra fica FORA do patch (Q1): localizacao muda so via Ajustes -> Mover lote de quadra. */
 export type AtualizarLotePatch = {
   lote: string
-  quadra: string
   bitola?: string
   tonalidade?: string
 }
@@ -177,11 +177,13 @@ export type InventoryContextValue = {
   cancelarReserva: (id: string, motivo?: string) => void
   entregarReserva: (input: EntregarReservaInput) => void
   estornarReserva: (input: EstornarReservaInput) => void
-  /** Entrada de remessa em lote existente (mesmo codigo + mesmas bitola/tonalidade): soma caixas ao estoque. */
-  registrarEntrada: (loteId: string, caixas: number) => void
+  /** Entrada de remessa em lote existente: soma caixas ao estoque, alocadas na quadra informada. */
+  registrarEntrada: (loteId: string, caixas: number, quadra: string) => void
   registrarPerda: (loteId: string, caixas: number, pisos: number, motivo: string) => void
+  /** Move o lote INTEIRO para a quadra (M1 do Q1; movimentacao parcial vem na proxima etapa). */
   moverQuadra: (loteId: string, novaQuadra: string) => void
-  corrigirEstoque: (loteId: string, novoTotal: number) => void
+  /** Corrige a contagem da alocacao do lote NAQUELA quadra; o estoque do lote vira a soma. */
+  corrigirEstoque: (loteId: string, quadra: string, novoTotalQuadra: number) => void
 }
 
 export const InventoryContext = createContext<InventoryContextValue | null>(null)

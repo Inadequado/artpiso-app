@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { clienteDaReserva } from '@/data/mock-inventory'
+import { clienteDaReserva, maiorAlocacao } from '@/data/mock-inventory'
 import { useInventory, type EstornarReservaInput } from '@/store/inventory'
 import type { Reserva } from '@/types/inventory'
 
@@ -27,7 +27,8 @@ export function EstornoDrawer({ reserva, onClose, onConfirm }: EstornoDrawerProp
     reserva?.caixas ??
     0
 
-  const quadraInicial = lote ? (quadras.find((q) => q.numero === lote.quadra)?.id ?? '') : ''
+  // Sugestao inicial: a quadra onde o lote tem mais caixas hoje (a devolucao ALOCA de verdade nela).
+  const quadraInicial = lote ? (quadras.find((q) => q.numero === maiorAlocacao(lote)?.quadra)?.id ?? '') : ''
 
   const [caixas, setCaixas] = useState(String(totalEntregue || 1))
   const [quadraId, setQuadraId] = useState(quadraInicial)
@@ -85,7 +86,7 @@ export function EstornoDrawer({ reserva, onClose, onConfirm }: EstornoDrawerProp
             />
           </Field>
 
-          <Field label="Quadra de destino" hint="Registra onde as caixas foram colocadas — não altera a quadra do lote">
+          <Field label="Quadra de destino" hint="As caixas devolvidas voltam ao estoque do lote já alocadas nesta quadra">
             <SelectMenu
               value={quadraId}
               onChange={setQuadraId}

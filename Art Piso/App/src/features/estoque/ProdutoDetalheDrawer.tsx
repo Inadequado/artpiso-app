@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Drawer } from '@/components/ui/drawer'
-import { caixasDisponiveis, caixasDisponiveisProduto, formatM2, formatPreco, m2Disponivel, m2DisponivelProduto, precoPorCaixa, statusLote } from '@/data/mock-inventory'
+import { caixasDisponiveis, caixasDisponiveisProduto, formatM2, formatPreco, m2Disponivel, m2DisponivelProduto, precoPorCaixa, quadraLabel, quadraLabelDetalhada, statusLote } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque, Produto, StockStatus } from '@/types/inventory'
 
@@ -168,7 +168,7 @@ export function ProdutoDetalheDrawer({
                     <p className="font-mono text-sm font-bold text-primary">{lote.lote}</p>
                     <p className="text-xs text-muted-foreground">
                       {[
-                        `Quadra ${lote.quadra}`,
+                        lote.alocacoes.length > 1 ? quadraLabelDetalhada(lote) : `Quadra ${quadraLabel(lote)}`,
                         lote.bitola ? `Bitola ${lote.bitola}` : '',
                         lote.tonalidade ? `Ton. ${lote.tonalidade}` : '',
                       ]

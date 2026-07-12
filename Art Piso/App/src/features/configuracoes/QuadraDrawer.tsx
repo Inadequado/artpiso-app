@@ -21,7 +21,7 @@ export function QuadraDrawer({
   const [numero, setNumero] = useState(quadra?.numero ?? '')
   const [descricao, setDescricao] = useState(quadra?.descricao ?? '')
 
-  // O numero e o VINCULO dos lotes (lote.quadra e texto): nao pode repetir em outra quadra.
+  // O numero e o VINCULO das alocacoes dos lotes (texto): nao pode repetir em outra quadra.
   const numeroDuplicado = numero.trim()
     ? quadras.find((item) => item.id !== quadra?.id && item.numero.trim().toLowerCase() === numero.trim().toLowerCase())
     : undefined

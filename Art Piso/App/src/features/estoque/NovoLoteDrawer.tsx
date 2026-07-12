@@ -44,7 +44,7 @@ export function NovoLoteDrawer({
       marca: produto.marca,
       tamanho: produto.tamanho,
       lote: codigo.trim(),
-      quadra: quadra.trim(),
+      alocacoes: [{ quadra: quadra.trim(), caixas: estoque }],
       bitola: bitola.trim() || undefined,
       tonalidade: tonalidade.trim() || undefined,
       m2PorCaixa: produto.m2PorCaixa,

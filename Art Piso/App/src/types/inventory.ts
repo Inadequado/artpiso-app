@@ -33,6 +33,13 @@ export type EstornoReserva = {
   motivo?: string
 }
 
+/** Caixas de um lote fisicamente guardadas numa quadra (Q1: lote pode ocupar 2+ quadras, caso de excesso). */
+export type AlocacaoQuadra = {
+  /** Numero da quadra (ex.: "Q-03"). */
+  quadra: string
+  caixas: number
+}
+
 export type LoteEstoque = {
   id: string
   /** Identidade do produto ao qual o lote pertence. Chave de agrupamento do catalogo (referencia e opcional). */
@@ -44,7 +51,8 @@ export type LoteEstoque = {
   /** Tamanho nominal (ex.: "60x60"). Opcional: vazio = nao informado. */
   tamanho: string
   lote: string
-  quadra: string
+  /** Onde as caixas estao. INVARIANTE: a soma das alocacoes = caixasEstoque. */
+  alocacoes: AlocacaoQuadra[]
   /** Bitola/calibre impresso na caixa (varia por lote). Opcional. */
   bitola?: string
   /** Tonalidade impressa na caixa (varia por lote). Opcional. */
@@ -89,6 +97,7 @@ export type Reserva = {
   telefone: string
   produto: string
   lote: string
+  /** SNAPSHOT da localizacao (label, ex.: "Q-03 · Q-11"). Para reservas ATIVAS a UI deriva do lote ao vivo (quadraDaReserva); o snapshot vale para o historico. */
   quadra: string
   /** Caixas em aberto (saldo a entregar). Em entrega parcial, cai para o restante. */
   caixas: number

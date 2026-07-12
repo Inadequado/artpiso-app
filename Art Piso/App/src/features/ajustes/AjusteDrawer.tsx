@@ -7,7 +7,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, formatM2 } from '@/data/mock-inventory'
+import { caixasDisponiveis, formatM2, maiorAlocacao, quadraLabel, quadraLabelDetalhada } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 
 export type AjusteTipo = 'entrada' | 'perda' | 'quadra' | 'correcao'
@@ -57,10 +57,24 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const [pisos, setPisos] = useState('')
   const [motivo, setMotivo] = useState('')
   const [novaQuadra, setNovaQuadra] = useState('')
+  // Quadra da operacao (Q1): destino da entrada / alocacao a recontar na correcao.
+  const [quadraAlvo, setQuadraAlvo] = useState('')
 
   const lote = lotes.find((item) => item.id === loteId)
   const cfg = tipo ? config[tipo] : null
   const Icon = cfg?.icon
+
+  // Ao trocar o lote, pre-preenche a quadra da operacao: entrada sugere a maior alocacao;
+  // correcao so auto-preenche quando o lote ocupa UMA quadra (com 2+ a escolha e consciente).
+  function selecionarLote(id: string) {
+    setLoteId(id)
+    const escolhido = lotes.find((item) => item.id === id)
+    if (tipo === 'entrada') {
+      setQuadraAlvo(escolhido ? (maiorAlocacao(escolhido)?.quadra ?? '') : '')
+    } else if (tipo === 'correcao') {
+      setQuadraAlvo(escolhido && escolhido.alocacoes.length === 1 ? escolhido.alocacoes[0].quadra : '')
+    }
+  }
 
   const numero = Number(quantidade)
   const pisosNum = Number(pisos)
@@ -71,16 +85,22 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const pisosValidos = pisos.trim() === '' || (Number.isFinite(pisosNum) && pisosNum >= 0 && !pisosExcede)
   const m2 = lote && quantidadeValida ? numero * lote.m2PorCaixa : 0
   const excedePerda = tipo === 'perda' && lote ? numero > caixasDisponiveis(lote) : false
-  // Comprometido = reserva + perda. O novo total da correcao nao pode ficar abaixo disso,
-  // senao o disponivel (estoque - reserva - perda) ficaria negativo.
+  // Correcao e POR QUADRA (Q1): o novo total do LOTE = demais alocacoes + novo total da quadra.
+  // Comprometido = reserva + perda; o total do lote nao pode ficar abaixo disso (PH-9).
+  const alocacaoNaQuadraAlvo = lote && quadraAlvo ? (lote.alocacoes.find((a) => a.quadra === quadraAlvo)?.caixas ?? 0) : 0
+  const novoTotalLote = lote ? lote.caixasEstoque - alocacaoNaQuadraAlvo + (Number.isFinite(numero) ? numero : 0) : 0
   const comprometido = lote ? lote.caixasReserva + lote.caixasPerda : 0
   const correcaoAbaixoDoComprometido =
-    tipo === 'correcao' && Boolean(lote) && Number.isFinite(numero) && numero >= 0 && numero < comprometido
+    tipo === 'correcao' && Boolean(lote) && Boolean(quadraAlvo) && Number.isFinite(numero) && numero >= 0 && novoTotalLote < comprometido
+  // Mover (M1) leva o lote INTEIRO: destino invalido so quando ele ja esta todo naquela quadra.
+  const inteiroNaQuadra = (numeroQuadra: string) =>
+    Boolean(lote && lote.alocacoes.length === 1 && lote.alocacoes[0].quadra === numeroQuadra)
 
   const valido = (() => {
     if (!lote) return false
-    if (tipo === 'quadra') return Boolean(novaQuadra) && novaQuadra !== lote.quadra
-    if (tipo === 'correcao') return Number.isFinite(numero) && numero >= comprometido
+    if (tipo === 'quadra') return Boolean(novaQuadra) && !inteiroNaQuadra(novaQuadra)
+    if (tipo === 'correcao') return Boolean(quadraAlvo) && Number.isFinite(numero) && numero >= 0 && novoTotalLote >= comprometido
+    if (tipo === 'entrada') return quantidadeValida && Boolean(quadraAlvo)
     if (tipo === 'perda') return quantidadeValida && !excedePerda && pisosValidos && motivo.trim() !== ''
     return quantidadeValida && !excedePerda
   })()
@@ -89,7 +109,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
     if (!lote || !tipo) return
     switch (tipo) {
       case 'entrada':
-        registrarEntrada(lote.id, numero)
+        registrarEntrada(lote.id, numero, quadraAlvo)
         break
       case 'perda':
         registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim())
@@ -98,7 +118,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
         moverQuadra(lote.id, novaQuadra)
         break
       case 'correcao':
-        corrigirEstoque(lote.id, numero)
+        corrigirEstoque(lote.id, quadraAlvo, numero)
         break
     }
     onConfirm()
@@ -128,11 +148,11 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
             <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Lote</span>
             <SelectMenu
               value={loteId}
-              onChange={setLoteId}
+              onChange={selecionarLote}
               placeholder="Selecione um lote…"
               options={lotes.map((item) => ({
                 value: item.id,
-                label: `${item.produto} — ${item.lote} (${item.quadra})`,
+                label: `${item.produto} — ${item.lote} (${quadraLabel(item)})`,
               }))}
             />
           </div>
@@ -142,9 +162,39 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
               <p className="font-bold">{lote.produto}</p>
               <p className="mt-1 text-muted-foreground">
                 Estoque atual: <span className="numeric font-semibold text-foreground">{lote.caixasEstoque} cx</span> ·
-                Disponível: <span className="numeric font-semibold text-foreground">{caixasDisponiveis(lote)} cx</span> ·
-                Quadra atual: <span className="font-mono text-foreground">{lote.quadra}</span>
+                Disponível: <span className="numeric font-semibold text-foreground">{caixasDisponiveis(lote)} cx</span>
               </p>
+              <p className="mt-0.5 text-muted-foreground">
+                Onde está: <span className="font-mono text-foreground">{quadraLabelDetalhada(lote)}</span>
+              </p>
+            </div>
+          ) : null}
+
+          {lote && (tipo === 'entrada' || tipo === 'correcao') ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                {tipo === 'entrada' ? 'Quadra de destino' : 'Quadra da contagem'}
+              </span>
+              <SelectMenu
+                value={quadraAlvo}
+                onChange={setQuadraAlvo}
+                placeholder="Selecione a quadra…"
+                options={
+                  tipo === 'entrada'
+                    ? quadras.map((quadra) => ({ value: quadra.numero, label: `${quadra.numero} — ${quadra.descricao}` }))
+                    : (lote.alocacoes.length > 0
+                        ? lote.alocacoes.map((alocacao) => ({
+                            value: alocacao.quadra,
+                            label: `${alocacao.quadra} — ${alocacao.caixas} cx contadas hoje`,
+                          }))
+                        : quadras.map((quadra) => ({ value: quadra.numero, label: `${quadra.numero} — ${quadra.descricao}` })))
+                }
+              />
+              {tipo === 'entrada' ? (
+                <p className="text-xs text-muted-foreground">
+                  Pode ser uma quadra nova para o lote — é assim que um lote passa a ocupar mais de uma quadra.
+                </p>
+              ) : null}
             </div>
           ) : null}
 
@@ -158,13 +208,13 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                 options={quadras.map((quadra) => ({
                   value: quadra.numero,
                   label: `${quadra.numero} — ${quadra.descricao}`,
-                  disabled: lote ? quadra.numero === lote.quadra : false,
+                  disabled: inteiroNaQuadra(quadra.numero),
                 }))}
               />
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              <Field label={tipo === 'correcao' ? 'Novo total (caixas)' : tipo === 'entrada' ? 'Caixas recebidas' : 'Quantidade (caixas)'}>
+              <Field label={tipo === 'correcao' ? 'Novo total na quadra (caixas)' : tipo === 'entrada' ? 'Caixas recebidas' : 'Quantidade (caixas)'}>
                 <Input
                   type="number"
                   min={tipo === 'correcao' ? 0 : 1}
@@ -225,7 +275,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
 
           {correcaoAbaixoDoComprometido && lote ? (
             <p className="-mt-2 text-xs font-semibold text-danger">
-              O total não pode ficar abaixo do comprometido ({comprometido} cx = {lote.caixasReserva} reservadas + {lote.caixasPerda} perda). Cancele reservas antes de reduzir.
+              Com essa contagem o lote ficaria com {novoTotalLote} cx, abaixo do comprometido ({comprometido} cx = {lote.caixasReserva} reservadas + {lote.caixasPerda} perda). Cancele reservas antes de reduzir.
             </p>
           ) : null}
         </div>

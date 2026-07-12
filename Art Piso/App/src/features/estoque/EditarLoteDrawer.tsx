@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { SelectMenu } from '@/components/ui/select-menu'
-import { loteComCodigo } from '@/data/mock-inventory'
+import { loteComCodigo, quadraLabelDetalhada } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
 
@@ -22,20 +21,18 @@ export function EditarLoteDrawer({
   lote: LoteEstoque | null
   onClose: () => void
 }) {
-  const { atualizarLote, lotes, quadras } = useInventory()
+  const { atualizarLote, lotes } = useInventory()
   const [codigo, setCodigo] = useState(lote?.lote ?? '')
-  const [quadra, setQuadra] = useState(lote?.quadra ?? '')
   const [bitola, setBitola] = useState(lote?.bitola ?? '')
   const [tonalidade, setTonalidade] = useState(lote?.tonalidade ?? '')
 
   const loteDuplicado = lote ? loteComCodigo(codigo, lotes, lote.id) : undefined
-  const valido = Boolean(lote && codigo.trim() && !loteDuplicado && quadra.trim())
+  const valido = Boolean(lote && codigo.trim() && !loteDuplicado)
 
   function salvar() {
     if (!lote || !valido) return
     atualizarLote(lote.id, {
       lote: codigo.trim(),
-      quadra: quadra.trim(),
       bitola: bitola.trim() || undefined,
       tonalidade: tonalidade.trim() || undefined,
     })
@@ -68,13 +65,13 @@ export function EditarLoteDrawer({
               </p>
             ) : null}
           </Field>
-          <Field label="Quadra">
-            <SelectMenu
-              value={quadra}
-              onChange={setQuadra}
-              placeholder="Selecione…"
-              options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
-            />
+          <Field label="Localização">
+            <div className="flex h-10 items-center rounded-md border bg-muted/40 px-3 font-mono text-sm text-muted-foreground">
+              {quadraLabelDetalhada(lote)}
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Para mudar as caixas de lugar, use Ajustes → Mover lote de quadra (fica no histórico).
+            </p>
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Bitola" optional>

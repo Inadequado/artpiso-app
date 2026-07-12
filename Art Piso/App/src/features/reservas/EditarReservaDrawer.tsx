@@ -8,7 +8,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, formatM2 } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, formatM2, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -87,7 +87,7 @@ export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReser
             {isParcial ? (
               <div className="rounded-md border bg-muted/30 p-3">
                 <p className="font-semibold">{lote?.produto}</p>
-                <p className="font-mono text-sm text-muted-foreground">{lote?.lote} · Quadra {lote?.quadra}</p>
+                <p className="font-mono text-sm text-muted-foreground">{lote?.lote} · Quadra {lote ? quadraLabel(lote) : ''}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Lote fixo — entrega parcial já registrada</p>
               </div>
             ) : (

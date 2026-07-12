@@ -121,7 +121,7 @@ export function CadastroProdutoDrawer({
       marca: produtoExistente ? produtoExistente.marca : marca.trim(),
       tamanho: produtoExistente ? produtoExistente.tamanho : tamanho.trim(),
       lote: lote.trim(),
-      quadra: quadra.trim(),
+      alocacoes: [{ quadra: quadra.trim(), caixas: estoque }],
       bitola: bitola.trim() || undefined,
       tonalidade: tonalidade.trim() || undefined,
       m2PorCaixa: m2Caixa,

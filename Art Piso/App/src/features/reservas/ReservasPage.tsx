@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Field } from '@/components/ui/field'
 import { MetricCard } from '@/components/ui/metric-card'
 import { Textarea } from '@/components/ui/textarea'
-import { clienteDaReserva } from '@/data/mock-inventory'
+import { clienteDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { DetalhesReservaDrawer } from '@/features/reservas/DetalhesReservaDrawer'
 import { EditarPedidoDrawer } from '@/features/reservas/EditarPedidoDrawer'
 import { EditarReservaDrawer } from '@/features/reservas/EditarReservaDrawer'
@@ -60,7 +60,7 @@ function numeroPedido(pedido: string) {
 }
 
 export function ReservasPage() {
-  const { reservas: listaReservas, clientes, criarPedido, editarPedido, editarReserva, cancelarReserva: cancelarReservaAction, entregarReserva, estornarReserva } = useInventory()
+  const { reservas: listaReservas, clientes, lotes, criarPedido, editarPedido, editarReserva, cancelarReserva: cancelarReservaAction, entregarReserva, estornarReserva } = useInventory()
   const [statusFilter, setStatusFilter] = useState<StatusTab>('todas')
   const [sortKey, setSortKey] = useState<SortKey>('pedido')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
@@ -92,12 +92,12 @@ export function ReservasPage() {
       const nomeCli = clienteDaReserva(reserva, clientes)?.nome ?? reserva.cliente
       const okBusca =
         termo === '' ||
-        [reserva.pedido, nomeCli, reserva.produto, reserva.lote, reserva.quadra].some((campo) =>
+        [reserva.pedido, nomeCli, reserva.produto, reserva.lote, quadraDaReserva(reserva, lotes)].some((campo) =>
           campo.toLowerCase().includes(termo),
         )
       return okStatus && okBusca
     })
-  }, [listaReservas, clientes, statusFilter, busca])
+  }, [listaReservas, clientes, lotes, statusFilter, busca])
 
   // So a MEMBERSHIP da lista (ids) entra na chave: trocar aba/filtro/busca ou add/remover reanima;
   // mudar o status de 1 reserva (entregar/cancelar) NAO reanima a tabela inteira.
@@ -257,7 +257,7 @@ export function ReservasPage() {
                     </td>
                     <td>
                       <strong>{reserva.produto}</strong>
-                      <p className="text-sm text-muted-foreground">{reserva.lote} - {reserva.quadra}</p>
+                      <p className="text-sm text-muted-foreground">{reserva.lote} - {quadraDaReserva(reserva, lotes)}</p>
                     </td>
                     <td className="text-center">
                       <strong className="numeric">{reserva.caixas} cx</strong>

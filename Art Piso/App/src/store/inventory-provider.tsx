@@ -9,9 +9,12 @@ import {
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
+  drenarAlocacoes,
   encomendasEmRisco,
   furoProduto,
   loteComCodigo,
+  quadraLabel,
+  somarAlocacao,
   proximoNumeroPedido,
   statusPorDisponivel,
   statusProduto,
@@ -173,15 +176,21 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     if (!alvo) return
     const numeroMudou = dados.numero !== alvo.numero
     setQuadras((atual) => atual.map((item) => (item.id === id ? { ...item, ...dados } : item)))
-    // Renomear a quadra cascateia o texto nos LOTES (estado atual deles) e nas reservas
-    // ATIVAS (historicas mantem o snapshot da epoca — regra do moverQuadra). FK real na Fase 2.
+    // Renomear a quadra cascateia o texto nas ALOCACOES dos lotes (estado atual). Reservas nao
+    // precisam de cascata: ativas derivam do lote ao vivo; historicas guardam o nome da epoca.
+    // FK real na Fase 2.
     if (numeroMudou) {
       setEstado((atual) => ({
-        lotes: atual.lotes.map((item) => (item.quadra === alvo.numero ? { ...item, quadra: dados.numero } : item)),
-        reservas: atual.reservas.map((reserva) =>
-          reserva.quadra === alvo.numero && (reserva.status === 'reservado' || reserva.status === 'parcial')
-            ? { ...reserva, quadra: dados.numero }
-            : reserva,
+        ...atual,
+        lotes: atual.lotes.map((item) =>
+          item.alocacoes.some((alocacao) => alocacao.quadra === alvo.numero)
+            ? {
+                ...item,
+                alocacoes: item.alocacoes.map((alocacao) =>
+                  alocacao.quadra === alvo.numero ? { ...alocacao, quadra: dados.numero } : alocacao,
+                ),
+              }
+            : item,
         ),
       }))
     }
@@ -265,39 +274,24 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.produtoId !== produtoId) }))
   }, [])
 
+  // Quadra saiu do patch (Q1): mudanca de localizacao tem caminho unico (Ajustes -> Mover),
+  // que lida com alocacoes por quadra e registra no historico.
   const atualizarLote = useCallback((loteId: string, patch: AtualizarLotePatch) => {
     const alvo = lotes.find((item) => item.id === loteId)
     if (!alvo) return
     // Guard defensivo: renomear para codigo ja usado mesclaria as reservas dos dois lotes.
     if (loteComCodigo(patch.lote, lotes, loteId)) return
     const codigoMudou = patch.lote !== alvo.lote
-    const quadraMudou = patch.quadra !== alvo.quadra
-    // Mudar quadra por aqui = mesma operacao do Mover lote de quadra (Ajustes): registra
-    // no historico. Sem isso, o Editar lote seria um caminho silencioso pra mesma acao.
-    if (quadraMudou) {
-      registrarMovimento({
-        tipo: 'quadra',
-        titulo: 'Lote movido de quadra',
-        detalhe: `${patch.lote}: ${alvo.quadra} → ${patch.quadra}`,
-        loteId: alvo.id,
-        produtoId: alvo.produtoId,
-      })
-    }
     setEstado((atual) => ({
       lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, ...patch } : item)),
-      // Cascatas nas reservas: codigo renomeado segue em TODAS (evita orfas); quadra nova
-      // so nas ATIVAS (historicas guardam o snapshot da epoca — mesma regra do moverQuadra).
-      reservas: atual.reservas.map((reserva) => {
-        if (reserva.lote !== alvo.lote) return reserva
-        const ativa = reserva.status === 'reservado' || reserva.status === 'parcial'
-        return {
-          ...reserva,
-          lote: codigoMudou ? patch.lote : reserva.lote,
-          quadra: quadraMudou && ativa ? patch.quadra : reserva.quadra,
-        }
-      }),
+      // Renomear o codigo do lote faz cascata no vinculo de TODAS as reservas (evita orfas).
+      reservas: codigoMudou
+        ? atual.reservas.map((reserva) =>
+            reserva.lote === alvo.lote ? { ...reserva, lote: patch.lote } : reserva,
+          )
+        : atual.reservas,
     }))
-  }, [lotes, registrarMovimento])
+  }, [lotes])
 
   // Campos de produto vivem em cada lote (LoteEstoque); editar produto aplica a todos os lotes do produtoId.
   const atualizarProduto = useCallback((produtoId: string, patch: AtualizarProdutoPatch) => {
@@ -350,7 +344,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         enderecoEntrega: input.enderecoEntrega?.trim() || undefined,
         produto: lote.produto,
         lote: lote.lote,
-        quadra: lote.quadra,
+        quadra: quadraLabel(lote),
         caixas: input.caixas,
         m2: input.caixas * lote.m2PorCaixa,
         caixasTravadas,
@@ -408,7 +402,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           enderecoEntrega,
           produto: lote.produto,
           lote: lote.lote,
-          quadra: lote.quadra,
+          quadra: quadraLabel(lote),
           caixas: item.caixas,
           m2: item.caixas * lote.m2PorCaixa,
           caixasTravadas,
@@ -493,7 +487,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           telefone: input.telefone?.trim() ?? item.telefone,
           produto: novoLote.produto,
           lote: novoLote.lote,
-          quadra: novoLote.quadra,
+          quadra: quadraLabel(novoLote),
         }
       })
 
@@ -579,7 +573,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           enderecoEntrega,
           produto: lote.produto,
           lote: lote.lote,
-          quadra: lote.quadra,
+          quadra: quadraLabel(lote),
           caixas: item.caixas,
           m2: item.caixas * lote.m2PorCaixa,
           caixasTravadas: regime === 'rotacionando' ? 0 : item.caixas,
@@ -662,17 +656,19 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
                 status: restante <= 0 ? 'entregue' : 'parcial',
                 // Se trocou de lote (rotacionando): vincula a reserva ao lote real da entrega.
                 lote: loteParaEntrega?.lote ?? item.lote,
-                quadra: loteParaEntrega?.quadra ?? item.quadra,
+                quadra: loteParaEntrega ? quadraLabel(loteParaEntrega) : item.quadra,
               }
             : item,
         ),
-        // Baixa por entrega: sai do estoque fisico e deixa de ser reserva (so o que foi entregue).
+        // Baixa por entrega: sai do estoque fisico (drenando as alocacoes por quadra,
+        // maior primeiro — M3 permitira escolher de quais quadras) e deixa de ser reserva.
         lotes: atual.lotes.map((item) =>
           item.lote === (loteParaEntrega?.lote ?? reserva.lote)
             ? {
                 ...item,
                 caixasReserva: Math.max(0, item.caixasReserva - travadasEntregues),
                 caixasEstoque: Math.max(0, item.caixasEstoque - entregues),
+                alocacoes: drenarAlocacoes(item.alocacoes, entregues),
               }
             : item,
         ),
@@ -709,9 +705,15 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             ? { ...r, status: 'estornado', estornos: [...(r.estornos ?? []), estorno] }
             : r,
         ),
+        // Devolucao volta ao estoque JA ALOCADA na quadra de destino informada (com o modelo
+        // de alocacoes do Q1, isso nao corrompe mais as caixas remanescentes do lote).
         lotes: atual.lotes.map((l) =>
           l.lote === reserva.lote
-            ? { ...l, caixasEstoque: l.caixasEstoque + input.caixas }
+            ? {
+                ...l,
+                caixasEstoque: l.caixasEstoque + input.caixas,
+                alocacoes: somarAlocacao(l.alocacoes, quadraNumero, input.caixas),
+              }
             : l,
         ),
       }
@@ -720,13 +722,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
 
   // Entrada de remessa no MESMO lote (mesmo codigo, mesmas bitola/tonalidade). Remessa com
   // specs diferentes e LOTE NOVO com sufixo no codigo (ver PH-12 no Memoria.md).
-  const registrarEntrada = useCallback((loteId: string, caixas: number) => {
+  // `quadra` = onde as caixas foram guardadas (Q1: pode ser uma quadra nova para o lote).
+  const registrarEntrada = useCallback((loteId: string, caixas: number, quadra: string) => {
     const lote = lotes.find((item) => item.id === loteId)
     if (lote && caixas > 0) {
       registrarMovimento({
         tipo: 'entrada',
         titulo: 'Entrada de estoque',
-        detalhe: `+${caixas} cx em ${lote.lote}`,
+        detalhe: `+${caixas} cx em ${lote.lote} · ${quadra}`,
         loteId: lote.id,
         produtoId: lote.produtoId,
       })
@@ -747,7 +750,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setEstado((atual) => ({
       ...atual,
       lotes: atual.lotes.map((item) =>
-        item.id === loteId ? { ...item, caixasEstoque: item.caixasEstoque + caixas } : item,
+        item.id === loteId && caixas > 0
+          ? {
+              ...item,
+              caixasEstoque: item.caixasEstoque + caixas,
+              alocacoes: somarAlocacao(item.alocacoes, quadra, caixas),
+            }
+          : item,
       ),
     }))
   }, [lotes, notificar, registrarMovimento])
@@ -794,48 +803,56 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }))
   }, [lotes, notificar, registrarMovimento])
 
+  // M1 do Q1: move o lote INTEIRO (todas as alocacoes colapsam na quadra de destino).
+  // Movimentacao PARCIAL (origem -> destino, N caixas) entra na proxima etapa.
+  // Reservas ativas nao precisam mais de cascata: a UI deriva a localizacao do lote ao vivo
+  // (quadraDaReserva); o snapshot fica para as historicas.
   const moverQuadra = useCallback((loteId: string, novaQuadra: string) => {
     const loteMov = lotes.find((item) => item.id === loteId)
-    if (loteMov) {
-      registrarMovimento({
-        tipo: 'quadra',
-        titulo: 'Lote movido de quadra',
-        detalhe: `${loteMov.lote}: ${loteMov.quadra} → ${novaQuadra}`,
-        loteId: loteMov.id,
-        produtoId: loteMov.produtoId,
-      })
-    }
-    setEstado((atual) => {
-      const alvo = atual.lotes.find((item) => item.id === loteId)
-      return {
-        lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, quadra: novaQuadra } : item)),
-        // Snapshot: reservas ATIVAS do lote acompanham a nova quadra; historicas (entregue/cancelado)
-        // mantem a quadra antiga (registro do que foi de fato combinado na epoca).
-        reservas: alvo
-          ? atual.reservas.map((reserva) =>
-              reserva.lote === alvo.lote && (reserva.status === 'reservado' || reserva.status === 'parcial')
-                ? { ...reserva, quadra: novaQuadra }
-                : reserva,
-            )
-          : atual.reservas,
-      }
+    if (!loteMov) return
+    registrarMovimento({
+      tipo: 'quadra',
+      titulo: 'Lote movido de quadra',
+      detalhe: `${loteMov.lote}: ${quadraLabel(loteMov)} → ${novaQuadra}`,
+      loteId: loteMov.id,
+      produtoId: loteMov.produtoId,
     })
-  }, [lotes, registrarMovimento])
-
-  const corrigirEstoque = useCallback((loteId: string, novoTotal: number) => {
-    const loteCorr = lotes.find((item) => item.id === loteId)
-    if (loteCorr) {
-      registrarMovimento({
-        tipo: 'correcao',
-        titulo: 'Correção de quantidade',
-        detalhe: `${loteCorr.lote} ajustado de ${loteCorr.caixasEstoque} para ${novoTotal} cx`,
-        loteId: loteCorr.id,
-        produtoId: loteCorr.produtoId,
-      })
-    }
     setEstado((atual) => ({
       ...atual,
-      lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, caixasEstoque: novoTotal } : item)),
+      lotes: atual.lotes.map((item) =>
+        item.id === loteId
+          ? { ...item, alocacoes: item.caixasEstoque > 0 ? [{ quadra: novaQuadra, caixas: item.caixasEstoque }] : [] }
+          : item,
+      ),
+    }))
+  }, [lotes, registrarMovimento])
+
+  // Correcao de contagem POR QUADRA (Q1): o novo total vale para a alocacao daquela quadra;
+  // o estoque do lote vira a soma das alocacoes (invariante preservado na origem).
+  const corrigirEstoque = useCallback((loteId: string, quadra: string, novoTotalQuadra: number) => {
+    const loteCorr = lotes.find((item) => item.id === loteId)
+    if (!loteCorr) return
+    const atualNaQuadra = loteCorr.alocacoes.find((a) => a.quadra === quadra)?.caixas ?? 0
+    registrarMovimento({
+      tipo: 'correcao',
+      titulo: 'Correção de quantidade',
+      detalhe: `${loteCorr.lote} · ${quadra}: ajustado de ${atualNaQuadra} para ${novoTotalQuadra} cx`,
+      loteId: loteCorr.id,
+      produtoId: loteCorr.produtoId,
+    })
+    setEstado((atual) => ({
+      ...atual,
+      lotes: atual.lotes.map((item) => {
+        if (item.id !== loteId) return item
+        const jaOcupa = item.alocacoes.some((a) => a.quadra === quadra)
+        const alocacoes =
+          novoTotalQuadra > 0
+            ? jaOcupa
+              ? item.alocacoes.map((a) => (a.quadra === quadra ? { ...a, caixas: novoTotalQuadra } : a))
+              : [...item.alocacoes, { quadra, caixas: novoTotalQuadra }]
+            : item.alocacoes.filter((a) => a.quadra !== quadra)
+        return { ...item, alocacoes, caixasEstoque: alocacoes.reduce((total, a) => total + a.caixas, 0) }
+      }),
     }))
   }, [lotes, registrarMovimento])
 

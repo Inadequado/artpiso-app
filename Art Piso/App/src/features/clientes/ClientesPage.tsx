@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ClienteDrawer } from '@/features/clientes/ClienteDrawer'
 import { useGsapListRefresh } from '@/lib/animations'
-import { enderecoEntregaDaReserva } from '@/data/mock-inventory'
+import { enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { onlyDigits } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
@@ -283,7 +283,7 @@ function PedidosDoCliente({
   pedidoExpandido: string | null
   onTogglePedido: (id: string) => void
 }) {
-  const { clientes } = useInventory()
+  const { clientes, lotes } = useInventory()
   if (pedidos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhum pedido para este cliente ainda.</p>
   }
@@ -320,7 +320,7 @@ function PedidosDoCliente({
               </button>
               {aberto ? (
                 <dl id={detalheId} className="grid grid-cols-2 gap-x-4 gap-y-3 border-t bg-muted/15 px-4 py-3 sm:grid-cols-3">
-                  <Detalhe label="Lote / Quadra" value={`${pedido.lote} · ${pedido.quadra}`} mono />
+                  <Detalhe label="Lote / Quadra" value={`${pedido.lote} · ${quadraDaReserva(pedido, lotes)}`} mono />
                   <Detalhe label="Quantidade" value={`${pedido.caixas} cx · ${pedido.m2.toLocaleString('pt-BR')} m²`} numeric />
                   <Detalhe label="Criado em" value={pedido.data} />
                   {pedido.dataPrevista ? <Detalhe label="Entrega prevista" value={pedido.dataPrevista} /> : null}

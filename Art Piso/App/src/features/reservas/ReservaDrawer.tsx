@@ -9,7 +9,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -68,7 +68,7 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
     .map((item) => ({
       value: item.id,
       label: `${item.produto} - ${item.lote}`,
-      hint: `${caixasDisponiveis(item)} cx · ${item.quadra}`,
+      hint: `${caixasDisponiveis(item)} cx · ${quadraLabel(item)}`,
     }))
 
   const loteEntry = todosLotes.find((item) => item.id === loteId)
@@ -240,7 +240,7 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
               <div className="-mt-2 flex flex-col gap-1.5">
                 <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
                   <span className="text-sm text-muted-foreground">
-                    Quadra <span className="font-mono text-foreground">{loteEntry.quadra}</span>
+                    Quadra <span className="font-mono text-foreground">{quadraLabel(loteEntry)}</span>
                   </span>
                   <span className="shrink-0 text-sm">
                     <span className="text-muted-foreground">Disponível </span>
@@ -274,7 +274,7 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
                   <div key={item.loteId} className="flex items-center gap-3 border-b p-3 last:border-b-0">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{lote.produto}</p>
-                      <p className="font-mono text-xs text-muted-foreground">{lote.lote} · {lote.quadra}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{lote.lote} · {quadraLabel(lote)}</p>
                       {excede ? (
                         <p className="mt-0.5 text-xs font-semibold text-danger">
                           Acima do disponível ({caixasDisponiveis(lote)} cx). Remova e adicione com menos caixas.
