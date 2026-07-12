@@ -20,6 +20,8 @@ export type EntregaReserva = {
   caixas: number
   /** Lote de onde as caixas saíram fisicamente. Preenchido quando rotacionando troca de lote na entrega. */
   lote?: string
+  /** De qual(is) quadra(s) as caixas sairam (texto pronto: "Q-08 (5 cx) · Q-11 (3 cx)"). */
+  quadras?: string
   observacoes?: string
 }
 

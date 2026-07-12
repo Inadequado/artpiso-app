@@ -164,6 +164,7 @@ function ItemPedidoCard({ linha }: { linha: Reserva }) {
               <span className="text-muted-foreground">
                 {entrega.data} · {entrega.responsavel}
                 {entrega.lote ? <span className="ml-1 font-mono text-xs"> · {entrega.lote}</span> : null}
+                {entrega.quadras ? <span className="ml-1 font-mono text-xs"> · {entrega.quadras}</span> : null}
               </span>
               <span className="numeric font-semibold text-success">{entrega.caixas} cx</span>
             </div>

@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext } from 'react'
-import type { Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva, Usuario } from '@/types/inventory'
+import type { AlocacaoQuadra, Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva, Usuario } from '@/types/inventory'
 
 /** Dados de cadastro do cliente (sem id; gerado no store). */
 export type ClienteInput = Omit<Cliente, 'id'>
@@ -124,6 +124,8 @@ export type EntregarReservaInput = {
   observacoes?: string
   /** Lote alternativo para entrega de pedidos rotacionando cujo lote original não tem estoque suficiente. */
   loteId?: string
+  /** De qual(is) quadra(s) saem as caixas (M3): soma deve bater com `caixas`. Ausente = maior quadra primeiro. */
+  retiradas?: AlocacaoQuadra[]
 }
 
 export type EstornarReservaInput = {

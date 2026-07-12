@@ -9,12 +9,14 @@ import {
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
-  drenarAlocacoes,
   encomendasEmRisco,
   furoProduto,
   loteComCodigo,
   quadraLabel,
+  retiradasValidas,
+  retirarAlocacoes,
   somarAlocacao,
+  sugerirRetiradas,
   proximoNumeroPedido,
   statusPorDisponivel,
   statusProduto,
@@ -635,12 +637,20 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         ? atual.lotes.find((item) => item.id === input.loteId)
         : atual.lotes.find((item) => item.lote === reserva.lote)
       const m2PorCaixa = loteParaEntrega?.m2PorCaixa ?? 0
+      // De onde saem as caixas (M3): usa as quadras escolhidas na UI quando batem com o
+      // total e com as alocacoes; senao cai na sugestao automatica (maior quadra primeiro).
+      const retiradas = loteParaEntrega
+        ? retiradasValidas(loteParaEntrega.alocacoes, entregues, input.retiradas)
+          ? input.retiradas
+          : sugerirRetiradas(loteParaEntrega.alocacoes, entregues)
+        : []
       const entrega = {
         id: crypto.randomUUID(),
         data: agoraTexto(),
         responsavel: input.responsavel.trim(),
         caixas: entregues,
         lote: loteParaEntrega?.lote,
+        quadras: retiradas.length > 0 ? retiradas.map((r) => `${r.quadra} (${r.caixas} cx)`).join(' · ') : undefined,
         observacoes: input.observacoes?.trim() || undefined,
       }
       return {
@@ -660,15 +670,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
               }
             : item,
         ),
-        // Baixa por entrega: sai do estoque fisico (drenando as alocacoes por quadra,
-        // maior primeiro — M3 permitira escolher de quais quadras) e deixa de ser reserva.
+        // Baixa por entrega: sai do estoque fisico nas quadras escolhidas e deixa de ser reserva.
         lotes: atual.lotes.map((item) =>
           item.lote === (loteParaEntrega?.lote ?? reserva.lote)
             ? {
                 ...item,
                 caixasReserva: Math.max(0, item.caixasReserva - travadasEntregues),
                 caixasEstoque: Math.max(0, item.caixasEstoque - entregues),
-                alocacoes: drenarAlocacoes(item.alocacoes, entregues),
+                alocacoes: retirarAlocacoes(item.alocacoes, retiradas),
               }
             : item,
         ),

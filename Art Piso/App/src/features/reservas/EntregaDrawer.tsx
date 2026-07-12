@@ -6,9 +6,15 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva, quadraLabel } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva, quadraLabel, sugerirRetiradas } from '@/data/mock-inventory'
 import { useInventory, type EntregarReservaInput } from '@/store/inventory'
-import type { Reserva } from '@/types/inventory'
+import type { LoteEstoque, Reserva } from '@/types/inventory'
+
+/** Sugestao inicial da divisao por quadra (maior primeiro), no formato dos inputs. */
+function sugestaoRetiradas(lote: LoteEstoque | undefined, caixas: number): Record<string, string> {
+  if (!lote || !Number.isFinite(caixas) || caixas <= 0) return {}
+  return Object.fromEntries(sugerirRetiradas(lote.alocacoes, caixas).map((r) => [r.quadra, String(r.caixas)]))
+}
 
 type EntregaDrawerProps = {
   reserva: Reserva | null
@@ -26,6 +32,11 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
   const [caixas, setCaixas] = useState(reserva ? String(reserva.caixas) : '')
   const [observacoes, setObservacoes] = useState('')
   const [loteAlternativoId, setLoteAlternativoId] = useState('')
+  // Divisao por quadra (M3): quantas caixas saem de cada quadra do lote da entrega.
+  // Nasce com a sugestao (maior quadra primeiro) e o usuario redistribui como quiser.
+  const [retiradas, setRetiradas] = useState<Record<string, string>>(() =>
+    sugestaoRetiradas(loteOriginal, reserva?.caixas ?? 0),
+  )
 
   const saldo = reserva?.caixas ?? 0
   const quantidade = Number(caixas)
@@ -46,12 +57,34 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
   const semAlternativa = originalInsuficiente && lotesAlternativos.length === 0
   const loteAlternativo = lotes.find((l) => l.id === loteAlternativoId)
 
+  // Lote de onde as caixas SAEM de fato (rotacionando pode trocar); a divisao por quadra e dele.
+  const loteEntrega = originalInsuficiente ? loteAlternativo : loteOriginal
+  const multiQuadra = (loteEntrega?.alocacoes.length ?? 0) > 1
+  const retiradaDaQuadra = (quadra: string) => Number(retiradas[quadra] || 0)
+  const somaRetiradas = (loteEntrega?.alocacoes ?? []).reduce((total, a) => total + retiradaDaQuadra(a.quadra), 0)
+  const retiradaExcede = (loteEntrega?.alocacoes ?? []).some((a) => retiradaDaQuadra(a.quadra) > a.caixas || retiradaDaQuadra(a.quadra) < 0)
+  const retiradasOk = !multiQuadra || (somaRetiradas === quantidade && !retiradaExcede)
+
+  // Quantidade e lote alternativo mudam o cenario: refaz a sugestao da divisao pro lote efetivo.
+  function aoMudarCaixas(valor: string) {
+    setCaixas(valor)
+    const nova = Number(valor)
+    const insuficiente = isRotacionando && Boolean(loteOriginal) && dispOriginal < nova
+    setRetiradas(sugestaoRetiradas(insuficiente ? loteAlternativo : loteOriginal, nova))
+  }
+
+  function aoEscolherLoteAlternativo(id: string) {
+    setLoteAlternativoId(id)
+    setRetiradas(sugestaoRetiradas(lotes.find((l) => l.id === id), quantidade))
+  }
+
   const valido =
     Boolean(reserva) &&
     responsavel.trim().length > 0 &&
     quantidadeValida &&
     !semAlternativa &&
-    (!originalInsuficiente || Boolean(loteAlternativo))
+    (!originalInsuficiente || Boolean(loteAlternativo)) &&
+    retiradasOk
 
   function confirmar() {
     if (!reserva || !valido) return
@@ -61,6 +94,11 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
       responsavel,
       observacoes,
       loteId: originalInsuficiente && loteAlternativo ? loteAlternativo.id : undefined,
+      retiradas: multiQuadra && loteEntrega
+        ? loteEntrega.alocacoes
+            .map((a) => ({ quadra: a.quadra, caixas: retiradaDaQuadra(a.quadra) }))
+            .filter((r) => r.caixas > 0)
+        : undefined,
     })
   }
 
@@ -121,7 +159,7 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
               max={saldo}
               value={caixas}
               placeholder="0"
-              onChange={(event) => setCaixas(event.target.value)}
+              onChange={(event) => aoMudarCaixas(event.target.value)}
             />
             <p className="mt-1.5 text-xs text-muted-foreground">
               {parcialEntrega
@@ -150,7 +188,7 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
                 <Field label="Entregar do lote">
                   <SelectMenu
                     value={loteAlternativoId}
-                    onChange={setLoteAlternativoId}
+                    onChange={aoEscolherLoteAlternativo}
                     placeholder="Selecione um lote..."
                     options={lotesAlternativos.map((l) => ({
                       value: l.id,
@@ -160,6 +198,47 @@ export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProp
                 </Field>
               </>
             )
+          ) : null}
+
+          {multiQuadra && loteEntrega ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                De onde saem as caixas
+              </span>
+              <div className="flex flex-col gap-2">
+                {loteEntrega.alocacoes.map((alocacao) => (
+                  <div key={alocacao.quadra} className="flex items-center justify-between gap-3 rounded-md border bg-muted/20 px-3 py-2">
+                    <span className="font-mono text-sm">
+                      {alocacao.quadra}
+                      <span className="ml-2 font-sans text-xs text-muted-foreground">{alocacao.caixas} cx no local</span>
+                    </span>
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      max={alocacao.caixas}
+                      className="w-24 text-right"
+                      value={retiradas[alocacao.quadra] ?? ''}
+                      placeholder="0"
+                      onChange={(event) =>
+                        setRetiradas((atual) => ({ ...atual, [alocacao.quadra]: event.target.value }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+              {quantidadeValida && !retiradasOk ? (
+                <p className="text-xs font-semibold text-danger">
+                  {retiradaExcede
+                    ? 'Alguma quadra está com mais caixas do que tem no local. Ajuste a divisão.'
+                    : `Distribuídas ${somaRetiradas} de ${quantidade} cx. A divisão precisa somar o total da entrega.`}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  O lote está em mais de uma quadra. Sugerimos tirar da maior; redistribua se as caixas saírem de outro lugar.
+                </p>
+              )}
+            </div>
           ) : null}
 
           <Field label="Observações">

@@ -786,17 +786,41 @@ export function quadraDaReserva(reserva: Reserva, lotes: LoteEstoque[]) {
 }
 
 /**
- * Drena caixas das alocacoes (maior alocacao primeiro) preservando o invariante
- * soma = caixasEstoque. Retorna nova lista, sem entradas zeradas.
+ * Sugestao de retirada por quadra (maior alocacao primeiro) para uma baixa de N caixas.
+ * Base do preenchimento automatico da entrega (M3) e do fallback quando a UI nao escolhe.
  */
-export function drenarAlocacoes(alocacoes: AlocacaoQuadra[], caixas: number): AlocacaoQuadra[] {
+export function sugerirRetiradas(alocacoes: AlocacaoQuadra[], caixas: number): AlocacaoQuadra[] {
+  const retiradas: AlocacaoQuadra[] = []
   let restante = Math.max(0, caixas)
-  return [...alocacoes]
-    .sort((a, b) => b.caixas - a.caixas)
+  for (const alocacao of [...alocacoes].sort((a, b) => b.caixas - a.caixas)) {
+    if (restante <= 0) break
+    const retirar = Math.min(alocacao.caixas, restante)
+    if (retirar > 0) retiradas.push({ quadra: alocacao.quadra, caixas: retirar })
+    restante -= retirar
+  }
+  return retiradas
+}
+
+/** Retiradas validas: sem quadra repetida, soma = total baixado e cada uma cabe na alocacao. */
+export function retiradasValidas(
+  alocacoes: AlocacaoQuadra[],
+  caixas: number,
+  retiradas: AlocacaoQuadra[] | undefined,
+): retiradas is AlocacaoQuadra[] {
+  if (!retiradas || retiradas.length === 0) return false
+  if (new Set(retiradas.map((r) => r.quadra)).size !== retiradas.length) return false
+  if (retiradas.reduce((total, r) => total + r.caixas, 0) !== caixas) return false
+  return retiradas.every(
+    (r) => r.caixas > 0 && (alocacoes.find((alocacao) => alocacao.quadra === r.quadra)?.caixas ?? 0) >= r.caixas,
+  )
+}
+
+/** Subtrai as retiradas das alocacoes preservando o invariante (quadra zerada some). */
+export function retirarAlocacoes(alocacoes: AlocacaoQuadra[], retiradas: AlocacaoQuadra[]): AlocacaoQuadra[] {
+  return alocacoes
     .map((alocacao) => {
-      const retirar = Math.min(alocacao.caixas, restante)
-      restante -= retirar
-      return { ...alocacao, caixas: alocacao.caixas - retirar }
+      const retirada = retiradas.find((r) => r.quadra === alocacao.quadra)
+      return retirada ? { ...alocacao, caixas: alocacao.caixas - retirada.caixas } : alocacao
     })
     .filter((alocacao) => alocacao.caixas > 0)
 }
