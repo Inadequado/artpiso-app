@@ -1,11 +1,12 @@
-import { Info as InfoIcon, Save } from 'lucide-react'
-import { useState } from 'react'
+import { ImagePlus, Info as InfoIcon, Save, X } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Autocomplete } from '@/components/ui/autocomplete'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { formatPreco } from '@/data/mock-inventory'
+import { agruparPorProduto, chaveNome, chaveReferencia, formatPreco } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
 
@@ -19,7 +20,7 @@ export function EditarProdutoDrawer({
   produto: Produto | null
   onClose: () => void
 }) {
-  const { atualizarProduto } = useInventory()
+  const { atualizarProduto, lotes } = useInventory()
   const [nome, setNome] = useState(produto?.produto ?? '')
   const [referencia, setReferencia] = useState(produto?.referencia ?? '')
   const [marca, setMarca] = useState(produto?.marca ?? '')
@@ -28,12 +29,48 @@ export function EditarProdutoDrawer({
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? String(produto.precoM2) : '')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
+  const [foto, setFoto] = useState(produto?.foto)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  // Marcas existentes no autocomplete (mesmo padrao do cadastro): nao fragmentar o catalogo.
+  const todosProdutos = agruparPorProduto(lotes)
+  const termoMarca = marca.trim().toLowerCase()
+  const marcasExistentes = Array.from(new Set(todosProdutos.map((p) => p.marca).filter(Boolean)))
+  const sugestoesMarca = marcasExistentes
+    .filter((m) => (termoMarca ? m.toLowerCase().includes(termoMarca) && m.toLowerCase() !== termoMarca : true))
+    .slice(0, 6)
+    .map((m) => ({ value: m, label: m }))
+
+  // Referencia/nome nao podem colidir com OUTRO produto: o reaproveitamento do cadastro
+  // identifica produto por essas chaves (e o schema Fase 2 preve referencia unique).
+  const outros = todosProdutos.filter((p) => p.id !== produto?.id)
+  const refChave = chaveReferencia(referencia)
+  const refDuplicada = refChave ? outros.find((p) => chaveReferencia(p.referencia) === refChave) : undefined
+  const nomeChave = chaveNome(nome)
+  const nomeDuplicado = nomeChave ? outros.find((p) => chaveNome(p.produto) === nomeChave) : undefined
 
   const m2Num = Number(m2PorCaixa)
   const pecasNum = Number(pecasPorCaixa)
   const precoNum = Number(preco)
-  const valido = Boolean(produto && nome.trim() && marca.trim() && m2Num > 0 && pecasNum > 0 && precoNum > 0)
+  const valido = Boolean(
+    produto &&
+      nome.trim() &&
+      !nomeDuplicado &&
+      !refDuplicada &&
+      marca.trim() &&
+      m2Num > 0 &&
+      pecasNum > 0 &&
+      precoNum > 0,
+  )
   const variosLotes = (produto?.lotes.length ?? 0) > 1
+
+  function onFotoSelecionada(event: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = event.target.files?.[0]
+    if (!arquivo) return
+    const reader = new FileReader()
+    reader.onload = () => setFoto(typeof reader.result === 'string' ? reader.result : undefined)
+    reader.readAsDataURL(arquivo)
+  }
 
   function salvar() {
     if (!produto || !valido) return
@@ -46,6 +83,7 @@ export function EditarProdutoDrawer({
       pecasPorCaixa: pecasNum,
       precoM2: precoNum,
       descricao: descricao.trim() || undefined,
+      foto,
     })
     onClose()
   }
@@ -70,13 +108,30 @@ export function EditarProdutoDrawer({
         <div className="flex flex-col gap-6">
           <Field label="Nome do produto">
             <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Porcelanato Branco Acetinado" />
+            {nomeDuplicado ? (
+              <p className="mt-1.5 text-xs font-semibold text-danger">
+                Já existe outro produto com este nome
+                {nomeDuplicado.referencia ? ` (Ref. ${nomeDuplicado.referencia})` : ''}. Escolha um nome diferente.
+              </p>
+            ) : null}
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Referência" optional>
               <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
+              {refDuplicada ? (
+                <p className="mt-1.5 text-xs font-semibold text-danger">
+                  Referência já usada em {refDuplicada.produto}.
+                </p>
+              ) : null}
             </Field>
             <Field label="Marca">
-              <Input value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="Ex: Portinari" />
+              <Autocomplete
+                value={marca}
+                onChange={setMarca}
+                onSelect={setMarca}
+                options={sugestoesMarca}
+                placeholder="Ex: Portinari"
+              />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -93,6 +148,41 @@ export function EditarProdutoDrawer({
           <Field label="Descrição" optional>
             <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
           </Field>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
+            onChange={onFotoSelecionada}
+          />
+          {foto ? (
+            <div className="flex items-center gap-3 rounded-lg border p-3">
+              <img src={foto} alt="Prévia do produto" className="size-16 rounded-md border object-cover" />
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">Foto do produto</span>
+                <div className="flex gap-3">
+                  <button type="button" className="text-xs font-semibold text-primary hover:underline" onClick={() => fileRef.current?.click()}>
+                    Trocar
+                  </button>
+                  <button type="button" className="flex items-center gap-1 text-xs font-semibold text-danger hover:underline" onClick={() => setFoto(undefined)}>
+                    <X aria-hidden="true" className="size-3" /> Remover
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center text-muted-foreground transition-colors hover:bg-muted/40"
+            >
+              <ImagePlus aria-hidden="true" className="size-7" />
+              <span className="text-sm font-semibold text-foreground">Adicionar foto do produto</span>
+              <span className="text-xs">Opcional · JPG ou PNG</span>
+            </button>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <Field label="m² por caixa">
               <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />

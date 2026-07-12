@@ -222,30 +222,61 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const atualizarLote = useCallback((loteId: string, patch: AtualizarLotePatch) => {
-    setEstado((atual) => {
-      const alvo = atual.lotes.find((item) => item.id === loteId)
-      if (!alvo) return atual
-      // Guard defensivo: renomear para codigo ja usado mesclaria as reservas dos dois lotes.
-      if (loteComCodigo(patch.lote, atual.lotes, loteId)) return atual
-      const codigoMudou = patch.lote !== alvo.lote
-      return {
-        lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, ...patch } : item)),
-        // Renomear o codigo do lote faz cascata no vinculo das reservas (evita orfas).
-        reservas: codigoMudou
-          ? atual.reservas.map((reserva) =>
-              reserva.lote === alvo.lote ? { ...reserva, lote: patch.lote } : reserva,
-            )
-          : atual.reservas,
-      }
-    })
-  }, [])
+    const alvo = lotes.find((item) => item.id === loteId)
+    if (!alvo) return
+    // Guard defensivo: renomear para codigo ja usado mesclaria as reservas dos dois lotes.
+    if (loteComCodigo(patch.lote, lotes, loteId)) return
+    const codigoMudou = patch.lote !== alvo.lote
+    const quadraMudou = patch.quadra !== alvo.quadra
+    // Mudar quadra por aqui = mesma operacao do Mover lote de quadra (Ajustes): registra
+    // no historico. Sem isso, o Editar lote seria um caminho silencioso pra mesma acao.
+    if (quadraMudou) {
+      registrarMovimento({
+        tipo: 'quadra',
+        titulo: 'Lote movido de quadra',
+        detalhe: `${patch.lote}: ${alvo.quadra} → ${patch.quadra}`,
+        loteId: alvo.id,
+        produtoId: alvo.produtoId,
+      })
+    }
+    setEstado((atual) => ({
+      lotes: atual.lotes.map((item) => (item.id === loteId ? { ...item, ...patch } : item)),
+      // Cascatas nas reservas: codigo renomeado segue em TODAS (evita orfas); quadra nova
+      // so nas ATIVAS (historicas guardam o snapshot da epoca — mesma regra do moverQuadra).
+      reservas: atual.reservas.map((reserva) => {
+        if (reserva.lote !== alvo.lote) return reserva
+        const ativa = reserva.status === 'reservado' || reserva.status === 'parcial'
+        return {
+          ...reserva,
+          lote: codigoMudou ? patch.lote : reserva.lote,
+          quadra: quadraMudou && ativa ? patch.quadra : reserva.quadra,
+        }
+      }),
+    }))
+  }, [lotes, registrarMovimento])
 
   // Campos de produto vivem em cada lote (LoteEstoque); editar produto aplica a todos os lotes do produtoId.
   const atualizarProduto = useCallback((produtoId: string, patch: AtualizarProdutoPatch) => {
-    setEstado((atual) => ({
-      ...atual,
-      lotes: atual.lotes.map((item) => (item.produtoId === produtoId ? { ...item, ...patch } : item)),
-    }))
+    setEstado((atual) => {
+      const codigosDoProduto = new Set(
+        atual.lotes.filter((item) => item.produtoId === produtoId).map((item) => item.lote),
+      )
+      return {
+        lotes: atual.lotes.map((item) => (item.produtoId === produtoId ? { ...item, ...patch } : item)),
+        // Cascatas nas reservas do produto: NOME renomeado segue em todas (e identidade de
+        // exibicao, como o codigo do lote); m2 corrigido recalcula so as ATIVAS (historicas
+        // guardam o snapshot do que foi combinado/entregue).
+        reservas: atual.reservas.map((reserva) => {
+          if (!codigosDoProduto.has(reserva.lote)) return reserva
+          const ativa = reserva.status === 'reservado' || reserva.status === 'parcial'
+          return {
+            ...reserva,
+            produto: patch.produto,
+            m2: ativa ? reserva.caixas * patch.m2PorCaixa : reserva.m2,
+          }
+        }),
+      }
+    })
   }, [])
 
   const criarReserva = useCallback((input: NovaReservaInput) => {

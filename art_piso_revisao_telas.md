@@ -28,7 +28,7 @@
 |---|---|
 | Estoque → Novo produto (cadastro) | ✅ Revisado e corrigido (2026-07-11) — 5 achados + 1 novo, todos resolvidos |
 | Estoque → Novo lote | ✅ Revisado e corrigido (2026-07-11) — 3 achados próprios + cobertura da sessão 1 |
-| Estoque → Editar produto / Editar lote | ⏳ Não revisado |
+| Estoque → Editar produto / Editar lote | ✅ Revisado e corrigido (2026-07-11) — 5 achados, todos resolvidos |
 | Reservas (criar / editar / entregar / estornar) | ⏳ Não revisado |
 | Clientes | ⏳ Não revisado |
 | Ajustes de Estoque (perda / quadra / correção) | ⏳ Não revisado |
@@ -85,6 +85,29 @@ Revisado em 2026-07-11. Fluxo: botão "Novo lote" no detalhe do produto → draw
 
 ### ✅ RESOLVIDO (2026-07-11) — Card do produto sem thumb da foto
 - **Feito:** card resumo do `NovoLoteDrawer` ganhou o thumb 16×16 da foto do produto (mesmo padrão do card de reaproveitamento do cadastro).
+
+---
+
+## 3. Estoque → Editar Produto / Editar Lote (`EditarProdutoDrawer.tsx` / `EditarLoteDrawer.tsx`)
+
+Revisado em 2026-07-11. Fluxos: lápis no detalhe do produto (edita dados de catálogo, aplica a todos os lotes) e lápis por lote (edita código/quadra/bitola/tonalidade).
+
+### ✅ RESOLVIDO (2026-07-11) — Editar lote mudava a quadra sem cascata nas reservas ativas e sem histórico
+- **Era:** Ajustes → "Mover lote de quadra" cascateava reservas ATIVAS + registrava movimento; Editar lote mudava `lote.quadra` em silêncio (entregador procuraria na quadra antiga; auditoria cega).
+- **Feito:** `atualizarLote` com quadra alterada agora registra "Lote movido de quadra" no histórico e cascateia a quadra nas reservas ATIVAS (históricas mantêm snapshot — mesma regra do `moverQuadra`). Código renomeado segue cascateando em TODAS (evita órfãs).
+
+### ✅ RESOLVIDO (2026-07-11) — Foto do produto não podia ser trocada nem removida (pré-anotado na sessão 1)
+- **Feito:** `EditarProdutoDrawer` ganhou o bloco de foto do cadastro (preview + Trocar/Remover; sem foto, botão de adicionar); `AtualizarProdutoPatch.foto` aplica a todos os lotes (undefined remove).
+
+### ✅ RESOLVIDO (2026-07-11) — Edição podia criar referência/nome duplicados de outro produto
+- **Era:** editar referência/nome para valores de OUTRO produto passava sem aviso e quebrava o reaproveitamento do cadastro (match acharia o produto errado); schema Fase 2 prevê referência `unique`.
+- **Feito:** erro inline + salvar bloqueado quando `chaveReferencia`/`chaveNome` colidem com outro `produtoId` (a mensagem diz qual produto já usa).
+
+### ✅ RESOLVIDO (2026-07-11) — Corrigir m²/caixa não recalculava o m² das reservas ativas
+- **Feito:** `atualizarProduto` recalcula `m2 = caixas × novo m²/caixa` das reservas ATIVAS dos lotes do produto (históricas mantêm snapshot). **Extensão da mesma regra:** renomear o NOME do produto agora cascateia em TODAS as reservas dele (nome é identidade de exibição, como o código do lote — reserva com nome velho confundiria, não é trilha de auditoria).
+
+### ✅ RESOLVIDO (2026-07-11) — Marca era Input cru no Editar produto
+- **Feito:** mesmo `Autocomplete` de marcas existentes do cadastro (não fragmentar o catálogo).
 
 ---
 

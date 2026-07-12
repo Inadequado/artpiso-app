@@ -25,6 +25,8 @@ export type AtualizarProdutoPatch = {
   precoM2: number
   /** Descricao livre do produto. Enviar sempre (undefined limpa a descricao). */
   descricao?: string
+  /** Foto do produto (data URL). Enviar sempre (undefined remove a foto). */
+  foto?: string
 }
 
 export type NovaReservaInput = {
