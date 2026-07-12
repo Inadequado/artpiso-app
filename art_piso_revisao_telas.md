@@ -32,7 +32,9 @@
 | Reservas (criar / editar / entregar / estornar) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos + 1 limite registrado (déficit agregado no painel de regime) |
 | Clientes | ✅ Revisado e corrigido (2026-07-11) — 4 achados, todos resolvidos |
 | Ajustes de Estoque (perda / quadra / correção) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos; pendente só a máscara do nome da quadra (aguardando dados do usuário) |
-| Configurações | ⏳ Não revisado |
+| Configurações | ✅ Revisado e corrigido (2026-07-11) — 4 achados, todos resolvidos |
+
+> **FASE 1 CONCLUÍDA em 2026-07-11.** Todas as 7 sessões revisadas e corrigidas. Único item em aberto: máscara do identificador de quadra (aguardando o usuário confirmar os dados reais do depósito). Próximo passo: definir com o usuário o curso de trabalho da Fase 2 (Supabase).
 
 ---
 
@@ -169,6 +171,24 @@ Revisado em 2026-07-11. Boa parte da tela já evoluiu nas sessões anteriores (q
 
 ### ✅ RESOLVIDO (2026-07-11) — Quadras sem paginação
 - **Era:** cards de quadra em 1 linha de 4 com seletor de páginas. **Feito:** paginação removida (estado `quadraPage`, setas e fatiamento saíram da `AjustesPage`); todas as quadras em grid corrido de 4 por linha.
+
+---
+
+## 7. Configurações (`ConfiguracoesPage.tsx` + `UsuarioDrawer` interno)
+
+Revisado em 2026-07-11. Gestão de usuários (mock — auth real é da Fase 2/Supabase; papéis PH-11).
+
+### ✅ RESOLVIDO (2026-07-11) — Usuários viviam em estado local: trocar de seção descartava as edições
+- **Feito:** `usuarios` subiu pro `InventoryProvider` (adicionar/atualizar/remover/alternar status), mesmo padrão das quadras; a página só consome. Sem registro no histórico (que é de ajustes de ESTOQUE). De brinde: o drawer ganhou remount por `key` sequencial (padrão documentado nos Aprendizados) — antes, dois "novo usuário" seguidos reaproveitavam o formulário sujo.
+
+### ✅ RESOLVIDO (2026-07-11) — Último admin: excluir era bloqueado, mas rebaixar o papel não
+- **Feito:** ao editar o único admin, o campo Papel vira read-only com a explicação "cadastre outro admin antes de mudar este papel".
+
+### ✅ RESOLVIDO (2026-07-11) — E-mail sem validação de formato nem unicidade
+- **Feito:** formato básico validado + "E-mail já usado por {nome}" com salvar bloqueado (edição ignora o próprio usuário).
+
+### ✅ RESOLVIDO (2026-07-11) — `statusLabel` com entradas mortas do Stitch
+- **Feito:** map limpo e tipado como `Record<Usuario['status'], string>`; fallbacks `?? usuario.role`/`?? usuario.status` removidos (os maps agora são totais).
 
 ---
 

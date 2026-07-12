@@ -8,8 +8,8 @@ import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
-import { usuarios as usuariosMock } from '@/data/mock-inventory'
 import { useGsapListRefresh } from '@/lib/animations'
+import { useInventory, type UsuarioInput } from '@/store/inventory'
 import type { Usuario, UserRole } from '@/types/inventory'
 
 const roleLabel: Record<UserRole, string> = {
@@ -23,58 +23,43 @@ const roleOptions = (Object.keys(roleLabel) as UserRole[]).map((role) => ({
   label: roleLabel[role],
 }))
 
-const statusLabel: Record<string, string> = {
+const statusLabel: Record<Usuario['status'], string> = {
   ativo: 'Ativo',
   ausente: 'Ausente',
-  ocupado: 'Ocupado',
-  disponivel: 'Disponível',
-  critico: 'Crítico',
-  vazio: 'Vazio',
 }
 
 export function ConfiguracoesPage() {
-  const [listaUsuarios, setListaUsuarios] = useState<Usuario[]>(usuariosMock)
+  const { usuarios, adicionarUsuario, atualizarUsuario, removerUsuario, alternarStatusUsuario } = useInventory()
   const [usuarioOpen, setUsuarioOpen] = useState(false)
+  const [usuarioSeq, setUsuarioSeq] = useState(0)
   const [usuarioEdit, setUsuarioEdit] = useState<Usuario | null>(null)
   const [usuarioExcluir, setUsuarioExcluir] = useState<Usuario | null>(null)
   const usuariosTableRef = useRef<HTMLTableElement>(null)
 
-  const totalAdmins = listaUsuarios.filter((usuario) => usuario.role === 'admin').length
+  const totalAdmins = usuarios.filter((usuario) => usuario.role === 'admin').length
   const ehUltimoAdmin = (usuario: Usuario) => usuario.role === 'admin' && totalAdmins === 1
   // So a membership (ids) entra na chave: toggle de status/role de 1 usuario nao reanima tudo.
-  const usuariosAnimacaoKey = listaUsuarios.map((usuario) => usuario.id).join('|')
+  const usuariosAnimacaoKey = usuarios.map((usuario) => usuario.id).join('|')
 
   useGsapListRefresh(usuariosTableRef, [usuariosAnimacaoKey])
 
   function abrirNovoUsuario() {
     setUsuarioEdit(null)
+    setUsuarioSeq((seq) => seq + 1)
     setUsuarioOpen(true)
   }
 
   function abrirEdicaoUsuario(usuario: Usuario) {
     setUsuarioEdit(usuario)
+    setUsuarioSeq((seq) => seq + 1)
     setUsuarioOpen(true)
   }
 
-  function alternarStatus(usuario: Usuario) {
-    setListaUsuarios((atual) =>
-      atual.map((item) =>
-        item.id === usuario.id ? { ...item, status: item.status === 'ativo' ? 'ausente' : 'ativo' } : item,
-      ),
-    )
-  }
-
-  function excluirUsuario(usuario: Usuario) {
-    setListaUsuarios((atual) => atual.filter((item) => item.id !== usuario.id))
-  }
-
-  function salvarUsuario(dados: Omit<Usuario, 'id' | 'status'>) {
+  function salvarUsuario(dados: UsuarioInput) {
     if (usuarioEdit) {
-      setListaUsuarios((atual) =>
-        atual.map((item) => (item.id === usuarioEdit.id ? { ...item, ...dados } : item)),
-      )
+      atualizarUsuario(usuarioEdit.id, dados)
     } else {
-      setListaUsuarios((atual) => [...atual, { id: crypto.randomUUID(), status: 'ativo', ...dados }])
+      adicionarUsuario(dados)
     }
     setUsuarioOpen(false)
   }
@@ -100,14 +85,14 @@ export function ConfiguracoesPage() {
               </tr>
             </thead>
             <tbody>
-              {listaUsuarios.map((usuario) => (
+              {usuarios.map((usuario) => (
                 <tr key={usuario.id}>
                   <td>
                     <strong>{usuario.nome}</strong>
                     <p className="text-sm text-muted-foreground">{usuario.email}</p>
                   </td>
-                  <td><Badge variant="reserved">{roleLabel[usuario.role] ?? usuario.role}</Badge></td>
-                  <td><Badge variant={usuario.status === 'ativo' ? 'success' : 'default'}>{statusLabel[usuario.status] ?? usuario.status}</Badge></td>
+                  <td><Badge variant="reserved">{roleLabel[usuario.role]}</Badge></td>
+                  <td><Badge variant={usuario.status === 'ativo' ? 'success' : 'default'}>{statusLabel[usuario.status]}</Badge></td>
                   <td>
                     <div className="flex items-center gap-1">
                       <Button size="sm" variant="ghost" onClick={() => abrirEdicaoUsuario(usuario)}>
@@ -119,7 +104,7 @@ export function ConfiguracoesPage() {
                         className="size-8 text-muted-foreground hover:text-foreground"
                         aria-label={usuario.status === 'ativo' ? `Desativar ${usuario.nome}` : `Ativar ${usuario.nome}`}
                         title={usuario.status === 'ativo' ? 'Desativar usuário' : 'Ativar usuário'}
-                        onClick={() => alternarStatus(usuario)}
+                        onClick={() => alternarStatusUsuario(usuario.id)}
                       >
                         {usuario.status === 'ativo' ? (
                           <PowerOff aria-hidden="true" className="size-4" />
@@ -148,9 +133,10 @@ export function ConfiguracoesPage() {
       </Card>
 
       <UsuarioDrawer
-        key={usuarioEdit?.id ?? 'novo'}
+        key={usuarioSeq}
         open={usuarioOpen}
         usuario={usuarioEdit}
+        ultimoAdmin={Boolean(usuarioEdit && ehUltimoAdmin(usuarioEdit))}
         onClose={() => setUsuarioOpen(false)}
         onSave={salvarUsuario}
       />
@@ -170,7 +156,7 @@ export function ConfiguracoesPage() {
         cancelLabel="Voltar"
         tone="danger"
         onConfirm={() => {
-          if (usuarioExcluir) excluirUsuario(usuarioExcluir)
+          if (usuarioExcluir) removerUsuario(usuarioExcluir.id)
         }}
         onClose={() => setUsuarioExcluir(null)}
       />
@@ -181,19 +167,36 @@ export function ConfiguracoesPage() {
 function UsuarioDrawer({
   open,
   usuario,
+  ultimoAdmin,
   onClose,
   onSave,
 }: {
   open: boolean
   usuario: Usuario | null
+  /** Editando o unico admin do sistema: papel travado (nao pode ficar sem administrador). */
+  ultimoAdmin: boolean
   onClose: () => void
-  onSave: (dados: Omit<Usuario, 'id' | 'status'>) => void
+  onSave: (dados: UsuarioInput) => void
 }) {
+  const { usuarios } = useInventory()
   const [nome, setNome] = useState(usuario?.nome ?? '')
   const [email, setEmail] = useState(usuario?.email ?? '')
   const [role, setRole] = useState<UserRole>(usuario?.role ?? 'vendedor')
 
-  const valido = nome.trim().length > 0 && email.trim().length > 0
+  // E-mail e a identidade de login: formato basico + sem duplicar com outro usuario.
+  const emailNorm = email.trim().toLowerCase()
+  const emailFormatoOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)
+  const emailDuplicado = emailFormatoOk
+    ? usuarios.find((item) => item.id !== usuario?.id && item.email.trim().toLowerCase() === emailNorm)
+    : undefined
+  const emailMensagem =
+    email.trim().length > 0 && !emailFormatoOk
+      ? 'Informe um e-mail válido (ex.: nome@artpiso.com.br).'
+      : emailDuplicado
+        ? `E-mail já usado por ${emailDuplicado.nome}.`
+        : undefined
+
+  const valido = nome.trim().length > 0 && emailFormatoOk && !emailDuplicado
 
   return (
     <Drawer
@@ -220,10 +223,24 @@ function UsuarioDrawer({
         </Field>
         <Field label="E-mail">
           <Input type="email" name="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nome@artpiso.com.br" />
+          {emailMensagem ? (
+            <p className="mt-1.5 text-xs font-semibold text-danger">{emailMensagem}</p>
+          ) : null}
         </Field>
         <div className="flex flex-col gap-2">
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Papel</span>
-          <SelectMenu value={role} onChange={(value) => setRole(value as UserRole)} options={roleOptions} />
+          {ultimoAdmin ? (
+            <>
+              <div className="flex h-10 items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
+                {roleLabel.admin}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Único administrador do sistema — cadastre outro admin antes de mudar este papel.
+              </p>
+            </>
+          ) : (
+            <SelectMenu value={role} onChange={(value) => setRole(value as UserRole)} options={roleOptions} />
+          )}
         </div>
       </div>
     </Drawer>

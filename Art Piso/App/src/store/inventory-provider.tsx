@@ -5,6 +5,7 @@ import {
   lotes as lotesSeed,
   reservas as reservasSeed,
   quadras as quadrasSeed,
+  usuarios as usuariosSeed,
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
@@ -31,8 +32,9 @@ import {
   type NovoMovimento,
   type NovoPedidoInput,
   type QuadraInput,
+  type UsuarioInput,
 } from '@/store/inventory'
-import type { Cliente, EstornoReserva, LoteEstoque, Movimento, Quadra, Reserva, StockStatus } from '@/types/inventory'
+import type { Cliente, EstornoReserva, LoteEstoque, Movimento, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 // Severidade de estoque para detectar PIORA (ok -> baixo -> esgotado).
 const SEVERIDADE_ESTOQUE: Record<StockStatus, number> = {
@@ -109,6 +111,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [movimentos, setMovimentos] = useState<Movimento[]>(movimentosSeed)
   const [clientes, setClientes] = useState<Cliente[]>(clientesSeed)
   const [quadras, setQuadras] = useState<Quadra[]>(quadrasSeed)
+  const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosSeed)
 
   const adicionarCliente = useCallback((input: ClienteInput): Cliente => {
     const novo: Cliente = {
@@ -208,6 +211,28 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       detalhe: `${quadra.numero} — ${quadra.descricao}`,
     })
   }, [quadras, registrarMovimento])
+
+  // Usuarios (mock ate o Supabase/auth): CRUD simples, sem movimento no historico
+  // (o historico e de ajustes de ESTOQUE).
+  const adicionarUsuario = useCallback((dados: UsuarioInput) => {
+    setUsuarios((atual) => [...atual, { id: crypto.randomUUID(), status: 'ativo', ...dados }])
+  }, [])
+
+  const atualizarUsuario = useCallback((id: string, dados: UsuarioInput) => {
+    setUsuarios((atual) => atual.map((item) => (item.id === id ? { ...item, ...dados } : item)))
+  }, [])
+
+  const removerUsuario = useCallback((id: string) => {
+    setUsuarios((atual) => atual.filter((item) => item.id !== id))
+  }, [])
+
+  const alternarStatusUsuario = useCallback((id: string) => {
+    setUsuarios((atual) =>
+      atual.map((item) =>
+        item.id === id ? { ...item, status: item.status === 'ativo' ? 'ausente' : 'ativo' } : item,
+      ),
+    )
+  }, [])
 
   const adicionarLote = useCallback((lote: LoteEstoque) => {
     // Guard defensivo: codigo de lote e global e vincula reservas — duplicar mesclaria lotes.
@@ -896,12 +921,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       reservas,
       clientes,
       quadras,
+      usuarios,
       movimentos,
       registrarMovimento,
       adicionarQuadra,
       atualizarQuadra,
       removerQuadra,
       alternarStatusQuadra,
+      adicionarUsuario,
+      atualizarUsuario,
+      removerUsuario,
+      alternarStatusUsuario,
       adicionarCliente,
       atualizarCliente,
       removerCliente,
@@ -927,12 +957,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       reservas,
       clientes,
       quadras,
+      usuarios,
       movimentos,
       registrarMovimento,
       adicionarQuadra,
       atualizarQuadra,
       removerQuadra,
       alternarStatusQuadra,
+      adicionarUsuario,
+      atualizarUsuario,
+      removerUsuario,
+      alternarStatusUsuario,
       adicionarCliente,
       atualizarCliente,
       removerCliente,

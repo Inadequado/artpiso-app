@@ -1,11 +1,14 @@
 ﻿import { createContext, useContext } from 'react'
-import type { Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva } from '@/types/inventory'
+import type { Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva, Usuario } from '@/types/inventory'
 
 /** Dados de cadastro do cliente (sem id; gerado no store). */
 export type ClienteInput = Omit<Cliente, 'id'>
 
 /** Dados de cadastro/edicao da quadra (id e status vivem no store). */
 export type QuadraInput = Pick<Quadra, 'numero' | 'descricao'>
+
+/** Dados de cadastro/edicao do usuario (id e status vivem no store). */
+export type UsuarioInput = Omit<Usuario, 'id' | 'status'>
 
 export type AtualizarLotePatch = {
   lote: string
@@ -144,6 +147,7 @@ export type InventoryContextValue = {
   reservas: Reserva[]
   clientes: Cliente[]
   quadras: Quadra[]
+  usuarios: Usuario[]
   movimentos: Movimento[]
   registrarMovimento: (input: NovoMovimento) => void
   adicionarQuadra: (dados: QuadraInput) => void
@@ -151,6 +155,11 @@ export type InventoryContextValue = {
   removerQuadra: (id: string) => void
   /** Alterna o status manual da quadra (disponivel <-> ocupado) e registra no historico. */
   alternarStatusQuadra: (id: string) => void
+  adicionarUsuario: (dados: UsuarioInput) => void
+  atualizarUsuario: (id: string, dados: UsuarioInput) => void
+  removerUsuario: (id: string) => void
+  /** Alterna ativo <-> ausente. Usuarios nao entram no historico (que e de ajustes de ESTOQUE). */
+  alternarStatusUsuario: (id: string) => void
   adicionarCliente: (input: ClienteInput) => Cliente
   atualizarCliente: (id: string, input: ClienteInput) => void
   removerCliente: (id: string) => void
