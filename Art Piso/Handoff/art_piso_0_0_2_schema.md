@@ -335,20 +335,29 @@ Rede de segurança adicional (cinto e suspensório, baratos): trigger de Q5 em `
 
 ## 6. RLS — matriz papel × ação
 
-Leitura: **todo autenticado lê tudo** (Q11: vendedor vê todas as reservas). Escrita direta nas tabelas: fechada para o client nas tabelas operacionais (passa pelas RPCs); aberta com policy nas de cadastro:
+PAPÉIS REDEFINIDOS pelo usuário (2026-07-12): **admin** = permissão total; **gerente** = limitada (funções exatas A DECIDIR — abaixo vai uma PROPOSTA para validação); **vendedor** = SOMENTE VISUALIZAÇÃO, sem edição — conta compartilhada num tablet da loja para todos os vendedores.
 
-| Tabela | admin | vendedor | gerente |
-|--------|-------|----------|---------|
+Consequências dessa decisão:
+
+- Leitura continua geral: **todo autenticado lê tudo** (o tablet vê estoque, reservas, clientes).
+- **Vendedor não escreve NADA** — supera Q12 (vendedor cancelava qualquer reserva) e a parte de criação da Q11; a RLS do papel `vendedor` vira `select`-only em todas as tabelas.
+- Criar/editar reservas passa a ser de **gerente e admin** (proposta) — no balcão, o vendedor consulta no tablet e quem fecha registra o pedido.
+- `pedidos.vendedor_id` fica (rastreia quem REGISTROU); com conta compartilhada ele identifica o tablet, não a pessoa — coerente com a remoção do campo Vendedor da UI já decidida.
+
+| Tabela | admin | gerente (PROPOSTA) | vendedor |
+|--------|-------|--------------------|----------|
 | profiles | CRUD | lê o próprio | lê o próprio |
-| quadras | CRUD | — | CRUD |
-| produtos | CRUD | — | — |
-| clientes / endereços | CRUD | CRUD | — (Q13: gerente não mexe em cliente) |
-| lotes / lote_quadras | via RPC | — | via RPC |
-| pedidos / reservas | via RPC | via RPC (criar/editar/cancelar) | via RPC (entregar/estornar) |
-| movimentos / entregas / estornos | insert via RPC; leitura geral | leitura | leitura |
+| quadras | CRUD | CRUD | leitura |
+| produtos | CRUD | — (catálogo é do admin) | leitura |
+| clientes / endereços | CRUD | CRUD (precisa p/ criar pedido; flexibiliza Q13) | leitura |
+| lotes / lote_quadras | via RPC | via RPC (entrada/perda/mover/correção) | leitura |
+| pedidos / reservas | via RPC | via RPC (criar/editar/cancelar/entregar/estornar) | leitura |
+| movimentos / entregas / estornos | leitura (insert só via RPC) | leitura | leitura |
 | parametros | CRUD | leitura | leitura |
 
-PH-11 vigente: na prática só `admin` existe no começo; a matriz acima é o alvo (papéis do CLAUDE.md §5), refinável sem mudar o modelo.
+Racional da proposta do gerente: fica com toda a OPERAÇÃO do dia a dia (estoque, reservas, entregas, clientes, quadras); fora dele ficam gestão de usuários, catálogo de produtos e parâmetros (admin). Nota: a proposta flexibiliza a Q13 antiga ("gerente não altera cliente") porque sem isso o gerente não conseguiria criar pedido de cliente novo — validar com o usuário.
+
+PH-11 vigente: na prática só `admin` existe no começo; a matriz é refinável sem mudar o modelo (é só policy/RPC, não coluna).
 
 ## 7. Perguntas para o Dev (levar junto com a validação)
 

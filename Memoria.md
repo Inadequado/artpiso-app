@@ -27,7 +27,7 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
 - Nao criar HTML unico gigante para o app. Nao duplicar documentos com a mesma funcao.
 - Backend/schema guia o frontend, mas nao engessa a experiencia visual. Frontend minimiza colunas visiveis e usa detalhes sob demanda.
 - Caixas sao valor primario; m2 e apoio calculado. Disponivel = Estoque - Reserva - Perda.
-- Papeis do sistema: `admin`, `vendedor`, `gerente`.
+- Papeis do sistema REDEFINIDOS (decisao do usuario, 2026-07-12): `admin` = permissao TOTAL; `gerente` = limitada (funcoes exatas A DECIDIR — proposta na matriz do schema 0.0.2: toda a operacao do dia a dia, sem usuarios/produtos/parametros); `vendedor` = SOMENTE VISUALIZACAO, sem edicao — conta compartilhada num TABLET na loja para todos os vendedores. Supera Q12 e a parte de criacao da Q11 (vendedor nao cria/cancela mais nada); leitura segue geral. CONSEQUENCIA: suporte a tablet deixou de ser P2 — e requisito do papel vendedor (ver Proximos Passos).
 - Nada de `<select>`/`<input type=...>` cru: usar `SelectMenu` e demais componentes do design system. Padrao de UI repetivel (dropdown, menu, picker) vira componente reutilizavel em `components/ui/`.
 - Meta-regra: correcao/lapidacao do usuario vira REGRA persistente aqui (pra nao repetir o erro e reaplicar o recurso em casos semelhantes), nao ajuste pontual esquecido.
 - PADRAO DE LABEL (decisao do usuario, 2026-07-07; REVISADO no mesmo dia): campo opcional usa a prop `optional` do `Field` (components/ui/field.tsx) — tag sutil "opcional" ao lado do label (minusculo, cinza claro, sem uppercase). NUNCA escrever "(opcional)" no texto do label. Decidido apos comparacao de alternativas (placeholder "Opcional" perderia o exemplo de formato e some ao digitar). A excecao do "Pisos danificados (opcional)" foi REVOGADA — convertido ao padrao. Hints descritivos com semantica propria (ex.: "Opcional · JPG ou PNG" na foto; "Sem data = entrega imediata") continuam permitidos; varredura de padronizacao das OUTRAS telas (reservas etc.) fica pra depois.
@@ -189,6 +189,7 @@ Varredura da raiz a pedido do usuario; itens sem uso pra continuacao do projeto,
 3. **Refinar modelo de encomenda/regime**: override E-04 (decidido, nao construido), E-07 encomenda vencida; E-03 FEITO (30 dias, 2026-07-09); fechar numeros restantes (PH-4/5) com o Dev.
 4. **Revisao de DESIGN VISUAL/estetico e UX de produto** (a revisao de engenharia/acessibilidade ja foi feita).
 5. **Consolidar componentes**: extrair o map de status da reserva (label/variant), hoje duplicado em ReservasPage/DetalhesReservaDrawer/ClientesPage/EditarPedidoDrawer, para um modulo compartilhado — quando a WIP de reservas assentar.
-6. **P2**: suporte a tablet (hoje desktop-only, `min-width: 1180px`) e navegacao `<button>` -> router.
+6. **Suporte a TABLET promovido de P2 a requisito** (2026-07-12): o papel vendedor vive num tablet compartilhado na loja (hoje o app e desktop-only, `min-width: 1180px`) — entra na Fase 2, no minimo para as telas de consulta. Segue P2: navegacao `<button>` -> router.
+7. **Funcoes exatas do GERENTE**: a decidir pelo usuario (proposta apresentada na matriz RLS do schema 0.0.2).
 
 (Semear clienteId nas reservas do mock: FEITO 2026-06-25; pendente real so no Supabase.)

@@ -52,11 +52,11 @@ Principios:
 
 ## 5. Papeis do sistema
 
-Usar estes papeis como referencia ate decisao contraria:
+REDEFINIDOS pelo usuario (2026-07-12):
 
-- `admin`: gerencia usuarios, produtos, lotes, reservas e configuracoes.
-- `vendedor`: consulta estoque, cria reservas e cancela reservas permitidas.
-- `gerente`: da entrada de estoque, registra perda, gerencia quadras e marca entregas.
+- `admin`: permissao TOTAL.
+- `gerente`: permissao limitada — funcoes exatas A DECIDIR (proposta em validacao no schema 0.0.2).
+- `vendedor`: SOMENTE VISUALIZACAO, sem edicao — conta compartilhada num tablet disponivel na loja para todos os vendedores.
 
 Nao trocar por `operador`, `conferente`, `diretor` ou outros nomes sem decisao explicita.
 
