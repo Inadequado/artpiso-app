@@ -479,7 +479,22 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const reservas: Reserva[] = []
       for (const reserva of atual.reservas) {
         if (reserva.pedido !== pedidoOriginal || reserva.status !== 'reservado') {
-          reservas.push(reserva) // outro pedido OU linha travada (parcial/entregue/cancelada)
+          // Linha PARCIAL do pedido acompanha os dados compartilhados editaveis (R-05 permite
+          // data/regime/observacoes; endereco e nivel-pedido) — senao divergiria das irmas.
+          // Cliente NAO muda aqui (trava R-05). Entregues/canceladas/estornadas ficam intocadas.
+          if (reserva.pedido === pedidoOriginal && reserva.status === 'parcial') {
+            reservas.push({
+              ...reserva,
+              enderecoId,
+              enderecoEntrega,
+              dataPrevista,
+              regime,
+              caixasTravadas: regime === 'rotacionando' ? 0 : reserva.caixas,
+              observacoes,
+            })
+            continue
+          }
+          reservas.push(reserva) // outro pedido OU linha travada (entregue/cancelada/estornada)
           continue
         }
         const item = itensPorId.get(reserva.id)

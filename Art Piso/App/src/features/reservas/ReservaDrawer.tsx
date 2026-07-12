@@ -9,7 +9,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { formatData } from '@/lib/masks'
@@ -37,7 +37,7 @@ type ReservaDrawerProps = {
  * Observacoes valem para o pedido inteiro; cada item adicionado vira uma linha (1 lote).
  */
 export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onConfirm }: ReservaDrawerProps) {
-  const { lotes: todosLotes, reservas } = useInventory()
+  const { lotes: todosLotes, reservas, clientes } = useInventory()
   const [pedido, setPedido] = useState(() => proximoNumeroPedido(reservas))
   const [itens, setItens] = useState<ItemPedido[]>([])
   // Item em construcao (entrada do carrinho).
@@ -108,7 +108,22 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
     )
   }, [itens, todosLotes])
 
-  const valido = itens.length > 0 && clienteSelecionado !== null
+  // PED e a CHAVE de agrupamento (R-07): numero manual nao pode colidir com pedido existente,
+  // senao as linhas novas se fundem ao pedido antigo (elo, Ver pedido, Editar pedido).
+  const pedidoExistente = pedido.trim()
+    ? reservas.find((item) => item.pedido.trim().toLowerCase() === pedido.trim().toLowerCase())
+    : undefined
+
+  // Revalida o carrinho contra o disponivel quando a entrega NAO e longa (Q5: bloqueio sempre).
+  // Cobre o caso de adicionar itens sem teto com data de encomenda e depois limpar/encurtar a data.
+  function itemExcedeDisponivel(item: ItemPedido) {
+    if (entregaLonga) return false
+    const lote = todosLotes.find((l) => l.id === item.loteId)
+    return !lote || item.caixas > caixasDisponiveis(lote)
+  }
+  const algumItemExcede = itens.some(itemExcedeDisponivel)
+
+  const valido = itens.length > 0 && clienteSelecionado !== null && !pedidoExistente && !algumItemExcede
 
   function confirmar() {
     if (!valido || !clienteSelecionado) return
@@ -254,11 +269,17 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
                 const lote = todosLotes.find((l) => l.id === item.loteId)
                 if (!lote) return null
                 const m2 = item.caixas * lote.m2PorCaixa
+                const excede = itemExcedeDisponivel(item)
                 return (
                   <div key={item.loteId} className="flex items-center gap-3 border-b p-3 last:border-b-0">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{lote.produto}</p>
                       <p className="font-mono text-xs text-muted-foreground">{lote.lote} · {lote.quadra}</p>
+                      {excede ? (
+                        <p className="mt-0.5 text-xs font-semibold text-danger">
+                          Acima do disponível ({caixasDisponiveis(lote)} cx). Remova e adicione com menos caixas.
+                        </p>
+                      ) : null}
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="numeric text-sm font-semibold">{item.caixas} cx</p>
@@ -302,6 +323,13 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
               onChange={(event) => setPedido(event.target.value)}
               placeholder="PED-XXXX"
             />
+            {pedidoExistente ? (
+              <p className="mt-1.5 text-xs font-semibold text-danger">
+                Número já usado no pedido de{' '}
+                {clienteDaReserva(pedidoExistente, clientes)?.nome ?? pedidoExistente.cliente}. Sugerido:{' '}
+                {proximoNumeroPedido(reservas)}.
+              </p>
+            ) : null}
           </Field>
 
           <Field label="Data prevista de entrega">

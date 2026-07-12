@@ -56,6 +56,11 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
   const linhasDoPedido = reserva ? reservas.filter((r) => r.pedido === reserva.pedido) : []
   const reservadoLines = linhasDoPedido.filter((r) => r.status === 'reservado')
   const linhasTravadas = linhasDoPedido.filter((r) => r.status !== 'reservado')
+  // R-05: com entrega ja iniciada em alguma linha (parcial/entregue/estornada), a mercadoria
+  // saiu para AQUELE cliente — trocar o cliente do pedido corromperia estoque/historico.
+  const temEntregaIniciada = linhasDoPedido.some(
+    (r) => r.status === 'parcial' || r.status === 'entregue' || r.status === 'estornado',
+  )
 
   const [cliente, setCliente] = useState<Cliente | null>(() =>
     reserva ? clienteDaReserva(reserva, clientes) ?? null : null,
@@ -189,6 +194,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
               }}
               onCadastroOpenChange={setCadastroAberto}
               hideLabel
+              readOnly={temEntregaIniciada}
             />
             {cliente?.enderecos?.length ? (
               <div className="flex flex-col gap-2">

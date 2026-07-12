@@ -29,7 +29,7 @@
 | Estoque → Novo produto (cadastro) | ✅ Revisado e corrigido (2026-07-11) — 5 achados + 1 novo, todos resolvidos |
 | Estoque → Novo lote | ✅ Revisado e corrigido (2026-07-11) — 3 achados próprios + cobertura da sessão 1 |
 | Estoque → Editar produto / Editar lote | ✅ Revisado e corrigido (2026-07-11) — 5 achados, todos resolvidos |
-| Reservas (criar / editar / entregar / estornar) | ⏳ Não revisado |
+| Reservas (criar / editar / entregar / estornar) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos + 1 limite registrado (déficit agregado no painel de regime) |
 | Clientes | ⏳ Não revisado |
 | Ajustes de Estoque (perda / quadra / correção) | ⏳ Não revisado |
 | Configurações | ⏳ Não revisado |
@@ -108,6 +108,27 @@ Revisado em 2026-07-11. Fluxos: lápis no detalhe do produto (edita dados de cat
 
 ### ✅ RESOLVIDO (2026-07-11) — Marca era Input cru no Editar produto
 - **Feito:** mesmo `Autocomplete` de marcas existentes do cadastro (não fragmentar o catálogo).
+
+---
+
+## 4. Reservas — criar / editar / entregar / estornar (`ReservaDrawer`, `EditarPedidoDrawer`, `EditarReservaDrawer`, `EntregaDrawer`, `EstornoDrawer`, `DetalhesReservaDrawer`, `ReservasPage`)
+
+Revisado em 2026-07-11. A maior tela do app; os fluxos de entrega/estorno/edição de saldo estão sólidos — os achados se concentram na criação e no editor de pedido.
+
+### ✅ RESOLVIDO (2026-07-11) — Número de pedido manual podia colidir com um PED existente
+- **Era:** digitar um PED existente fundia as linhas novas com o pedido antigo (elo, Ver pedido, Editar pedido), mesmo sendo de outro cliente — PED é a chave de agrupamento do R-07.
+- **Feito:** erro inline no campo (diz de quem é o pedido em conflito e sugere o próximo número livre) + confirmar bloqueado. O campo continua manual (decisão R-07); só não pode colidir.
+
+### ✅ RESOLVIDO (2026-07-11) — Carrinho não era revalidado quando a data longa saía (violava Q5)
+- **Era:** itens adicionados sem teto com data de encomenda viravam reserva comum acima do disponível se a data fosse limpa/encurtada depois (provider capava as travadas em silêncio).
+- **Feito:** `itemExcedeDisponivel` revalida cada item quando a entrega não é longa — aviso vermelho no card do item + confirmar bloqueado (espelha o `itemValido` do editor de pedido).
+
+### ✅ RESOLVIDO (2026-07-11) — Editar pedido com linha parcial: cliente editável e dados compartilhados divergiam
+- **Feito (a):** `ClienteSelector` fica `readOnly` no editor de pedido quando o PED tem linha parcial/entregue/estornada (R-05: a mercadoria já saiu para aquele cliente).
+- **Feito (b):** `editarPedido` aplica os dados compartilhados (data prevista/regime, observações, endereço, travadas recomputadas pelo regime) também às linhas PARCIAIS — que a R-05 permite editar — em vez de deixá-las divergir das irmãs. Entregues/canceladas/estornadas seguem intocadas (snapshot histórico).
+
+### 📌 LIMITE REGISTRADO (sem fix agora) — Déficit agregado no painel de regime
+- No pedido multi-item, o `RegimeTogglePanel` compara o TOTAL de caixas do carrinho com a SOMA dos disponíveis dos lotes — produtos diferentes se compensam e um déficit por lote pode ficar mascarado no aviso (o travamento real por lote está correto; só o aviso é agregado). Refinar por item pertence ao modelo de encomenda (E-04/E-05, PH-3/4/5) — não mexer agora.
 
 ---
 
