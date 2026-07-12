@@ -11,7 +11,7 @@ Consultar nesta ordem:
 1. `Memoria.md`
 2. `art_piso_revisao_telas.md`, quando o assunto for a revisao tela-por-tela do app (Fase 1, pre-banco) em andamento
 3. `Art Piso/Handoff/art_piso_0_0_1_handoff.md`
-4. `Art Piso/Handoff/art_piso_0_0_1_schema.sql`, quando o assunto envolver banco, colunas, permissoes ou calculos
+4. `Art Piso/Handoff/art_piso_0_0_2_schema.md`, quando o assunto envolver banco, colunas, permissoes ou calculos (o `art_piso_0_0_1_schema.sql` fica como referencia historica do ponto de partida)
 5. `Art Piso/Google Switch/`, quando o assunto envolver referencias visuais geradas pelo Stitch
 6. `.claude/skills/`, quando o assunto envolver stack, UI, revisao, debug, plano ou implementacao
 
@@ -131,4 +131,5 @@ Manter somente anexos que ainda tenham utilidade real.
 Atualmente esperados:
 
 - `art_piso_0_0_1_handoff.md`
-- `art_piso_0_0_1_schema.sql`
+- `art_piso_0_0_1_schema.sql` (referencia historica; superado pelo 0.0.2)
+- `art_piso_0_0_2_schema.md` (schema vigente da Fase 2, proposto 2026-07-12)
