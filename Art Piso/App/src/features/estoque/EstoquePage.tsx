@@ -329,7 +329,11 @@ export function EstoquePage() {
         key={`novolote-${novoLoteSeq}`}
         open={novoLoteOpen}
         produto={selecionado}
-        onClose={() => setNovoLoteOpen(false)}
+        onClose={() => {
+          // Cancelar volta ao detalhe do produto, igual aos demais fluxos abertos por ele.
+          setNovoLoteOpen(false)
+          setDetalheOpen(true)
+        }}
         onSave={(novo) => {
           salvarLote(novo)
           setNovoLoteOpen(false)

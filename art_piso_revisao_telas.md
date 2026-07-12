@@ -27,7 +27,7 @@
 | Sessão / tela | Status |
 |---|---|
 | Estoque → Novo produto (cadastro) | ✅ Revisado e corrigido (2026-07-11) — 5 achados + 1 novo, todos resolvidos |
-| Estoque → Novo lote | ⏳ Não revisado formalmente (vários fixes da sessão 1 já o cobriram: quadra SelectMenu, código duplicado, herança de descrição/foto) |
+| Estoque → Novo lote | ✅ Revisado e corrigido (2026-07-11) — 3 achados próprios + cobertura da sessão 1 |
 | Estoque → Editar produto / Editar lote | ⏳ Não revisado |
 | Reservas (criar / editar / entregar / estornar) | ⏳ Não revisado |
 | Clientes | ⏳ Não revisado |
@@ -68,6 +68,23 @@ Revisado em 2026-06-28. Fluxo: registra o produto e o primeiro lote em uma só p
 ### ✅ RESOLVIDO (2026-07-11) — Foto vive por lote, não por produto
 - **Era:** `foto` em `LoteEstoque`; lote novo criado pelo `NovoLoteDrawer` nascia sem a foto do produto.
 - **Feito (mínimo coerente com a arquitetura atual):** `NovoLoteDrawer` herda `produto.foto` (e `descricao`), como já herda m²/peças/preço; no reaproveitamento do cadastro a foto vem da entidade. Mover foto/descrição para uma entidade `Produto` de verdade é decisão de schema da FASE 2 (hoje produto é derivado dos lotes). Lacuna conhecida assumida: não há como TROCAR a foto de um produto já cadastrado (o `EditarProdutoDrawer` não edita foto) — entra na revisão da tela Editar produto.
+
+---
+
+## 2. Estoque → Novo Lote (`NovoLoteDrawer.tsx`)
+
+Revisado em 2026-07-11. Fluxo: botão "Novo lote" no detalhe do produto → drawer herda os dados do produto e cadastra só o lote. Boa parte da tela já foi corrigida pela sessão 1 (quadra `SelectMenu`, código duplicado, herança de descrição/foto) — achados abaixo são o que restou.
+
+### ✅ RESOLVIDO (2026-07-11) — Cancelar/Esc não voltava ao detalhe do produto
+- **Era:** salvar reabria o `ProdutoDetalheDrawer`, Editar produto/lote também — mas cancelar o Novo lote derrubava na tabela (único caminho sem volta).
+- **Feito:** `onClose` do `NovoLoteDrawer` na `EstoquePage` reabre o detalhe, igual aos demais fluxos.
+
+### ✅ RESOLVIDO (2026-07-11) — Salvar lote com 0 caixas passava silencioso
+- **Era:** Stepper iniciava em 0 e o salvar aceitava — lote nascia esgotado sem aviso.
+- **Decisão do usuário:** mínimo 1 caixa. **Feito:** `valido` exige `estoque > 0` no `NovoLoteDrawer` E no `CadastroProdutoDrawer`. Caso "cadastrar antes de conferir a carga" fica coberto por cadastrar com o mínimo e completar via Ajustes → Adicionar estoque.
+
+### ✅ RESOLVIDO (2026-07-11) — Card do produto sem thumb da foto
+- **Feito:** card resumo do `NovoLoteDrawer` ganhou o thumb 16×16 da foto do produto (mesmo padrão do card de reaproveitamento do cadastro).
 
 ---
 

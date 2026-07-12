@@ -30,7 +30,8 @@ export function NovoLoteDrawer({
   const [estoque, setEstoque] = useState(0)
 
   const loteDuplicado = loteComCodigo(codigo, lotes)
-  const valido = Boolean(produto && codigo.trim() && !loteDuplicado && quadra.trim())
+  // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
+  const valido = Boolean(produto && codigo.trim() && !loteDuplicado && quadra.trim() && estoque > 0)
   const totalM2 = produto ? estoque * produto.m2PorCaixa : 0
 
   function salvar() {
@@ -75,12 +76,17 @@ export function NovoLoteDrawer({
     >
       {produto ? (
         <div className="flex flex-col gap-6">
-          <div className="rounded-lg border bg-muted/30 p-4 text-sm">
-            {produto.referencia ? <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p> : null}
-            <p className="mt-1 font-bold">{produto.produto}</p>
-            <p className="text-muted-foreground">
-              {[[produto.marca, produto.tamanho].filter(Boolean).join(' - '), `${formatM2(produto.m2PorCaixa)} m²/caixa`, `${produto.pecasPorCaixa} pç/caixa`].join(' · ')}
-            </p>
+          <div className="flex gap-3 rounded-lg border bg-muted/30 p-4 text-sm">
+            {produto.foto ? (
+              <img src={produto.foto} alt="" className="size-16 shrink-0 rounded-md border object-cover" />
+            ) : null}
+            <div className="min-w-0">
+              {produto.referencia ? <p className="font-mono text-xs text-primary">Ref. {produto.referencia}</p> : null}
+              <p className="mt-1 font-bold">{produto.produto}</p>
+              <p className="text-muted-foreground">
+                {[[produto.marca, produto.tamanho].filter(Boolean).join(' - '), `${formatM2(produto.m2PorCaixa)} m²/caixa`, `${produto.pecasPorCaixa} pç/caixa`].join(' · ')}
+              </p>
+            </div>
           </div>
 
           <Field label="Código do lote">

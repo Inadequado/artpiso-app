@@ -108,7 +108,8 @@ export function CadastroProdutoDrawer({
     ? true
     : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0)
   const loteDuplicado = loteComCodigo(lote, lotes)
-  const valido = Boolean(dadosProdutoValidos && lote.trim() && !loteDuplicado && quadra.trim())
+  // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
+  const valido = Boolean(dadosProdutoValidos && lote.trim() && !loteDuplicado && quadra.trim() && estoque > 0)
 
   function salvar() {
     onSave({
