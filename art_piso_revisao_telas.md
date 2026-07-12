@@ -30,7 +30,7 @@
 | Estoque → Novo lote | ✅ Revisado e corrigido (2026-07-11) — 3 achados próprios + cobertura da sessão 1 |
 | Estoque → Editar produto / Editar lote | ✅ Revisado e corrigido (2026-07-11) — 5 achados, todos resolvidos |
 | Reservas (criar / editar / entregar / estornar) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos + 1 limite registrado (déficit agregado no painel de regime) |
-| Clientes | ⏳ Não revisado |
+| Clientes | ✅ Revisado e corrigido (2026-07-11) — 4 achados, todos resolvidos |
 | Ajustes de Estoque (perda / quadra / correção) | ⏳ Não revisado |
 | Configurações | ⏳ Não revisado |
 
@@ -129,6 +129,24 @@ Revisado em 2026-07-11. A maior tela do app; os fluxos de entrega/estorno/ediç�
 
 ### 📌 LIMITE REGISTRADO (sem fix agora) — Déficit agregado no painel de regime
 - No pedido multi-item, o `RegimeTogglePanel` compara o TOTAL de caixas do carrinho com a SOMA dos disponíveis dos lotes — produtos diferentes se compensam e um déficit por lote pode ficar mascarado no aviso (o travamento real por lote está correto; só o aviso é agregado). Refinar por item pertence ao modelo de encomenda (E-04/E-05, PH-3/4/5) — não mexer agora.
+
+---
+
+## 5. Clientes (`ClientesPage.tsx`, `ClienteDrawer.tsx`)
+
+Revisado em 2026-07-11. Pontos fortes já existentes: CPF/CNPJ com dígito verificador (R-04), endereço vinculado a pedido ativo não pode ser removido, busca por dígitos no documento.
+
+### ✅ RESOLVIDO (2026-07-11) — Excluir cliente com pedido ATIVO não era bloqueado
+- **Feito:** botão excluir desabilitado quando o cliente tem pedido reservado/parcial, com `title` explicando — regra anti-órfã, mesmo padrão do produto/lote no detalhe do Estoque.
+
+### ✅ RESOLVIDO (2026-07-11) — CPF/CNPJ duplicado passava no cadastro e na edição
+- **Feito:** `ClienteDrawer` (canônico — cobre também o cadastro via Nova reserva) mostra "Documento já cadastrado para {nome}" e bloqueia o salvar quando outro cliente usa o mesmo documento (comparação por dígitos; a edição ignora o próprio cadastro). Mesma família do código de lote (sessão 1) e da referência (sessão 3).
+
+### ✅ RESOLVIDO (2026-07-11) — "Pedidos Totais" contava linhas, não pedidos
+- **Feito:** coluna conta PEDs distintos (`Set` dos números de pedido); o accordion continua listando por linha, que é onde status/entrega vivem.
+
+### ✅ RESOLVIDO (2026-07-11) — Busca não encontrava telefone por dígitos
+- **Feito:** `onlyDigits(telefone)` entrou na comparação por dígitos da busca, igual ao documento.
 
 ---
 

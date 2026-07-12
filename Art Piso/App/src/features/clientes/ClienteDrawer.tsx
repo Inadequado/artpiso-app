@@ -25,7 +25,7 @@ export function ClienteDrawer({
   onClose: () => void
   onSave: (dados: ClienteInput) => void
 }) {
-  const { reservas } = useInventory()
+  const { reservas, clientes } = useInventory()
   const [nome, setNome] = useState(cliente?.nome ?? nomeInicial ?? '')
   const [documento, setDocumento] = useState(cliente?.documento ?? '')
   const [telefone, setTelefone] = useState(cliente?.telefone ?? '')
@@ -34,16 +34,23 @@ export function ClienteDrawer({
   )
 
   const documentoOk = documentoValido(documento)
-  // Distingue "ainda incompleto" de "completo mas com digito verificador errado".
+  // Documento e a identidade natural do cliente (PH-10): nao pode repetir em outro cadastro,
+  // senao o historico de pedidos fragmenta entre dois clientes.
+  const documentoDuplicado = documentoOk
+    ? clientes.find((item) => item.id !== cliente?.id && onlyDigits(item.documento) === onlyDigits(documento))
+    : undefined
+  // Distingue "ainda incompleto" de "completo mas com digito verificador errado" e de "duplicado".
   const documentoMensagem =
     documento.length > 0 && !documentoOk
       ? documentoCompleto(documento)
         ? 'CPF/CNPJ inválido — confira os dígitos.'
         : 'Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) completo.'
-      : undefined
+      : documentoDuplicado
+        ? `Documento já cadastrado para ${documentoDuplicado.nome}.`
+        : undefined
   const telefoneOk = onlyDigits(telefone).length >= 10
   const enderecosOk = enderecos.every((item) => item.endereco.trim().length > 0)
-  const valido = nome.trim().length > 0 && documentoOk && telefoneOk && enderecosOk
+  const valido = nome.trim().length > 0 && documentoOk && !documentoDuplicado && telefoneOk && enderecosOk
 
   // Endereco vinculado a pedido ATIVO (reservado/parcial) nao pode ser removido (evita orfa).
   function enderecoEmUso(id: string) {

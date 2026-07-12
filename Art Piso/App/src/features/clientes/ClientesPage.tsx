@@ -69,7 +69,8 @@ export function ClientesPage() {
             (cliente) =>
               cliente.nome.toLowerCase().includes(termo) ||
               cliente.telefone.toLowerCase().includes(termo) ||
-              (digitos.length > 0 && onlyDigits(cliente.documento).includes(digitos)),
+              (digitos.length > 0 &&
+                (onlyDigits(cliente.documento).includes(digitos) || onlyDigits(cliente.telefone).includes(digitos))),
           )
     return [...base].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }))
   }, [clientes, busca])
@@ -197,6 +198,10 @@ function ClienteRow({
   onExcluir: () => void
 }) {
   const painelId = `cliente-${cliente.id}-pedidos`
+  // R-07: pedido multi-item vira N linhas com o mesmo PED — a coluna conta PEDIDOS, nao linhas.
+  const totalPedidos = new Set(pedidos.map((pedido) => pedido.pedido)).size
+  // Regra anti-orfa (mesma do produto/lote): cliente com pedido ativo nao pode ser excluido.
+  const temPedidoAtivo = pedidos.some((pedido) => statusAtivo(pedido.status))
   return (
     <>
       <tr className="cursor-pointer transition-colors hover:bg-muted/40" onClick={onToggle}>
@@ -222,7 +227,7 @@ function ClienteRow({
           </button>
         </td>
         <td>{cliente.telefone}</td>
-        <td className="numeric text-center font-semibold">{pedidos.length}</td>
+        <td className="numeric text-center font-semibold">{totalPedidos}</td>
         <td>
           <div className="flex items-center gap-1">
             <Button
@@ -238,9 +243,10 @@ function ClienteRow({
             <Button
               size="icon"
               variant="ghost"
-              className="size-8 text-muted-foreground hover:text-danger"
+              className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
               aria-label={`Excluir ${cliente.nome}`}
-              title="Excluir cliente"
+              title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
+              disabled={temPedidoAtivo}
               onClick={(event) => {
                 event.stopPropagation()
                 onExcluir()
