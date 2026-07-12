@@ -31,7 +31,7 @@
 | Estoque → Editar produto / Editar lote | ✅ Revisado e corrigido (2026-07-11) — 5 achados, todos resolvidos |
 | Reservas (criar / editar / entregar / estornar) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos + 1 limite registrado (déficit agregado no painel de regime) |
 | Clientes | ✅ Revisado e corrigido (2026-07-11) — 4 achados, todos resolvidos |
-| Ajustes de Estoque (perda / quadra / correção) | ⏳ Não revisado |
+| Ajustes de Estoque (perda / quadra / correção) | ✅ Revisado e corrigido (2026-07-11) — 3 achados resolvidos; pendente só a máscara do nome da quadra (aguardando dados do usuário) |
 | Configurações | ⏳ Não revisado |
 
 ---
@@ -150,12 +150,22 @@ Revisado em 2026-07-11. Pontos fortes já existentes: CPF/CNPJ com dígito verif
 
 ---
 
-## Anotações antecipadas — Ajustes de Estoque (pedidos do usuário, 2026-07-11)
+## 6. Ajustes de Estoque (`AjustesPage`, `AjusteDrawer`, `QuadraDrawer`, `HistoricoDrawer`)
 
-Registradas antes da sessão de revisão da tela; entram no escopo quando a sessão de Ajustes abrir.
+Revisado em 2026-07-11. Boa parte da tela já evoluiu nas sessões anteriores (quadras no store, ação Adicionar estoque, paginação removida); a revisão formal cobre o que restou.
 
-### 🧩 MELHORIA — Máscara para o nome das quadras
-- Definir uma máscara/formato padrão para o identificador da quadra (hoje o `QuadraDrawer` aceita texto livre, ex.: "Q-13" vs "q13" vs "Quadra 13"). **Aguardando o usuário confirmar os dados reais do depósito para definir o formato.**
+### ✅ RESOLVIDO (2026-07-11) — Identificador de quadra duplicado passava no cadastro/edição
+- **Feito:** `QuadraDrawer` mostra erro inline ("Identificador já usado ({descrição})") e bloqueia o salvar quando o número já é de outra quadra (edição ignora a própria). Mesma família do código de lote/referência/CPF.
+
+### ✅ RESOLVIDO (2026-07-11) — Renomear quadra não cascateava nos lotes e reservas ativas
+- **Era:** renomear "Q-03" → "Q-3A" zerava a contagem do card e deixava lotes apontando pra quadra fantasma (apontado como "limite Fase 2" na sessão 1, mas era barato no mock).
+- **Feito:** `atualizarQuadra` com número alterado cascateia o texto nos LOTES (todos) e nas reservas ATIVAS (históricas mantêm snapshot — regra do moverQuadra); o histórico registra "X renomeada para Y". FK real continua sendo a solução da Fase 2.
+
+### ✅ RESOLVIDO (2026-07-11) — Pisos danificados sem teto plausível
+- **Feito:** limite de `caixas perdidas × peças/caixa` no Registrar perda — erro inline com a conta quando exceder; salvar bloqueado.
+
+### 🧩 MELHORIA (pré-anotada, PENDENTE) — Máscara para o nome das quadras
+- Definir máscara/formato padrão para o identificador da quadra (hoje texto livre). **Aguardando o usuário confirmar os dados reais do depósito.** Único item da tela que fica em aberto.
 
 ### ✅ RESOLVIDO (2026-07-11) — Quadras sem paginação
 - **Era:** cards de quadra em 1 linha de 4 com seletor de páginas. **Feito:** paginação removida (estado `quadraPage`, setas e fatiamento saíram da `AjustesPage`); todas as quadras em grid corrido de 4 por linha.

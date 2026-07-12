@@ -64,8 +64,11 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
 
   const numero = Number(quantidade)
   const pisosNum = Number(pisos)
-  const pisosValidos = pisos.trim() === '' || (Number.isFinite(pisosNum) && pisosNum >= 0)
   const quantidadeValida = Number.isFinite(numero) && numero > 0
+  // Teto plausivel dos pisos danificados: nao cabem mais pisos do que as caixas perdidas contem.
+  const pisosMax = lote && quantidadeValida ? numero * lote.pecasPorCaixa : 0
+  const pisosExcede = tipo === 'perda' && pisos.trim() !== '' && quantidadeValida && Boolean(lote) && pisosNum > pisosMax
+  const pisosValidos = pisos.trim() === '' || (Number.isFinite(pisosNum) && pisosNum >= 0 && !pisosExcede)
   const m2 = lote && quantidadeValida ? numero * lote.m2PorCaixa : 0
   const excedePerda = tipo === 'perda' && lote ? numero > caixasDisponiveis(lote) : false
   // Comprometido = reserva + perda. O novo total da correcao nao pode ficar abaixo disso,
@@ -185,11 +188,16 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                   type="number"
                   inputMode="numeric"
                   min={0}
+                  max={pisosMax > 0 ? pisosMax : undefined}
                   value={pisos}
                   placeholder="0"
                   onChange={(event) => setPisos(event.target.value)}
                 />
-                {lote ? (
+                {pisosExcede && lote ? (
+                  <p className="mt-1.5 text-xs font-semibold text-danger">
+                    Máximo plausível: {pisosMax} pisos ({numero} cx × {lote.pecasPorCaixa} pç/caixa).
+                  </p>
+                ) : lote ? (
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     Total de peças quebradas dentro das caixas perdidas, não por caixa. Referência: {lote.pecasPorCaixa} peças por caixa.
                   </p>

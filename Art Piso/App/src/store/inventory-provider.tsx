@@ -166,9 +166,28 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [registrarMovimento])
 
   const atualizarQuadra = useCallback((id: string, dados: QuadraInput) => {
+    const alvo = quadras.find((item) => item.id === id)
+    if (!alvo) return
+    const numeroMudou = dados.numero !== alvo.numero
     setQuadras((atual) => atual.map((item) => (item.id === id ? { ...item, ...dados } : item)))
-    registrarMovimento({ tipo: 'quadra', titulo: 'Quadra atualizada', detalhe: `${dados.numero} atualizada no depósito` })
-  }, [registrarMovimento])
+    // Renomear a quadra cascateia o texto nos LOTES (estado atual deles) e nas reservas
+    // ATIVAS (historicas mantem o snapshot da epoca — regra do moverQuadra). FK real na Fase 2.
+    if (numeroMudou) {
+      setEstado((atual) => ({
+        lotes: atual.lotes.map((item) => (item.quadra === alvo.numero ? { ...item, quadra: dados.numero } : item)),
+        reservas: atual.reservas.map((reserva) =>
+          reserva.quadra === alvo.numero && (reserva.status === 'reservado' || reserva.status === 'parcial')
+            ? { ...reserva, quadra: dados.numero }
+            : reserva,
+        ),
+      }))
+    }
+    registrarMovimento({
+      tipo: 'quadra',
+      titulo: 'Quadra atualizada',
+      detalhe: numeroMudou ? `${alvo.numero} renomeada para ${dados.numero}` : `${dados.numero} atualizada no depósito`,
+    })
+  }, [quadras, registrarMovimento])
 
   const removerQuadra = useCallback((id: string) => {
     const quadra = quadras.find((item) => item.id === id)
