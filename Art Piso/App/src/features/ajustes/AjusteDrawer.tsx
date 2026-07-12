@@ -30,9 +30,9 @@ const config: Record<
   },
   quadra: {
     title: 'Mover lote de quadra',
-    description: 'Escolha o lote e a quadra de destino.',
+    description: 'Escolha o lote, de onde saem as caixas e para onde vão.',
     icon: ArrowRightLeft,
-    confirmar: 'Mover lote',
+    confirmar: 'Mover caixas',
   },
   correcao: {
     title: 'Corrigir quantidade',
@@ -65,15 +65,27 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const Icon = cfg?.icon
 
   // Ao trocar o lote, pre-preenche a quadra da operacao: entrada sugere a maior alocacao;
-  // correcao so auto-preenche quando o lote ocupa UMA quadra (com 2+ a escolha e consciente).
+  // correcao/mover so auto-preenchem quando o lote ocupa UMA quadra (com 2+ a escolha e consciente).
   function selecionarLote(id: string) {
     setLoteId(id)
     const escolhido = lotes.find((item) => item.id === id)
     if (tipo === 'entrada') {
       setQuadraAlvo(escolhido ? (maiorAlocacao(escolhido)?.quadra ?? '') : '')
-    } else if (tipo === 'correcao') {
+    } else if (tipo === 'correcao' || tipo === 'perda') {
       setQuadraAlvo(escolhido && escolhido.alocacoes.length === 1 ? escolhido.alocacoes[0].quadra : '')
+    } else if (tipo === 'quadra') {
+      const unica = escolhido && escolhido.alocacoes.length === 1 ? escolhido.alocacoes[0] : undefined
+      setQuadraAlvo(unica?.quadra ?? '')
+      setQuantidade(unica ? String(unica.caixas) : '')
+      setNovaQuadra('')
     }
+  }
+
+  // Origem do mover (M2): ao escolher de onde saem as caixas, sugere mover TUDO daquela quadra.
+  function selecionarOrigem(quadra: string) {
+    setQuadraAlvo(quadra)
+    const alocacao = lote?.alocacoes.find((a) => a.quadra === quadra)
+    setQuantidade(alocacao ? String(alocacao.caixas) : '')
   }
 
   const numero = Number(quantidade)
@@ -92,16 +104,22 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const comprometido = lote ? lote.caixasReserva + lote.caixasPerda : 0
   const correcaoAbaixoDoComprometido =
     tipo === 'correcao' && Boolean(lote) && Boolean(quadraAlvo) && Number.isFinite(numero) && numero >= 0 && novoTotalLote < comprometido
-  // Mover (M1) leva o lote INTEIRO: destino invalido so quando ele ja esta todo naquela quadra.
-  const inteiroNaQuadra = (numeroQuadra: string) =>
-    Boolean(lote && lote.alocacoes.length === 1 && lote.alocacoes[0].quadra === numeroQuadra)
+  // Mover (M2) e da alocacao de ORIGEM: nao da pra mover mais caixas do que ha nela.
+  const alocacaoOrigem = tipo === 'quadra' && lote && quadraAlvo
+    ? (lote.alocacoes.find((a) => a.quadra === quadraAlvo)?.caixas ?? 0)
+    : 0
+  const moverExcedeOrigem = tipo === 'quadra' && Boolean(quadraAlvo) && quantidadeValida && numero > alocacaoOrigem
+  // Quadra da perda: obrigatoria so quando o lote ocupa 2+ quadras (com uma, ja vai preenchida).
+  const perdaPrecisaQuadra = tipo === 'perda' && Boolean(lote) && (lote?.alocacoes.length ?? 0) > 1
 
   const valido = (() => {
     if (!lote) return false
-    if (tipo === 'quadra') return Boolean(novaQuadra) && !inteiroNaQuadra(novaQuadra)
+    if (tipo === 'quadra')
+      return Boolean(quadraAlvo) && Boolean(novaQuadra) && novaQuadra !== quadraAlvo && quantidadeValida && !moverExcedeOrigem
     if (tipo === 'correcao') return Boolean(quadraAlvo) && Number.isFinite(numero) && numero >= 0 && novoTotalLote >= comprometido
     if (tipo === 'entrada') return quantidadeValida && Boolean(quadraAlvo)
-    if (tipo === 'perda') return quantidadeValida && !excedePerda && pisosValidos && motivo.trim() !== ''
+    if (tipo === 'perda')
+      return quantidadeValida && !excedePerda && pisosValidos && motivo.trim() !== '' && (!perdaPrecisaQuadra || Boolean(quadraAlvo))
     return quantidadeValida && !excedePerda
   })()
 
@@ -112,10 +130,10 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
         registrarEntrada(lote.id, numero, quadraAlvo)
         break
       case 'perda':
-        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim())
+        registrarPerda(lote.id, numero, pisos.trim() !== '' && pisosNum > 0 ? pisosNum : 0, motivo.trim(), quadraAlvo || undefined)
         break
       case 'quadra':
-        moverQuadra(lote.id, novaQuadra)
+        moverQuadra(lote.id, quadraAlvo, novaQuadra, numero)
         break
       case 'correcao':
         corrigirEstoque(lote.id, quadraAlvo, numero)
@@ -170,10 +188,10 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
             </div>
           ) : null}
 
-          {lote && (tipo === 'entrada' || tipo === 'correcao') ? (
+          {lote && (tipo === 'entrada' || tipo === 'correcao' || perdaPrecisaQuadra) ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                {tipo === 'entrada' ? 'Quadra de destino' : 'Quadra da contagem'}
+                {tipo === 'entrada' ? 'Quadra de destino' : tipo === 'correcao' ? 'Quadra da contagem' : 'Quadra da perda'}
               </span>
               <SelectMenu
                 value={quadraAlvo}
@@ -185,7 +203,9 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                     : (lote.alocacoes.length > 0
                         ? lote.alocacoes.map((alocacao) => ({
                             value: alocacao.quadra,
-                            label: `${alocacao.quadra} — ${alocacao.caixas} cx contadas hoje`,
+                            label: tipo === 'correcao'
+                              ? `${alocacao.quadra} — ${alocacao.caixas} cx contadas hoje`
+                              : `${alocacao.quadra} — ${alocacao.caixas} cx no local`,
                           }))
                         : quadras.map((quadra) => ({ value: quadra.numero, label: `${quadra.numero} — ${quadra.descricao}` })))
                 }
@@ -194,42 +214,73 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                 <p className="text-xs text-muted-foreground">
                   Pode ser uma quadra nova para o lote — é assim que um lote passa a ocupar mais de uma quadra.
                 </p>
+              ) : tipo === 'perda' ? (
+                <p className="text-xs text-muted-foreground">
+                  De qual quadra saíram as caixas perdidas. Fica no histórico; a contagem por quadra se acerta na correção.
+                </p>
               ) : null}
             </div>
           ) : null}
 
-          {tipo === 'quadra' ? (
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Nova quadra</span>
-              <SelectMenu
-                value={novaQuadra}
-                onChange={setNovaQuadra}
-                placeholder="Selecione a quadra de destino…"
-                options={quadras.map((quadra) => ({
-                  value: quadra.numero,
-                  label: `${quadra.numero} — ${quadra.descricao}`,
-                  disabled: inteiroNaQuadra(quadra.numero),
-                }))}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <Field label={tipo === 'correcao' ? 'Novo total na quadra (caixas)' : tipo === 'entrada' ? 'Caixas recebidas' : 'Quantidade (caixas)'}>
-                <Input
-                  type="number"
-                  min={tipo === 'correcao' ? 0 : 1}
-                  value={quantidade}
-                  placeholder="0"
-                  onChange={(event) => setQuantidade(event.target.value)}
+          {lote && tipo === 'quadra' ? (
+            <>
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Quadra de origem</span>
+                <SelectMenu
+                  value={quadraAlvo}
+                  onChange={selecionarOrigem}
+                  placeholder="De onde saem as caixas…"
+                  options={lote.alocacoes.map((alocacao) => ({
+                    value: alocacao.quadra,
+                    label: `${alocacao.quadra} — ${alocacao.caixas} cx no local`,
+                  }))}
                 />
-              </Field>
-              <Field label="Equivale a (m²)">
-                <div className="numeric flex h-10 items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
-                  {formatM2(m2)} m²
-                </div>
-              </Field>
-            </div>
-          )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Quadra de destino</span>
+                <SelectMenu
+                  value={novaQuadra}
+                  onChange={setNovaQuadra}
+                  placeholder="Para onde vão as caixas…"
+                  options={quadras.map((quadra) => ({
+                    value: quadra.numero,
+                    label: `${quadra.numero} — ${quadra.descricao}`,
+                    disabled: quadra.numero === quadraAlvo,
+                  }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Movendo menos que o total da origem, o lote passa a ocupar as duas quadras.
+                </p>
+              </div>
+            </>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label={
+                tipo === 'correcao'
+                  ? 'Novo total na quadra (caixas)'
+                  : tipo === 'entrada'
+                    ? 'Caixas recebidas'
+                    : tipo === 'quadra'
+                      ? 'Caixas a mover'
+                      : 'Quantidade (caixas)'
+              }
+            >
+              <Input
+                type="number"
+                min={tipo === 'correcao' ? 0 : 1}
+                value={quantidade}
+                placeholder="0"
+                onChange={(event) => setQuantidade(event.target.value)}
+              />
+            </Field>
+            <Field label="Equivale a (m²)">
+              <div className="numeric flex h-10 items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
+                {formatM2(m2)} m²
+              </div>
+            </Field>
+          </div>
 
           {tipo === 'perda' ? (
             <>
@@ -265,6 +316,12 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                 </p>
               </Field>
             </>
+          ) : null}
+
+          {moverExcedeOrigem && lote ? (
+            <p className="-mt-2 text-xs font-semibold text-danger">
+              A origem {quadraAlvo} tem {alocacaoOrigem} cx do lote. Reduza a quantidade.
+            </p>
           ) : null}
 
           {excedePerda && lote ? (

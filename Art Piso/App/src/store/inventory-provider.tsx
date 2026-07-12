@@ -761,7 +761,9 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }))
   }, [lotes, notificar, registrarMovimento])
 
-  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo: string) => {
+  // A quadra e INFORMATIVA (M2 do Q1): registra de onde sairam as caixas no historico.
+  // Perda NAO mexe em caixasEstoque nem nas alocacoes — Disponivel = Estoque - Reserva - Perda.
+  const registrarPerda = useCallback((loteId: string, caixas: number, pisos: number, motivo: string, quadra?: string) => {
     const lote = lotes.find((item) => item.id === loteId)
     if (lote) {
       notificar({
@@ -772,7 +774,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       registrarMovimento({
         tipo: 'perda',
         titulo: 'Perda registrada',
-        detalhe: `${caixas} cx em ${lote.lote}${pisos > 0 ? ` · ${pisos} piso${pisos === 1 ? '' : 's'} danificado${pisos === 1 ? '' : 's'}` : ''}`,
+        detalhe: `${caixas} cx em ${lote.lote}${quadra ? ` · ${quadra}` : ''}${pisos > 0 ? ` · ${pisos} piso${pisos === 1 ? '' : 's'} danificado${pisos === 1 ? '' : 's'}` : ''}`,
         observacao: motivo,
         loteId: lote.id,
         produtoId: lote.produtoId,
@@ -803,27 +805,31 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }))
   }, [lotes, notificar, registrarMovimento])
 
-  // M1 do Q1: move o lote INTEIRO (todas as alocacoes colapsam na quadra de destino).
-  // Movimentacao PARCIAL (origem -> destino, N caixas) entra na proxima etapa.
-  // Reservas ativas nao precisam mais de cascata: a UI deriva a localizacao do lote ao vivo
+  // M2 do Q1: move PARCIAL ou total — tira as caixas da alocacao de ORIGEM (some se zerar)
+  // e soma na de DESTINO. O estoque do lote nao muda; so a distribuicao entre quadras.
+  // Reservas ativas nao precisam de cascata: a UI deriva a localizacao do lote ao vivo
   // (quadraDaReserva); o snapshot fica para as historicas.
-  const moverQuadra = useCallback((loteId: string, novaQuadra: string) => {
+  const moverQuadra = useCallback((loteId: string, origem: string, destino: string, caixas: number) => {
     const loteMov = lotes.find((item) => item.id === loteId)
-    if (!loteMov) return
+    if (!loteMov || caixas <= 0 || origem === destino) return
+    const naOrigem = loteMov.alocacoes.find((a) => a.quadra === origem)?.caixas ?? 0
+    if (caixas > naOrigem) return
     registrarMovimento({
       tipo: 'quadra',
       titulo: 'Lote movido de quadra',
-      detalhe: `${loteMov.lote}: ${quadraLabel(loteMov)} → ${novaQuadra}`,
+      detalhe: `${loteMov.lote}: ${origem} → ${destino} (${caixas} cx)`,
       loteId: loteMov.id,
       produtoId: loteMov.produtoId,
     })
     setEstado((atual) => ({
       ...atual,
-      lotes: atual.lotes.map((item) =>
-        item.id === loteId
-          ? { ...item, alocacoes: item.caixasEstoque > 0 ? [{ quadra: novaQuadra, caixas: item.caixasEstoque }] : [] }
-          : item,
-      ),
+      lotes: atual.lotes.map((item) => {
+        if (item.id !== loteId) return item
+        const semOrigem = item.alocacoes
+          .map((a) => (a.quadra === origem ? { ...a, caixas: a.caixas - caixas } : a))
+          .filter((a) => a.caixas > 0)
+        return { ...item, alocacoes: somarAlocacao(semOrigem, destino, caixas) }
+      }),
     }))
   }, [lotes, registrarMovimento])
 

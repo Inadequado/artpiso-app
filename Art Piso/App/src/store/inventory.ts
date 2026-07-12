@@ -179,9 +179,10 @@ export type InventoryContextValue = {
   estornarReserva: (input: EstornarReservaInput) => void
   /** Entrada de remessa em lote existente: soma caixas ao estoque, alocadas na quadra informada. */
   registrarEntrada: (loteId: string, caixas: number, quadra: string) => void
-  registrarPerda: (loteId: string, caixas: number, pisos: number, motivo: string) => void
-  /** Move o lote INTEIRO para a quadra (M1 do Q1; movimentacao parcial vem na proxima etapa). */
-  moverQuadra: (loteId: string, novaQuadra: string) => void
+  /** Registra perda no lote; a quadra e INFORMATIVA (de onde sairam as caixas) e vai so pro historico. */
+  registrarPerda: (loteId: string, caixas: number, pisos: number, motivo: string, quadra?: string) => void
+  /** Move caixas da quadra de ORIGEM para a de DESTINO (parcial ou total — M2 do Q1). */
+  moverQuadra: (loteId: string, origem: string, destino: string, caixas: number) => void
   /** Corrige a contagem da alocacao do lote NAQUELA quadra; o estoque do lote vira a soma. */
   corrigirEstoque: (loteId: string, quadra: string, novoTotalQuadra: number) => void
 }
