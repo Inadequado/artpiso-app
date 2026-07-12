@@ -27,7 +27,7 @@ Princípios mantidos do 0.0.1:
 | 10 | sem perda por peça | `lotes.pisos_danificados` | registro informativo de pisos quebrados dentro das caixas perdidas |
 | 11 | limites fixos no app | tabela **`parametros`** | PH-1/PH-2/PH-3 são chutes: ajustar sem deploy |
 | 12 | escrita direta nas tabelas | operações compostas via **RPC** (funções Postgres) | entrega/estorno/correção tocam 2+ tabelas; transação + regra no banco (Q5, PH-9) |
-| 13 | caixas `numeric(12,2)` | caixas **`int`** | o app inteiro opera caixas inteiras (mínimo 1); confirmar com o Dev (pergunta P4) |
+| 13 | caixas `numeric(12,2)` | caixas **`int`** | CONFIRMADO pelo usuário (2026-07-12): meia caixa não existe na prática, somente caixas inteiras |
 
 O que **continua fora do banco** (derivado em view/app): m² de tudo, `caixas_reserva` do lote (soma das linhas ativas), disponível, status de estoque (disponível/baixo/esgotado), label de localização ("Q-08 (30 cx) · Q-11 (15 cx)").
 
@@ -355,7 +355,7 @@ PH-11 vigente: na prática só `admin` existe no começo; a matriz acima é o al
 - **P1 — Máscara da quadra**: `quadras.numero` é `text` livre até o usuário confirmar os identificadores reais do depósito. Existe padrão ("Q-03"? número puro? letra+número)? Vira `check` depois.
 - **P2 — PH-12**: mesmo código de fábrica com bitola/tonalidade diferentes → hoje sufixo manual (L-2405-B), código único global. Como o depósito diferencia isso HOJE no papel? Vale unicidade composta (código+bitola+tonalidade) em vez do sufixo? (No 0.0.2 o vínculo reserva→lote já é por FK id, então mudar a unicidade depois é barato.)
 - **P3 — PH-9**: correção de contagem abaixo do comprometido (reserva travada + perda): BLOQUEAR (comportamento atual) ou avisar e permitir?
-- **P4 — Caixa fracionada existe?** O schema propõe `int` (o app inteiro opera caixas inteiras, mínimo 1). O 0.0.1 usava `numeric(12,2)` — meia caixa acontece na prática?
+- ~~P4 — Caixa fracionada~~ RESOLVIDA pelo usuário (2026-07-12): não existe meia caixa; caixas são `int`.
 - **P5 — Endereço de entrega**: texto livre basta ou estruturar (rua/CEP/cidade) para rota/frete no futuro?
 - **P6 — Q16/PH-5**: prazo real de reposição (pedido → chegada), sazonalidade, produtos mais lentos — define `dias_antecedencia_entrega` e a escala rápida×encomenda (PH-4).
 - **P7 — PH-1/PH-2**: limites de estoque baixo (10 cx) e pico de perda (5 cx) — valores reais? Por produto ou global? (A tabela `parametros` já deixa ajustável.)
