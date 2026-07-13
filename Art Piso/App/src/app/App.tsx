@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { AjustesPage } from '@/features/ajustes/AjustesPage'
 import { ClientesPage } from '@/features/clientes/ClientesPage'
@@ -7,7 +7,9 @@ import { EstoquePage } from '@/features/estoque/EstoquePage'
 import { ReservasPage } from '@/features/reservas/ReservasPage'
 import { AppShell, type AppSection } from '@/components/layout/AppShell'
 import { SignInPage } from '@/components/ui/sign-in'
+import { dataSource, supabase } from '@/lib/supabase'
 import { InventoryProvider } from '@/store/inventory-provider'
+import { SupabaseInventoryProvider } from '@/store/supabase-provider'
 import { NotificationsProvider } from '@/store/notifications-provider'
 
 const titles: Record<AppSection, string> = {
@@ -19,16 +21,48 @@ const titles: Record<AppSection, string> = {
 }
 
 export default function App() {
-  const [authenticated, setAuthenticated] = useState(false)
+  const [authenticated, setAuthenticated] = useState(dataSource === 'mock' ? false : null as boolean | null)
+  const [authError, setAuthError] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
   const [activeSection, setActiveSection] = useState<AppSection>('estoque')
   const [searchQuery, setSearchQuery] = useState('')
 
-  function handleSignIn(event: FormEvent<HTMLFormElement>) {
+  // Modo Supabase: sessao persistida (recarregar a pagina nao desloga) + observador de auth.
+  useEffect(() => {
+    if (!supabase) return
+    supabase.auth.getSession().then(({ data }) => setAuthenticated(Boolean(data.session)))
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticated(Boolean(session))
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setAuthenticated(true)
+    if (!supabase) {
+      // Modo mock: entra direto (comportamento original, sem auth real)
+      setAuthenticated(true)
+      return
+    }
+    const form = new FormData(event.currentTarget)
+    const email = String(form.get('email') ?? '').trim()
+    const password = String(form.get('password') ?? '')
+    setAuthError('')
+    setAuthLoading(true)
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    setAuthLoading(false)
+    if (error) {
+      setAuthError(
+        error.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos.'
+          : `Não foi possível entrar: ${error.message}`,
+      )
+    }
+    // Sucesso: o onAuthStateChange acima marca a sessao como autenticada.
   }
 
   function handleLogout() {
+    if (supabase) void supabase.auth.signOut()
     setAuthenticated(false)
     setActiveSection('estoque')
     setSearchQuery('')
@@ -54,18 +88,27 @@ export default function App() {
     }
   }, [activeSection])
 
+  // Modo Supabase: aguardando o getSession inicial (evita piscar a tela de login)
+  if (authenticated === null) {
+    return <div className="flex h-dvh items-center justify-center bg-background text-sm text-muted-foreground">Carregando…</div>
+  }
+
   if (!authenticated) {
     return (
       <SignInPage
         description="Gerencie estoque, reservas e ajustes em um só lugar."
         onSignIn={handleSignIn}
+        errorMessage={authError}
+        loading={authLoading}
       />
     )
   }
 
+  const DataProvider = dataSource === 'supabase' ? SupabaseInventoryProvider : InventoryProvider
+
   return (
     <NotificationsProvider>
-      <InventoryProvider>
+      <DataProvider>
         <AppShell
           activeSection={activeSection}
           title={titles[activeSection]}
@@ -76,7 +119,7 @@ export default function App() {
         >
           {page}
         </AppShell>
-      </InventoryProvider>
+      </DataProvider>
     </NotificationsProvider>
   )
 }

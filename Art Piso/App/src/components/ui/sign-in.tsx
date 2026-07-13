@@ -7,6 +7,10 @@ interface SignInPageProps {
   heroImageSrc?: string;
   onSignIn?: (event: React.FormEvent<HTMLFormElement>) => void;
   onResetPassword?: () => void;
+  /** Erro de autenticacao (modo Supabase): exibido acima do botao Entrar. */
+  errorMessage?: string;
+  /** Autenticando: desabilita o botao (evita duplo submit). */
+  loading?: boolean;
 }
 
 // --- SUB-COMPONENTS ---
@@ -24,6 +28,8 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   heroImageSrc = "/login-hero.png",
   onSignIn,
   onResetPassword,
+  errorMessage,
+  loading = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -74,8 +80,14 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword?.(); }} className="text-muted-foreground transition-colors hover:text-foreground hover:underline">Esqueci minha senha</a>
               </div>
 
-              <button type="submit" className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                Entrar
+              {errorMessage ? (
+                <p className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400" role="alert">
+                  {errorMessage}
+                </p>
+              ) : null}
+
+              <button type="submit" disabled={loading} className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                {loading ? 'Entrando…' : 'Entrar'}
               </button>
             </form>
           </div>
