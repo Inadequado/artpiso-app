@@ -191,5 +191,6 @@ Varredura da raiz a pedido do usuario; itens sem uso pra continuacao do projeto,
 5. **Consolidar componentes**: extrair o map de status da reserva (label/variant), hoje duplicado em ReservasPage/DetalhesReservaDrawer/ClientesPage/EditarPedidoDrawer, para um modulo compartilhado — quando a WIP de reservas assentar.
 6. **Suporte a TABLET promovido de P2 a requisito** (2026-07-12): o papel vendedor vive num tablet compartilhado na loja (hoje o app e desktop-only, `min-width: 1180px`) — entra na Fase 2, no minimo para as telas de consulta. Segue P2: navegacao `<button>` -> router.
 7. **Funcoes exatas do GERENTE**: a decidir pelo usuario (proposta apresentada na matriz RLS do schema 0.0.2).
+8. **Autoria da venda** (decisao do usuario, 2026-07-12): loja NAO usa comissao — `vendedor_id` registra quem REGISTROU o pedido (conta compartilhada do tablet nao identifica pessoa e esta ok). SE comissao surgir no futuro: campo "Vendedor" MANUAL no pedido (lista de nomes, sem login individual), nao contas individuais.
 
 (Semear clienteId nas reservas do mock: FEITO 2026-06-25; pendente real so no Supabase.)
