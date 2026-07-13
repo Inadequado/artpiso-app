@@ -1,11 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { proximoNumeroPedido } from '@/data/mock-inventory'
+import { parseDataPrevista, regimePorData } from '@/lib/reserva-regime'
 import { supabase } from '@/lib/supabase'
 import { useNotifications } from '@/store/notifications'
 import {
   InventoryContext,
   type ClienteInput,
+  type EditarPedidoInput,
+  type EditarReservaInput,
+  type EntregarReservaInput,
+  type EstornarReservaInput,
   type InventoryContextValue,
+  type NovaReservaInput,
+  type NovoPedidoInput,
   type QuadraInput,
 } from '@/store/inventory'
 import type {
@@ -25,8 +33,10 @@ import type {
  * VITE_DATA_SOURCE (App.tsx).
  *
  * FATIA 1 (catalogo + clientes): leitura de estoque/quadras/usuarios/clientes/
- * historico; ajustes de estoque e cadastros via RPC/tabela. Reservas/pedidos
- * chegam na proxima fatia (acoes avisam em vez de quebrar).
+ * historico; ajustes de estoque e cadastros via RPC/tabela.
+ * FATIA 2 (pedidos/reservas): leitura com entregas/estornos embutidos e as acoes
+ * criar/editar/cancelar/entregar/estornar via RPCs (Q5/R-05/R-07 valem no banco).
+ * Falta: CRUD de usuarios (admin API exige service role — painel por ora).
  */
 
 const TITULO_MOVIMENTO: Record<MovimentoTipo, string> = {
@@ -44,6 +54,29 @@ function formatarData(iso: string) {
   return `${dia} · ${hora}`
 }
 
+/** Data prevista da UI (DD/MM/AAAA) -> coluna date (YYYY-MM-DD). */
+function dataPrevistaParaISO(value?: string): string | null {
+  const data = parseDataPrevista(value)
+  if (!data) return null
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`
+}
+
+/** Coluna date (YYYY-MM-DD) -> formato da UI (DD/MM/AAAA). */
+function dataPrevistaParaUI(value?: string | null): string | undefined {
+  if (!value) return undefined
+  const [ano, mes, dia] = value.split('-')
+  return `${dia}/${mes}/${ano}`
+}
+
+/** "Q-08 (5 cx) · Q-11 (3 cx)" a partir das linhas de entrega_quadras. */
+function labelRetiradas(itens: { caixas: number; quadras: { numero: string } | null }[] | null | undefined) {
+  const label = (itens ?? [])
+    .map((item) => (item.quadras ? `${item.quadras.numero} (${item.caixas} cx)` : null))
+    .filter(Boolean)
+    .join(' · ')
+  return label || undefined
+}
+
 function mensagemErro(erro: unknown) {
   if (erro && typeof erro === 'object' && 'message' in erro) return String((erro as { message: unknown }).message)
   return String(erro)
@@ -57,7 +90,9 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [movimentos, setMovimentos] = useState<Movimento[]>([])
-  const [reservas] = useState<Reserva[]>([]) // proxima fatia (pedidos/reservas)
+  const [reservas, setReservas] = useState<Reserva[]>([])
+  // Chaves internas do banco que o contrato do mock nao carrega: numero do PED -> ids do pedido.
+  const pedidosMeta = useRef(new Map<string, { id: string; clienteId: string }>())
 
   const avisarErro = useCallback((contexto: string, erro: unknown) => {
     notificar({ tipo: 'info', titulo: contexto, descricao: mensagemErro(erro) })
@@ -66,14 +101,21 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   // ------------------------------------------------------------- leituras
   const recarregar = useCallback(async () => {
     if (!supabase) return
-    const [vwEstoque, tQuadras, tProfiles, tClientes, tMovimentos] = await Promise.all([
+    const [vwEstoque, tQuadras, tProfiles, tClientes, tMovimentos, tReservas] = await Promise.all([
       supabase.from('vw_estoque').select('*').order('nome').order('lote'),
       supabase.from('quadras').select('id, numero, descricao, status').order('numero'),
       supabase.from('profiles').select('id, nome, role, status').order('nome'),
       supabase.from('clientes').select('id, nome, documento, telefone, cliente_enderecos(id, apelido, endereco)').order('nome'),
       supabase.from('movimentos').select('id, tipo, detalhe, observacao, lote_id, produto_id, created_at, profiles(nome)').order('created_at', { ascending: false }).limit(200),
+      supabase.from('reservas').select(`
+        id, caixas_saldo, caixas_entregues, caixas_travadas, regime, status, motivo_cancelamento, created_at,
+        pedidos(id, numero, cliente_id, endereco_id, endereco_entrega, data_prevista, observacoes, clientes(nome, documento, telefone), profiles(nome)),
+        lotes(codigo, m2_por_caixa, produtos(nome)),
+        entregas(id, caixas, responsavel, observacoes, created_at, lotes(codigo), entrega_quadras(caixas, quadras(numero))),
+        estornos(id, caixas, motivo, created_at, quadras(numero), profiles(nome))
+      `).order('created_at', { ascending: false }),
     ])
-    const falha = vwEstoque.error ?? tQuadras.error ?? tProfiles.error ?? tClientes.error ?? tMovimentos.error
+    const falha = vwEstoque.error ?? tQuadras.error ?? tProfiles.error ?? tClientes.error ?? tMovimentos.error ?? tReservas.error
     if (falha) {
       avisarErro('Erro ao carregar dados', falha)
       return
@@ -122,6 +164,65 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
       usuario: (r.profiles as { nome: string } | null)?.nome ?? '—',
       data: formatarData(r.created_at),
     })))
+
+    pedidosMeta.current = new Map()
+    setReservas((tReservas.data ?? []).map((r): Reserva => {
+      const pedido = r.pedidos
+      if (pedido) pedidosMeta.current.set(pedido.numero, { id: pedido.id, clienteId: pedido.cliente_id })
+      const entregas = [...(r.entregas ?? [])]
+        .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
+        .map((e) => ({
+          id: e.id,
+          data: formatarData(e.created_at),
+          responsavel: e.responsavel,
+          caixas: e.caixas,
+          lote: (e.lotes as { codigo: string } | null)?.codigo,
+          quadras: labelRetiradas(e.entrega_quadras),
+          observacoes: e.observacoes ?? undefined,
+        }))
+      const estornos = [...(r.estornos ?? [])]
+        .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
+        .map((e) => ({
+          id: e.id,
+          data: formatarData(e.created_at),
+          responsavel: (e.profiles as { nome: string } | null)?.nome ?? '—',
+          caixas: e.caixas,
+          quadraDestino: (e.quadras as { numero: string } | null)?.numero ?? '—',
+          motivo: e.motivo ?? undefined,
+        }))
+      // Snapshot de localizacao das HISTORICAS: de onde as entregas sairam.
+      // (As ativas derivam do lote ao vivo via quadraDaReserva.)
+      const quadrasHistoricas = [...new Set(
+        (r.entregas ?? []).flatMap((e) => (e.entrega_quadras ?? []).map((q) => (q.quadras as { numero: string } | null)?.numero)).filter(Boolean),
+      )].join(' · ')
+      return {
+        id: r.id,
+        pedido: pedido?.numero ?? '—',
+        clienteId: pedido?.cliente_id ?? undefined,
+        cliente: (pedido?.clientes as { nome: string } | null)?.nome ?? '',
+        documento: (pedido?.clientes as { documento?: string } | null)?.documento ?? undefined,
+        telefone: (pedido?.clientes as { telefone?: string } | null)?.telefone ?? '',
+        enderecoId: pedido?.endereco_id ?? undefined,
+        enderecoEntrega: pedido?.endereco_entrega ?? undefined,
+        produto: ((r.lotes as { produtos?: { nome: string } } | null)?.produtos?.nome) ?? '—',
+        lote: (r.lotes as { codigo: string } | null)?.codigo ?? '—',
+        quadra: quadrasHistoricas || '—',
+        caixas: r.caixas_saldo,
+        m2: r.caixas_saldo * Number((r.lotes as { m2_por_caixa: number } | null)?.m2_por_caixa ?? 0),
+        caixasEntregues: r.caixas_entregues || undefined,
+        // Contrato do mock: caixasTravadas numerico so p/ rotacionando (nos demais deriva do saldo).
+        caixasTravadas: r.regime === 'rotacionando' ? r.caixas_travadas : undefined,
+        entregas: entregas.length > 0 ? entregas : undefined,
+        estornos: estornos.length > 0 ? estornos : undefined,
+        dataPrevista: dataPrevistaParaUI(pedido?.data_prevista),
+        status: r.status,
+        regime: r.regime,
+        data: formatarData(r.created_at),
+        vendedor: (pedido?.profiles as { nome: string } | null)?.nome ?? '—',
+        observacoes: pedido?.observacoes ?? undefined,
+        motivoCancelamento: r.motivo_cancelamento ?? undefined,
+      }
+    }))
   }, [avisarErro])
 
   useEffect(() => {
@@ -358,6 +459,148 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     })
   }, [executar])
 
+  // ------------------------------------------------------------- pedidos / reservas
+  /** Regime por item, espelhando o mock: rotacionando trava 0; o resto deriva do saldo no banco. */
+  const itemPedido = useCallback((loteId: string, caixas: number, dataPrevista?: string, manterReservadoAgora?: boolean) => {
+    const regime = regimePorData(dataPrevista, manterReservadoAgora) ?? 'aguardando'
+    return { lote_id: loteId, caixas, regime, caixas_travadas: 0 }
+  }, [])
+
+  const criarPedido = useCallback((input: NovoPedidoInput) => {
+    const itens = input.itens.filter((item) => item.caixas > 0)
+    if (itens.length === 0) return
+    if (!input.clienteId) {
+      notificar({ tipo: 'info', titulo: 'Cliente obrigatório', descricao: 'Selecione um cliente cadastrado para criar o pedido.' })
+      return
+    }
+    const numero = input.pedido?.trim() || proximoNumeroPedido(reservas)
+    executar('Erro ao criar pedido', async () => {
+      await rpc('fn_criar_pedido', {
+        p_numero: numero,
+        p_cliente_id: input.clienteId,
+        p_endereco_id: input.enderecoId ?? null,
+        p_data_prevista: dataPrevistaParaISO(input.dataPrevista),
+        p_observacoes: input.observacoes ?? null,
+        p_itens: itens.map((item) => itemPedido(item.loteId, item.caixas, input.dataPrevista, input.manterReservadoAgora)),
+      })
+      const totalCaixas = itens.reduce((total, item) => total + item.caixas, 0)
+      notificar({
+        tipo: 'reserva',
+        titulo: itens.length > 1 ? 'Pedido criado' : 'Reserva criada',
+        descricao: `${numero} — ${itens.length > 1 ? `${itens.length} itens · ` : ''}${totalCaixas} cx para ${input.cliente.trim()}`,
+      })
+    })
+  }, [executar, itemPedido, notificar, reservas, rpc])
+
+  const criarReserva = useCallback((input: NovaReservaInput) => {
+    criarPedido({
+      pedido: input.pedido,
+      clienteId: input.clienteId,
+      cliente: input.cliente,
+      documento: input.documento,
+      telefone: input.telefone,
+      enderecoId: input.enderecoId,
+      enderecoEntrega: input.enderecoEntrega,
+      observacoes: input.observacoes,
+      dataPrevista: input.dataPrevista,
+      manterReservadoAgora: input.manterReservadoAgora,
+      itens: [{ loteId: input.loteId, caixas: input.caixas }],
+    })
+  }, [criarPedido])
+
+  const editarPedido = useCallback((input: EditarPedidoInput) => {
+    const meta = pedidosMeta.current.get(input.pedidoOriginal)
+    if (!meta) {
+      notificar({ tipo: 'info', titulo: 'Pedido não encontrado', descricao: `Não achei o pedido ${input.pedidoOriginal} no banco.` })
+      return
+    }
+    executar('Erro ao editar pedido', () => rpc('fn_editar_pedido', {
+      p_pedido_id: meta.id,
+      p_cliente_id: input.clienteId ?? meta.clienteId,
+      p_endereco_id: input.enderecoId ?? null,
+      p_data_prevista: dataPrevistaParaISO(input.dataPrevista),
+      p_observacoes: input.observacoes ?? null,
+      p_itens: input.itens.map((item) => ({
+        ...itemPedido(item.loteId, item.caixas, input.dataPrevista, input.manterReservadoAgora),
+        reserva_id: item.reservaId ?? null,
+      })),
+    }))
+  }, [executar, itemPedido, notificar, rpc])
+
+  const editarReserva = useCallback((input: EditarReservaInput) => {
+    // Editor de 1 LINHA (saldo da parcial): monta o pedido inteiro para a RPC —
+    // linhas reservadas ausentes seriam CANCELADAS pelo fn_editar_pedido (R-07).
+    const linha = reservas.find((item) => item.id === input.id)
+    const meta = linha ? pedidosMeta.current.get(linha.pedido) : undefined
+    if (!linha || !meta) {
+      notificar({ tipo: 'info', titulo: 'Reserva não encontrada', descricao: 'Não achei a linha no banco. Recarregue a página.' })
+      return
+    }
+    const outrasLinhas = reservas
+      .filter((item) => item.pedido === linha.pedido && item.id !== linha.id && item.status === 'reservado')
+      .map((item) => {
+        const lote = lotes.find((l) => l.lote === item.lote)
+        return { reserva_id: item.id, lote_id: lote?.id ?? null, caixas: item.caixas, regime: item.regime ?? 'aguardando', caixas_travadas: item.caixasTravadas ?? 0 }
+      })
+    executar('Erro ao editar reserva', () => rpc('fn_editar_pedido', {
+      p_pedido_id: meta.id,
+      p_cliente_id: meta.clienteId, // cliente imutavel na parcial (R-05)
+      p_endereco_id: linha.enderecoId ?? null,
+      p_data_prevista: dataPrevistaParaISO(input.dataPrevista),
+      p_observacoes: input.observacoes ?? null,
+      p_itens: [
+        { ...itemPedido(input.loteId, input.caixas, input.dataPrevista, input.manterReservadoAgora), reserva_id: input.id },
+        ...outrasLinhas,
+      ],
+    }))
+  }, [executar, itemPedido, lotes, notificar, reservas, rpc])
+
+  const cancelarReserva = useCallback((id: string, motivo?: string) => {
+    executar('Erro ao cancelar reserva', () => rpc('fn_cancelar_reserva', { p_reserva_id: id, p_motivo: motivo ?? null }))
+  }, [executar, rpc])
+
+  const entregarReserva = useCallback((input: EntregarReservaInput) => {
+    const linha = reservas.find((item) => item.id === input.id)
+    executar('Erro ao registrar entrega', async () => {
+      const retiradas = (input.retiradas ?? []).map((r) => {
+        const quadraId = quadraIdPorNumero(r.quadra)
+        if (!quadraId) throw new Error(`Quadra ${r.quadra} não encontrada.`)
+        return { quadra_id: quadraId, caixas: r.caixas }
+      })
+      await rpc('fn_entregar', {
+        p_reserva_id: input.id,
+        p_caixas: input.caixas,
+        p_responsavel: input.responsavel,
+        p_observacoes: input.observacoes ?? null,
+        p_lote_alternativo_id: input.loteId ?? null,
+        p_retiradas: retiradas.length > 0 ? retiradas : null,
+      })
+      const total = linha ? input.caixas >= linha.caixas : true
+      notificar({
+        tipo: 'entrega',
+        titulo: total ? 'Entrega concluída' : 'Entrega parcial',
+        descricao: `${linha?.produto ?? ''} — ${input.caixas} cx${linha ? ` (${linha.pedido})` : ''}`,
+      })
+    })
+  }, [executar, notificar, quadraIdPorNumero, reservas, rpc])
+
+  const estornarReserva = useCallback((input: EstornarReservaInput) => {
+    const linha = reservas.find((item) => item.id === input.id)
+    executar('Erro na devolução', async () => {
+      await rpc('fn_estornar', {
+        p_reserva_id: input.id,
+        p_caixas: input.caixas,
+        p_quadra_destino_id: input.quadraId,
+        p_motivo: input.motivo ?? null,
+      })
+      notificar({
+        tipo: 'entrega',
+        titulo: 'Devolução registrada',
+        descricao: `${linha?.produto ?? ''} — ${input.caixas} cx devolvidas${linha ? ` (${linha.pedido})` : ''}`,
+      })
+    })
+  }, [executar, notificar, reservas, rpc])
+
   // ------------------------------------------------------------- stubs (proximas fatias)
   const value: InventoryContextValue = {
     lotes,
@@ -383,13 +626,13 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     removerProduto,
     atualizarLote,
     atualizarProduto,
-    criarReserva: () => proximaFatia('Criar reserva'),
-    criarPedido: () => proximaFatia('Criar pedido'),
-    editarReserva: () => proximaFatia('Editar reserva'),
-    editarPedido: () => proximaFatia('Editar pedido'),
-    cancelarReserva: () => proximaFatia('Cancelar reserva'),
-    entregarReserva: () => proximaFatia('Registrar entrega'),
-    estornarReserva: () => proximaFatia('Devolução'),
+    criarReserva,
+    criarPedido,
+    editarReserva,
+    editarPedido,
+    cancelarReserva,
+    entregarReserva,
+    estornarReserva,
     registrarEntrada,
     registrarPerda,
     moverQuadra,
