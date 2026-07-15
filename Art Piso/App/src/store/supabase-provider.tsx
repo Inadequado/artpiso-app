@@ -238,6 +238,27 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     }
   }, [recarregar])
 
+  // Realtime GERAL (etapa 4): qualquer mudanca nas tabelas publicadas — deste ou de
+  // OUTRO aparelho — recarrega os dados (debounce: uma transacao emite N eventos).
+  useEffect(() => {
+    if (!supabase) return
+    let timer: number | undefined
+    const canal = supabase
+      .channel('dados-inventario')
+      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        if (payload.table === 'notificacoes') return // o sino tem canal proprio
+        window.clearTimeout(timer)
+        timer = window.setTimeout(() => {
+          void recarregar()
+        }, 400)
+      })
+      .subscribe()
+    return () => {
+      window.clearTimeout(timer)
+      void supabase?.removeChannel(canal)
+    }
+  }, [recarregar])
+
   // ------------------------------------------------------------- helpers
   const quadraIdPorNumero = useCallback((numero: string) => {
     return quadras.find((q) => q.numero === numero)?.id
@@ -402,10 +423,6 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
 
   const atualizarProduto = useCallback<InventoryContextValue['atualizarProduto']>((produtoId, patch) => {
     const atual = lotes.find((l) => l.produtoId === produtoId)
-    if (atual && (patch.m2PorCaixa !== atual.m2PorCaixa || patch.pecasPorCaixa !== atual.pecasPorCaixa)) {
-      // m2/caixa e pecas/caixa sao POR LOTE no banco; edicao em massa via produto fica pra proxima fatia.
-      notificar({ tipo: 'info', titulo: 'Campo por lote', descricao: 'm²/caixa e peças/caixa são do LOTE no banco — edite pelo lote (próxima fatia cobre a edição em massa).' })
-    }
     executar('Erro ao atualizar produto', async () => {
       const { error } = await supabase!.from('produtos').update({
         nome: patch.produto,
@@ -417,8 +434,16 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
         foto: patch.foto ?? null,
       }).eq('id', produtoId)
       if (error) throw error
+      // m2/caixa e pecas/caixa vivem no LOTE; a edicao pelo produto aplica em massa (RPC)
+      if (atual && (patch.m2PorCaixa !== atual.m2PorCaixa || patch.pecasPorCaixa !== atual.pecasPorCaixa)) {
+        await rpc('fn_atualizar_medidas_produto', {
+          p_produto_id: produtoId,
+          p_m2_por_caixa: patch.m2PorCaixa,
+          p_pecas_por_caixa: patch.pecasPorCaixa,
+        })
+      }
     })
-  }, [executar, lotes, notificar])
+  }, [executar, lotes, rpc])
 
   // ------------------------------------------------------------- ajustes
   const registrarEntrada = useCallback((loteId: string, caixas: number, quadra: string) => {
