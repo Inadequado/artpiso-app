@@ -6,6 +6,7 @@ import { ConfiguracoesPage } from '@/features/configuracoes/ConfiguracoesPage'
 import { EstoquePage } from '@/features/estoque/EstoquePage'
 import { ReservasPage } from '@/features/reservas/ReservasPage'
 import { AppShell, type AppSection } from '@/components/layout/AppShell'
+import { SplashScreen } from '@/components/layout/SplashScreen'
 import { SignInPage } from '@/components/ui/sign-in'
 import { paraEmailLogin } from '@/lib/login'
 import { dataSource, supabase } from '@/lib/supabase'
@@ -28,6 +29,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false)
   const [activeSection, setActiveSection] = useState<AppSection>('estoque')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSplash, setShowSplash] = useState(true)
 
   // Modo Supabase: sessao persistida (recarregar a pagina nao desloga) + observador de auth.
   useEffect(() => {
@@ -91,39 +93,38 @@ export default function App() {
     }
   }, [activeSection])
 
-  // Modo Supabase: aguardando o getSession inicial (evita piscar a tela de login)
-  if (authenticated === null) {
-    return <div className="flex h-dvh items-center justify-center bg-background text-sm text-muted-foreground">Carregando…</div>
-  }
-
-  if (!authenticated) {
-    return (
-      <SignInPage
-        description="Gerencie estoque, reservas e ajustes em um só lugar."
-        onSignIn={handleSignIn}
-        errorMessage={authError}
-        loading={authLoading}
-      />
-    )
-  }
-
   const DataProvider = dataSource === 'supabase' ? SupabaseInventoryProvider : InventoryProvider
   const BellProvider = dataSource === 'supabase' ? SupabaseNotificationsProvider : NotificationsProvider
 
   return (
-    <BellProvider>
-      <DataProvider>
-        <AppShell
-          activeSection={activeSection}
-          title={titles[activeSection]}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        >
-          {page}
-        </AppShell>
-      </DataProvider>
-    </BellProvider>
+    <>
+      {showSplash ? <SplashScreen onDone={() => setShowSplash(false)} /> : null}
+      {authenticated === null ? (
+        // Modo Supabase: aguardando o getSession inicial (a splash cobre este vao)
+        <div className="flex h-dvh items-center justify-center bg-background text-sm text-muted-foreground">Carregando…</div>
+      ) : authenticated ? (
+        <BellProvider>
+          <DataProvider>
+            <AppShell
+              activeSection={activeSection}
+              title={titles[activeSection]}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onNavigate={handleNavigate}
+              onLogout={handleLogout}
+            >
+              {page}
+            </AppShell>
+          </DataProvider>
+        </BellProvider>
+      ) : (
+        <SignInPage
+          description="Gerencie estoque, reservas e ajustes em um só lugar."
+          onSignIn={handleSignIn}
+          errorMessage={authError}
+          loading={authLoading}
+        />
+      )}
+    </>
   )
 }

@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { LogoSymbol, LogoWordmark } from '@/components/brand/Logo'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { IosVh } from '@/components/layout/IosVh'
 import { NotificationsDrawer } from '@/components/layout/NotificationsDrawer'
 import { notificacaoIcon, notificacaoTone } from '@/components/layout/notification-style'
 import { PrimaryActionContext } from '@/components/layout/primary-action'
@@ -166,7 +167,8 @@ export function AppShell({
   }, [accountOpen])
 
   return (
-    <div className="dark min-h-[100dvh] bg-background text-foreground lg:flex">
+    <div className="app-shell dark min-h-[100dvh] bg-background text-foreground lg:flex">
+      <IosVh />
       <aside className="relative hidden w-20 shrink-0 lg:block">
         <div className="group absolute inset-y-0 left-0 z-30 flex w-20 flex-col overflow-hidden border-r bg-card transition-[width] duration-200 ease-out hover:w-[264px] focus-within:w-[264px]">
           <div className="flex h-20 shrink-0 items-center gap-3 border-b px-4">
@@ -254,7 +256,7 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="flex h-[100dvh] min-w-0 flex-1 flex-col lg:h-screen">
+      <main className="app-main flex h-[100dvh] min-w-0 flex-1 flex-col lg:h-screen">
         <header className="hidden h-20 shrink-0 items-center justify-between border-b bg-card px-8 lg:flex">
           <div>
             <h1 className="text-2xl font-bold text-pretty">{title}</h1>
@@ -377,7 +379,7 @@ export function AppShell({
           </div>
         </header>
 
-        <header className="relative shrink-0 border-b bg-background pt-[env(safe-area-inset-top)] lg:hidden">
+        <header className="relative shrink-0 border-b bg-background pt-[max(env(safe-area-inset-top),var(--safe-top-boot,0px))] lg:hidden">
           <div className="flex h-14 items-center justify-between gap-2 px-4">
             <h1 className="min-w-0 truncate text-lg font-bold">{title}</h1>
             <div className="flex items-center gap-1">

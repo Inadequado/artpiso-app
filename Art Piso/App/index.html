@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#09090b" />
     <meta name="color-scheme" content="dark" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,6 +15,29 @@
     <title>Art Piso</title>
   </head>
   <body>
+    <!-- [FIX iOS PWA] Portado do minas-tintas-pintor: roda SINCRONO antes do 1o
+         paint (o useEffect do IosVh so roda pos-hidratacao e o frame nascia no
+         100dvh DEFASADO -> bottom-nav empurrada + faixa embaixo). Publica
+         --app-vh = screen.height (px fisico, correto desde o 1o frame) e
+         --safe-top-boot = screen.height - innerHeight (a status bar no boot, que
+         o env(safe-area-inset-top) so reporta ~59 depois de reconciliar). -->
+    <script>
+      (function () {
+        try {
+          if (navigator.standalone === true) {
+            var d = document.documentElement
+            d.classList.add('ios-standalone')
+            var portrait = matchMedia('(orientation: portrait)').matches
+            var h = portrait
+              ? Math.max(screen.width, screen.height)
+              : Math.min(screen.width, screen.height)
+            d.style.setProperty('--app-vh', h + 'px')
+            var gap = h - window.innerHeight
+            if (gap > 0 && gap < 120) d.style.setProperty('--safe-top-boot', gap + 'px')
+          }
+        } catch (e) {}
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
