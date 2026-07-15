@@ -7,6 +7,7 @@ import { EstoquePage } from '@/features/estoque/EstoquePage'
 import { ReservasPage } from '@/features/reservas/ReservasPage'
 import { AppShell, type AppSection } from '@/components/layout/AppShell'
 import { SignInPage } from '@/components/ui/sign-in'
+import { paraEmailLogin } from '@/lib/login'
 import { dataSource, supabase } from '@/lib/supabase'
 import { InventoryProvider } from '@/store/inventory-provider'
 import { SupabaseInventoryProvider } from '@/store/supabase-provider'
@@ -46,7 +47,8 @@ export default function App() {
       return
     }
     const form = new FormData(event.currentTarget)
-    const email = String(form.get('email') ?? '').trim()
+    // "balcao" vira "balcao@artpiso.local" invisivel; e-mail completo passa direto
+    const email = paraEmailLogin(String(form.get('email') ?? ''))
     const password = String(form.get('password') ?? '')
     setAuthError('')
     setAuthLoading(true)

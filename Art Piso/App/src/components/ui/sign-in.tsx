@@ -54,9 +54,9 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 
             <form className="space-y-5" onSubmit={onSignIn}>
               <div className="animate-element animate-delay-300">
-                <label className="text-sm font-medium text-muted-foreground">E-mail</label>
+                <label className="text-sm font-medium text-muted-foreground">Usuário ou e-mail</label>
                 <GlassInputWrapper>
-                  <input name="email" type="email" placeholder="Digite seu e-mail" className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none" />
+                  <input name="email" type="text" autoComplete="username" spellCheck={false} placeholder="Digite seu usuário ou e-mail" className="w-full bg-transparent text-sm p-4 rounded-2xl focus:outline-none" />
                 </GlassInputWrapper>
               </div>
 

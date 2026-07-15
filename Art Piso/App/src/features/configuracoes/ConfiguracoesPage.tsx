@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { useGsapListRefresh } from '@/lib/animations'
+import { paraEmailLogin, paraUsuarioExibicao } from '@/lib/login'
 import { useInventory, type UsuarioInput } from '@/store/inventory'
 import type { Usuario, UserRole } from '@/types/inventory'
 
@@ -91,7 +92,7 @@ export function ConfiguracoesPage() {
                 <tr key={usuario.id}>
                   <td>
                     <strong>{usuario.nome}</strong>
-                    <p className="text-sm text-muted-foreground">{usuario.email}</p>
+                    <p className="text-sm text-muted-foreground">{paraUsuarioExibicao(usuario.email)}</p>
                   </td>
                   <td><Badge variant="reserved">{roleLabel[usuario.role]}</Badge></td>
                   <td><Badge variant={usuario.status === 'ativo' ? 'success' : 'default'}>{statusLabel[usuario.status]}</Badge></td>
@@ -183,27 +184,33 @@ function UsuarioDrawer({
 }) {
   const { usuarios } = useInventory()
   const [nome, setNome] = useState(usuario?.nome ?? '')
-  const [email, setEmail] = useState(usuario?.email ?? '')
+  const [login, setLogin] = useState(usuario ? paraUsuarioExibicao(usuario.email) : '')
   const [senha, setSenha] = useState('')
   const [role, setRole] = useState<UserRole>(usuario?.role ?? 'vendedor')
 
-  // E-mail e a identidade de login: formato basico + sem duplicar com outro usuario.
-  const emailNorm = email.trim().toLowerCase()
-  const emailFormatoOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)
-  const emailDuplicado = emailFormatoOk
-    ? usuarios.find((item) => item.id !== usuario?.id && item.email.trim().toLowerCase() === emailNorm)
+  // Login e a identidade: USUARIO simples (sem e-mail) ou e-mail completo, sem duplicar.
+  const loginNorm = login.trim().toLowerCase()
+  const ehEmail = loginNorm.includes('@')
+  const loginFormatoOk = ehEmail
+    ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginNorm)
+    : /^[a-z0-9][a-z0-9._-]+$/.test(loginNorm)
+  const emailFinal = paraEmailLogin(loginNorm)
+  const loginDuplicado = loginFormatoOk
+    ? usuarios.find((item) => item.id !== usuario?.id && item.email.trim().toLowerCase() === emailFinal)
     : undefined
-  const emailMensagem =
-    email.trim().length > 0 && !emailFormatoOk
-      ? 'Informe um e-mail válido (ex.: nome@artpiso.com.br).'
-      : emailDuplicado
-        ? `E-mail já usado por ${emailDuplicado.nome}.`
+  const loginMensagem =
+    loginNorm.length > 0 && !loginFormatoOk
+      ? ehEmail
+        ? 'Informe um e-mail válido (ex.: nome@artpiso.com.br).'
+        : 'Use letras minúsculas e números, sem espaços (ex.: balcao).'
+      : loginDuplicado
+        ? `Login já usado por ${loginDuplicado.nome}.`
         : undefined
 
   // Senha de login: obrigatoria no cadastro; na edicao so quando quiser redefinir.
   const senhaOk = usuario ? senha === '' || senha.length >= 6 : senha.length >= 6
 
-  const valido = nome.trim().length > 0 && emailFormatoOk && !emailDuplicado && senhaOk
+  const valido = nome.trim().length > 0 && loginFormatoOk && !loginDuplicado && senhaOk
 
   return (
     <Drawer
@@ -217,7 +224,7 @@ function UsuarioDrawer({
           <Button
             className="flex-[2]"
             disabled={!valido}
-            onClick={() => onSave({ nome: nome.trim(), email: email.trim(), role, senha: senha || undefined })}
+            onClick={() => onSave({ nome: nome.trim(), email: emailFinal, role, senha: senha || undefined })}
           >
             {usuario ? 'Salvar alterações' : 'Adicionar usuário'}
           </Button>
@@ -228,11 +235,15 @@ function UsuarioDrawer({
         <Field label="Nome">
           <Input name="nome" autoComplete="name" value={nome} onChange={(event) => setNome(event.target.value)} placeholder="Nome completo" />
         </Field>
-        <Field label="E-mail">
-          <Input type="email" name="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nome@artpiso.com.br" />
-          {emailMensagem ? (
-            <p className="mt-1.5 text-xs font-semibold text-danger">{emailMensagem}</p>
-          ) : null}
+        <Field label="Usuário (login)">
+          <Input type="text" name="login" autoComplete="username" spellCheck={false} value={login} onChange={(event) => setLogin(event.target.value)} placeholder="ex.: balcao" />
+          {loginMensagem ? (
+            <p className="mt-1.5 text-xs font-semibold text-danger">{loginMensagem}</p>
+          ) : (
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Nome curto para entrar no sistema, sem e-mail — ou um e-mail completo, se preferir.
+            </p>
+          )}
         </Field>
         <Field label="Senha" optional={Boolean(usuario)}>
           <Input
