@@ -14,11 +14,13 @@ import {
   UserPlus,
   UserRound,
   Users,
+  X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { LogoSymbol, LogoWordmark } from '@/components/brand/Logo'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { NotificationsDrawer } from '@/components/layout/NotificationsDrawer'
 import { notificacaoIcon, notificacaoTone } from '@/components/layout/notification-style'
 import { PrimaryActionContext } from '@/components/layout/primary-action'
@@ -100,8 +102,11 @@ export function AppShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [verTodasOpen, setVerTodasOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
+  const mobileAccountRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLSpanElement>(null)
 
   const { notificacoes, naoLidas, ringTick, marcarTodasLidas, marcarLida } = useNotifications()
@@ -162,9 +167,30 @@ export function AppShell({
     }
   }, [accountOpen])
 
+  useEffect(() => {
+    if (!mobileAccountOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      if (!mobileAccountRef.current?.contains(event.target as Node)) {
+        setMobileAccountOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMobileAccountOpen(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [mobileAccountOpen])
+
   return (
-    <div className="dark flex min-h-screen bg-background text-foreground">
-      <aside className="relative w-20 shrink-0">
+    <div className="dark min-h-[100dvh] bg-background text-foreground lg:flex">
+      <aside className="relative hidden w-20 shrink-0 lg:block">
         <div className="group absolute inset-y-0 left-0 z-30 flex w-20 flex-col overflow-hidden border-r bg-card transition-[width] duration-200 ease-out hover:w-[264px] focus-within:w-[264px]">
           <div className="flex h-20 shrink-0 items-center gap-3 border-b px-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
@@ -251,8 +277,8 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">
-        <header className="flex h-20 items-center justify-between border-b bg-card px-8">
+      <main className="flex h-[100dvh] min-w-0 flex-1 flex-col lg:h-screen">
+        <header className="hidden h-20 shrink-0 items-center justify-between border-b bg-card px-8 lg:flex">
           <div>
             <h1 className="text-2xl font-bold text-pretty">{title}</h1>
           </div>
@@ -373,12 +399,118 @@ export function AppShell({
           </div>
         </header>
 
+        <header className="relative shrink-0 border-b bg-card pt-[env(safe-area-inset-top)] lg:hidden">
+          <div className="flex h-14 items-center justify-between gap-2 px-4">
+            <h1 className="min-w-0 truncate text-lg font-bold">{title}</h1>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={mobileSearchOpen ? 'Fechar busca' : 'Buscar'}
+                aria-expanded={mobileSearchOpen}
+                onClick={() => setMobileSearchOpen((open) => !open)}
+              >
+                {mobileSearchOpen ? <X aria-hidden="true" /> : <Search aria-hidden="true" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
+                onClick={() => setVerTodasOpen(true)}
+              >
+                <Bell aria-hidden="true" />
+                {naoLidas > 0 ? (
+                  <span className="absolute right-2 top-2 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white">
+                    {naoLidas}
+                  </span>
+                ) : null}
+              </Button>
+              <div ref={mobileAccountRef} className="relative">
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={mobileAccountOpen}
+                  aria-label="Conta"
+                  className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
+                  onClick={() => setMobileAccountOpen((open) => !open)}
+                >
+                  AP
+                </button>
+                {mobileAccountOpen ? (
+                  <div className="absolute right-0 top-12 z-50 w-56 rounded-lg border bg-card shadow-2xl" role="menu">
+                    <div className="border-b p-4">
+                      <p className="text-sm font-bold">Administrador</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Gerente geral</p>
+                    </div>
+                    <div className="flex flex-col p-2">
+                      {accountMenuItems.map((item) => {
+                        const Icon = item.icon
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            role="menuitem"
+                            className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
+                            onClick={() => {
+                              setMobileAccountOpen(false)
+                              if (item.id === 'sair') onLogout?.()
+                            }}
+                          >
+                            <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                            <span className="text-sm font-semibold">{item.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+          {mobileSearchOpen ? (
+            <div className="px-4 pb-3">
+              <div className="relative">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  data-icon="inline-start"
+                />
+                <Input
+                  type="search"
+                  name="busca-mobile"
+                  aria-label="Buscar por referência, lote, cliente ou quadra"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="pl-10"
+                  placeholder="Buscar…"
+                  value={searchQuery}
+                  onChange={(event) => onSearchChange(event.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+          ) : null}
+        </header>
+
         <PrimaryActionContext.Provider value={primaryActionRef}>
           <SearchContext.Provider value={searchQuery}>
-            <div className="app-scrollbar h-[calc(100vh-80px)] overflow-y-auto p-8">{children}</div>
+            <div className="app-scrollbar flex-1 overflow-y-auto p-4 pb-24 lg:p-8">{children}</div>
           </SearchContext.Provider>
         </PrimaryActionContext.Provider>
       </main>
+
+      {primaryAction ? (
+        <button
+          type="button"
+          aria-label={primaryAction.label}
+          onClick={() => primaryActionRef.current?.()}
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-transform active:scale-90 lg:hidden"
+        >
+          <primaryAction.icon aria-hidden="true" className="size-6" />
+        </button>
+      ) : null}
+
+      <BottomNav items={navItems} activeSection={activeSection} onNavigate={onNavigate} />
 
       <NotificationsDrawer
         open={verTodasOpen}
