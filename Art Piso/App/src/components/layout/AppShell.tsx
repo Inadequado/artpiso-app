@@ -53,12 +53,12 @@ const sectionAction: Record<AppSection, { label: string; icon: LucideIcon } | nu
   configuracoes: null,
 }
 
-const navItems: Array<{ id: AppSection; label: string; icon: typeof Archive }> = [
+const navItems: Array<{ id: AppSection; label: string; shortLabel?: string; icon: typeof Archive }> = [
   { id: 'estoque', label: 'Estoque', icon: Archive },
   { id: 'reservas', label: 'Reservas', icon: CalendarCheck },
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'ajustes', label: 'Ajustes', icon: SlidersHorizontal },
-  { id: 'configuracoes', label: 'Configurações', icon: Settings },
+  { id: 'configuracoes', label: 'Configurações', shortLabel: 'Config', icon: Settings },
 ]
 
 const accountMenuItems: Array<{ id: string; label: string; description: string; icon: LucideIcon }> = [
@@ -282,6 +282,7 @@ export function AppShell({
               <Button
                 variant="ghost"
                 size="icon"
+                className="relative"
                 aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
                 aria-haspopup="menu"
                 aria-expanded={notificationsOpen}
@@ -291,8 +292,8 @@ export function AppShell({
                   <Bell aria-hidden="true" data-icon="inline-start" />
                 </span>
                 {naoLidas > 0 ? (
-                  <span className="absolute right-2 top-2 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white">
-                    {naoLidas}
+                  <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-card">
+                    {naoLidas > 9 ? '9+' : naoLidas}
                   </span>
                 ) : null}
               </Button>
@@ -376,7 +377,7 @@ export function AppShell({
           </div>
         </header>
 
-        <header className="relative shrink-0 border-b bg-card pt-[env(safe-area-inset-top)] lg:hidden">
+        <header className="relative shrink-0 border-b bg-background pt-[env(safe-area-inset-top)] lg:hidden">
           <div className="flex h-14 items-center justify-between gap-2 px-4">
             <h1 className="min-w-0 truncate text-lg font-bold">{title}</h1>
             <div className="flex items-center gap-1">
@@ -392,13 +393,14 @@ export function AppShell({
               <Button
                 variant="ghost"
                 size="icon"
+                className="relative"
                 aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
                 onClick={() => setVerTodasOpen(true)}
               >
                 <Bell aria-hidden="true" />
                 {naoLidas > 0 ? (
-                  <span className="absolute right-2 top-2 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white">
-                    {naoLidas}
+                  <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-background">
+                    {naoLidas > 9 ? '9+' : naoLidas}
                   </span>
                 ) : null}
               </Button>

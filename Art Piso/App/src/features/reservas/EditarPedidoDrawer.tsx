@@ -13,25 +13,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
+import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { formatData } from '@/lib/masks'
 import { caixasTravadasReserva, dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type EditarPedidoInput } from '@/store/inventory'
-import type { Cliente, Reserva, ReservaStatus } from '@/types/inventory'
-
-const statusLabel: Record<ReservaStatus, string> = {
-  reservado: 'Reservado',
-  parcial: 'Entrega parcial',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-  estornado: 'Estornado',
-}
-const statusVariant: Record<ReservaStatus, 'reserved' | 'success' | 'danger' | 'warning' | 'default'> = {
-  reservado: 'reserved',
-  parcial: 'warning',
-  entregue: 'success',
-  cancelado: 'danger',
-  estornado: 'default',
-}
+import type { Cliente, Reserva } from '@/types/inventory'
 
 /** Item editavel do carrinho. `reservaId` ausente = item novo; caixas em texto para o input. */
 type ItemEdit = { key: string; reservaId?: string; loteId: string; caixas: string }
@@ -344,14 +330,14 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
               <span className="numeric font-bold text-primary">{resumo.caixas} cx · {formatPreco(resumo.valor)}</span>
             </div>
 
-            <Field label="Data prevista de entrega">
+            <Field label="Data prevista de entrega" optional>
               <Input
                 name="dataPrevista"
                 inputMode="numeric"
                 autoComplete="off"
                 value={dataPrevista}
                 onChange={(event) => setDataPrevista(formatData(event.target.value))}
-                placeholder="DD/MM/AAAA (opcional)"
+                placeholder="DD/MM/AAAA"
               />
             </Field>
 

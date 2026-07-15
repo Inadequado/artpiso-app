@@ -17,27 +17,12 @@ import { EntregaDrawer } from '@/features/reservas/EntregaDrawer'
 import { EstornoDrawer } from '@/features/reservas/EstornoDrawer'
 import { ReservaDrawer } from '@/features/reservas/ReservaDrawer'
 import { RegimeTag } from '@/features/reservas/RegimeTag'
+import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { useGsapListRefresh } from '@/lib/animations'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
-import type { Reserva, ReservaStatus } from '@/types/inventory'
-
-const statusVariant: Record<ReservaStatus, 'reserved' | 'success' | 'danger' | 'warning' | 'default'> = {
-  reservado: 'reserved',
-  parcial: 'warning',
-  entregue: 'success',
-  cancelado: 'danger',
-  estornado: 'default',
-}
-
-const statusLabel: Record<ReservaStatus, string> = {
-  reservado: 'Reservado',
-  parcial: 'Entrega parcial',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-  estornado: 'Estornado',
-}
+import type { Reserva } from '@/types/inventory'
 
 const statusTabs = [
   { id: 'todas', label: 'Todas' },
@@ -352,7 +337,7 @@ export function ReservasPage() {
       </Card>
 
       <ReservaDrawer
-        key={novaReservaSeq}
+        key={`nova-${novaReservaSeq}`}
         open={novaReservaOpen}
         onClose={() => setNovaReservaOpen(false)}
         onConfirm={(input) => {
@@ -362,7 +347,7 @@ export function ReservasPage() {
       />
 
       <EditarPedidoDrawer
-        key={editarPedidoSeq}
+        key={`editar-pedido-${editarPedidoSeq}`}
         reserva={editarPedidoItem}
         onClose={() => setEditarPedidoItem(null)}
         onConfirm={(input) => {
@@ -372,7 +357,7 @@ export function ReservasPage() {
       />
 
       <EditarReservaDrawer
-        key={editarSaldoSeq}
+        key={`editar-saldo-${editarSaldoSeq}`}
         reserva={editarSaldoItem}
         onClose={() => setEditarSaldoItem(null)}
         onConfirm={(input) => {
@@ -382,7 +367,7 @@ export function ReservasPage() {
       />
 
       <EntregaDrawer
-        key={entregaSeq}
+        key={`entrega-${entregaSeq}`}
         reserva={entregaReserva}
         onClose={() => setEntregaReserva(null)}
         onConfirm={(input) => {
@@ -392,7 +377,7 @@ export function ReservasPage() {
       />
 
       <EstornoDrawer
-        key={estornoSeq}
+        key={`estorno-${estornoSeq}`}
         reserva={estornoReserva}
         onClose={() => setEstornoReserva(null)}
         onConfirm={(input) => {
@@ -439,7 +424,7 @@ export function ReservasPage() {
         }}
         onClose={() => setCancelarReserva(null)}
       >
-        <Field label="Motivo do cancelamento (opcional)">
+        <Field label="Motivo do cancelamento" optional>
           <Textarea
             value={motivoCancelamento}
             onChange={(event) => setMotivoCancelamento(event.target.value)}

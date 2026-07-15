@@ -85,16 +85,31 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
+      <Card className="max-lg:border-0 max-lg:bg-transparent">
+        <CardHeader className="flex-row items-center justify-between max-lg:px-0">
           <div>
             <CardTitle>Usuários</CardTitle>
             <CardDescription>Papéis alinhados ao escopo: administrador, vendedor e gerente.</CardDescription>
           </div>
           <Button onClick={abrirNovoUsuario}>Adicionar usuário</Button>
         </CardHeader>
-        <CardContent>
-          <table ref={usuariosTableRef} className="data-table">
+        <CardContent className="max-lg:p-0">
+          {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {usuarios.map((usuario) => (
+              <UsuarioCard
+                key={usuario.id}
+                usuario={usuario}
+                ultimoAdmin={ehUltimoAdmin(usuario)}
+                onEditar={() => abrirEdicaoUsuario(usuario)}
+                onToggleStatus={() => alternarStatusUsuario(usuario.id)}
+                onExcluir={() => setUsuarioExcluir(usuario)}
+              />
+            ))}
+          </div>
+
+          {/* Desktop: tabela completa */}
+          <table ref={usuariosTableRef} className="data-table hidden lg:table">
             <thead>
               <tr>
                 <th>Usuário</th>
@@ -179,6 +194,65 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
         }}
         onClose={() => setUsuarioExcluir(null)}
       />
+    </div>
+  )
+}
+
+function UsuarioCard({
+  usuario,
+  ultimoAdmin,
+  onEditar,
+  onToggleStatus,
+  onExcluir,
+}: {
+  usuario: Usuario
+  ultimoAdmin: boolean
+  onEditar: () => void
+  onToggleStatus: () => void
+  onExcluir: () => void
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <strong className="block truncate">{usuario.nome}</strong>
+          <p className="truncate text-sm text-muted-foreground">{usuario.email}</p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <Badge variant="reserved">{roleLabel[usuario.role]}</Badge>
+          <Badge variant={usuario.status === 'ativo' ? 'success' : 'default'}>{statusLabel[usuario.status]}</Badge>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-1 border-t pt-3">
+        <Button size="sm" variant="ghost" onClick={onEditar}>
+          Editar
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={onToggleStatus}
+        >
+          {usuario.status === 'ativo' ? (
+            <PowerOff aria-hidden="true" data-icon="inline-start" />
+          ) : (
+            <Power aria-hidden="true" data-icon="inline-start" />
+          )}
+          {usuario.status === 'ativo' ? 'Desativar' : 'Ativar'}
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="ml-auto size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
+          aria-label={`Excluir ${usuario.nome}`}
+          title={ultimoAdmin ? 'Não é possível excluir o último administrador' : 'Excluir usuário'}
+          disabled={ultimoAdmin}
+          onClick={onExcluir}
+        >
+          <Trash2 aria-hidden="true" className="size-4" />
+        </Button>
+      </div>
     </div>
   )
 }
