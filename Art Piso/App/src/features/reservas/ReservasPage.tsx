@@ -160,40 +160,72 @@ export function ReservasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="grid grid-cols-4 gap-4">
-        <MetricCard icon={CalendarCheck} tone="reserved" label="Reservas ativas" value={`${resumo.ativas} ${resumo.ativas === 1 ? 'pedido' : 'pedidos'}`} detail="Aguardando entrega" />
+      <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <MetricCard icon={CalendarCheck} tone="reserved" label="Reservas ativas" value={`${resumo.ativas}`} detail={resumo.ativas === 1 ? 'pedido aguardando entrega' : 'pedidos aguardando entrega'} />
         <MetricCard icon={Boxes} tone="default" label="Caixas separadas" value={`${resumo.caixas} cx`} detail="Separadas no estoque" />
-        <MetricCard icon={RotateCw} tone="warning" label="Rotacionando" value={`${resumo.rotacionando} ${resumo.rotacionando === 1 ? 'pedido' : 'pedidos'}`} detail="Estoque girando até a entrega" />
-        <MetricCard icon={Truck} tone="warning" label="Entrega parcial" value={`${resumo.parciais} ${resumo.parciais === 1 ? 'pedido' : 'pedidos'}`} detail="Saldo em aberto" />
+        <MetricCard icon={RotateCw} tone="warning" label="Rotacionando" value={`${resumo.rotacionando}`} detail={resumo.rotacionando === 1 ? 'pedido girando até a entrega' : 'pedidos girando até a entrega'} />
+        <MetricCard icon={Truck} tone="warning" label="Entrega parcial" value={`${resumo.parciais}`} detail={resumo.parciais === 1 ? 'pedido com saldo em aberto' : 'pedidos com saldo em aberto'} />
       </section>
 
-      <section className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-lg border bg-muted p-1">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setStatusFilter(tab.id)}
-              className={cn(
-                'rounded px-3 py-1 text-xs font-bold transition-colors',
-                statusFilter === tab.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      {/* Desktop: filtro de status acima do card. No mobile ele vai pra dentro do card, abaixo do cabecalho. */}
+      <section className="hidden lg:block">
+        <StatusTabs value={statusFilter} onChange={setStatusFilter} />
       </section>
 
-      <Card>
-        <CardHeader>
+      <Card className="max-lg:border-0 max-lg:bg-transparent">
+        <CardHeader className="max-lg:px-0">
           <CardTitle>Reservas e pedidos</CardTitle>
           <CardDescription>Acompanhe reservas, entregas e cancelamentos.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <table ref={reservasTableRef} className="data-table">
+        <CardContent className="max-lg:p-0">
+          {/* Mobile: filtro de status abaixo do cabecalho, antes da lista */}
+          <div className="mb-4 lg:hidden">
+            <StatusTabs value={statusFilter} onChange={setStatusFilter} />
+          </div>
+
+          {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {ordenadas.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Nenhuma reserva encontrada para os filtros selecionados.
+              </p>
+            ) : (
+              ordenadas.map((reserva) => {
+                const cli = clienteDaReserva(reserva, clientes)
+                const multiLinha = (pedidoCounts.get(reserva.pedido) ?? 0) > 1
+                return (
+                  <ReservaCard
+                    key={reserva.id}
+                    reserva={reserva}
+                    clienteNome={cli?.nome ?? reserva.cliente}
+                    clienteTelefone={cli?.telefone ?? reserva.telefone}
+                    quadra={quadraDaReserva(reserva, lotes)}
+                    multiLinha={multiLinha}
+                    onOpen={() => setDetalhesReserva(reserva)}
+                    onEntregar={() => {
+                      setEntregaReserva(reserva)
+                      setEntregaSeq((seq) => seq + 1)
+                    }}
+                    onCancelar={() => {
+                      setCancelarReserva(reserva)
+                      setMotivoCancelamento('')
+                    }}
+                    onEditarSaldo={() => {
+                      setEditarSaldoItem(reserva)
+                      setEditarSaldoSeq((seq) => seq + 1)
+                    }}
+                    onEstorno={() => {
+                      setEstornoReserva(reserva)
+                      setEstornoSeq((seq) => seq + 1)
+                    }}
+                  />
+                )
+              })
+            )}
+          </div>
+
+          {/* Desktop: tabela completa */}
+          <table ref={reservasTableRef} className="data-table hidden lg:table">
             <thead>
               <tr>
                 <th>
@@ -416,6 +448,168 @@ export function ReservasPage() {
           />
         </Field>
       </ConfirmDialog>
+    </div>
+  )
+}
+
+// Filtro de status (abas). Vira grade 3x2 no mobile e linha inline no desktop.
+function StatusTabs({ value, onChange }: { value: StatusTab; onChange: (value: StatusTab) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Filtrar por status</span>
+      <div className="grid w-full grid-cols-3 gap-x-1 gap-y-2 rounded-lg border bg-muted p-1.5 lg:flex lg:w-auto lg:items-center lg:gap-1 lg:p-1">
+        {statusTabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onChange(tab.id)}
+            className={cn(
+              'min-h-11 rounded px-3 py-2 text-center text-xs font-bold transition-colors lg:min-h-0 lg:py-1',
+              value === tab.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Card de reserva para mobile/tablet (equivalente a uma linha da tabela).
+// O card inteiro abre o pedido (Detalhes); as acoes operacionais usam stopPropagation.
+function ReservaCard({
+  reserva,
+  clienteNome,
+  clienteTelefone,
+  quadra,
+  multiLinha,
+  onOpen,
+  onEntregar,
+  onCancelar,
+  onEditarSaldo,
+  onEstorno,
+}: {
+  reserva: Reserva
+  clienteNome: string
+  clienteTelefone: string
+  quadra: string
+  multiLinha: boolean
+  onOpen: () => void
+  onEntregar: () => void
+  onCancelar: () => void
+  onEditarSaldo: () => void
+  onEstorno: () => void
+}) {
+  const ativo = reserva.status === 'reservado' || reserva.status === 'parcial'
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir pedido ${reserva.pedido}`}
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen()
+        }
+      }}
+      className={cn(
+        'relative overflow-hidden rounded-lg border bg-card p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:bg-muted/25',
+        // Elo (R-07): pedido multi-item ganha realce indigo sutil (marca no tema claro; sem conotacao de alerta).
+        multiLinha && 'border-l-2 border-l-[#818cf8]/70',
+      )}
+    >
+      {multiLinha ? <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[#818cf8]/[0.06]" /> : null}
+      <div className="relative">
+      <div className="flex items-start justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 font-mono text-sm text-primary">
+          {reserva.pedido}
+          {multiLinha ? <Link2 aria-hidden="true" className="size-3.5 text-muted-foreground" /> : null}
+        </span>
+        <div className="flex flex-col items-end gap-1">
+          <Badge variant={statusVariant[reserva.status]}>{statusLabel[reserva.status]}</Badge>
+          {ativo && (reserva.regime === 'rotacionando' || reserva.regime === 'travado') ? (
+            <RegimeTag regime={reserva.regime} />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-2">
+        <strong className="text-pretty leading-tight">{clienteNome}</strong>
+        <p className="text-sm text-muted-foreground">{clienteTelefone}</p>
+      </div>
+
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate font-semibold">{reserva.produto}</p>
+          <p className="text-sm text-muted-foreground">
+            {reserva.lote} · {quadra}
+          </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <strong className="numeric">{reserva.caixas} cx</strong>
+          <p className="numeric text-sm text-muted-foreground">{reserva.m2.toLocaleString('pt-BR')} m²</p>
+        </div>
+      </div>
+
+      {ativo || reserva.status === 'entregue' ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {ativo ? (
+            <>
+              <Button
+                size="sm"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onEntregar()
+                }}
+              >
+                <CheckCircle2 aria-hidden="true" data-icon="inline-start" />
+                {reserva.status === 'parcial' ? 'Entregar restante' : 'Marcar entregue'}
+              </Button>
+              {reserva.status === 'reservado' ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onCancelar()
+                  }}
+                >
+                  <XCircle aria-hidden="true" data-icon="inline-start" />
+                  Cancelar
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onEditarSaldo()
+                  }}
+                >
+                  <PencilLine aria-hidden="true" data-icon="inline-start" />
+                  Editar saldo
+                </Button>
+              )}
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(event) => {
+                event.stopPropagation()
+                onEstorno()
+              }}
+            >
+              <Undo2 aria-hidden="true" data-icon="inline-start" />
+              Registrar devolução
+            </Button>
+          )}
+        </div>
+      ) : null}
+      </div>
     </div>
   )
 }
