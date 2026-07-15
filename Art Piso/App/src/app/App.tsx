@@ -11,6 +11,7 @@ import { dataSource, supabase } from '@/lib/supabase'
 import { InventoryProvider } from '@/store/inventory-provider'
 import { SupabaseInventoryProvider } from '@/store/supabase-provider'
 import { NotificationsProvider } from '@/store/notifications-provider'
+import { SupabaseNotificationsProvider } from '@/store/supabase-notifications-provider'
 
 const titles: Record<AppSection, string> = {
   estoque: 'Estoque',
@@ -105,9 +106,10 @@ export default function App() {
   }
 
   const DataProvider = dataSource === 'supabase' ? SupabaseInventoryProvider : InventoryProvider
+  const BellProvider = dataSource === 'supabase' ? SupabaseNotificationsProvider : NotificationsProvider
 
   return (
-    <NotificationsProvider>
+    <BellProvider>
       <DataProvider>
         <AppShell
           activeSection={activeSection}
@@ -120,6 +122,6 @@ export default function App() {
           {page}
         </AppShell>
       </DataProvider>
-    </NotificationsProvider>
+    </BellProvider>
   )
 }
