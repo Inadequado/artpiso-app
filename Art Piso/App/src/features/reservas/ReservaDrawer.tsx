@@ -332,14 +332,14 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
             ) : null}
           </Field>
 
-          <Field label="Data prevista de entrega">
+          <Field label="Data prevista de entrega" optional>
             <Input
               name="dataPrevista"
               inputMode="numeric"
               autoComplete="off"
               value={dataPrevista}
               onChange={(event) => setDataPrevista(formatData(event.target.value))}
-              placeholder="DD/MM/AAAA (opcional)"
+              placeholder="DD/MM/AAAA"
             />
           </Field>
 

@@ -10,6 +10,7 @@ import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { Textarea } from '@/components/ui/textarea'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
+import { uid } from '@/lib/id'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -113,9 +114,9 @@ export function CadastroProdutoDrawer({
 
   function salvar() {
     onSave({
-      id: crypto.randomUUID(),
+      id: uid(),
       // Novo lote de produto existente herda o produtoId dele; produto novo ganha id proprio.
-      produtoId: produtoExistente?.id ?? crypto.randomUUID(),
+      produtoId: produtoExistente?.id ?? uid(),
       produto: produtoExistente ? produtoExistente.produto : nome.trim(),
       referencia: produtoExistente ? produtoExistente.referencia : referencia.trim(),
       marca: produtoExistente ? produtoExistente.marca : marca.trim(),

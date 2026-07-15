@@ -7,28 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ClienteDrawer } from '@/features/clientes/ClienteDrawer'
+import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { useGsapListRefresh } from '@/lib/animations'
 import { enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { onlyDigits } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { Cliente, Reserva, ReservaStatus } from '@/types/inventory'
-
-const statusVariant: Record<ReservaStatus, 'reserved' | 'success' | 'danger' | 'warning' | 'default'> = {
-  reservado: 'reserved',
-  parcial: 'warning',
-  entregue: 'success',
-  cancelado: 'danger',
-  estornado: 'default',
-}
-
-const statusLabel: Record<ReservaStatus, string> = {
-  reservado: 'Reservado',
-  parcial: 'Entrega parcial',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-  estornado: 'Estornado',
-}
 
 const statusAtivo = (status: ReservaStatus) => status === 'reservado' || status === 'parcial'
 
@@ -101,12 +86,12 @@ export function ClientesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
+      <Card className="max-lg:border-0 max-lg:bg-transparent">
+        <CardHeader className="max-lg:hidden">
           <CardTitle>Clientes</CardTitle>
           <CardDescription>Cadastro dos clientes da loja. Clique em um cliente para ver os pedidos.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-lg:p-0">
           {filtrados.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">
               {clientes.length === 0
@@ -114,7 +99,29 @@ export function ClientesPage() {
                 : 'Nenhum cliente encontrado para a busca.'}
             </p>
           ) : (
-            <table ref={clientesTableRef} className="data-table">
+          <>
+            {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
+            <div className="flex flex-col gap-3 lg:hidden">
+              {filtrados.map((cliente) => {
+                const pedidos = pedidosDoCliente(cliente, reservas)
+                return (
+                  <ClienteCard
+                    key={cliente.id}
+                    cliente={cliente}
+                    pedidos={pedidos}
+                    aberto={expandido === cliente.id}
+                    pedidoExpandido={pedidoExpandido}
+                    onToggle={() => alternarExpandido(cliente.id)}
+                    onTogglePedido={(id) => setPedidoExpandido((atual) => (atual === id ? null : id))}
+                    onEditar={() => abrirEdicao(cliente)}
+                    onExcluir={() => setClienteExcluir(cliente)}
+                  />
+                )
+              })}
+            </div>
+
+            {/* Desktop: tabela completa */}
+            <table ref={clientesTableRef} className="data-table hidden lg:table">
               <thead>
                 <tr>
                   <th>Cliente</th>
@@ -143,6 +150,7 @@ export function ClientesPage() {
                 })}
               </tbody>
             </table>
+          </>
           )}
         </CardContent>
       </Card>
@@ -271,6 +279,82 @@ function ClienteRow({
         </tr>
       ) : null}
     </>
+  )
+}
+
+function ClienteCard({
+  cliente,
+  pedidos,
+  aberto,
+  pedidoExpandido,
+  onToggle,
+  onTogglePedido,
+  onEditar,
+  onExcluir,
+}: {
+  cliente: Cliente
+  pedidos: Reserva[]
+  aberto: boolean
+  pedidoExpandido: string | null
+  onToggle: () => void
+  onTogglePedido: (id: string) => void
+  onEditar: () => void
+  onExcluir: () => void
+}) {
+  const painelId = `cliente-card-${cliente.id}-pedidos`
+  // R-07: pedido multi-item vira N linhas com o mesmo PED — a coluna conta PEDIDOS, nao linhas.
+  const totalPedidos = new Set(pedidos.map((pedido) => pedido.pedido)).size
+  // Regra anti-orfa (mesma do produto/lote): cliente com pedido ativo nao pode ser excluido.
+  const temPedidoAtivo = pedidos.some((pedido) => statusAtivo(pedido.status))
+  return (
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <button
+        type="button"
+        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        aria-expanded={aberto}
+        aria-controls={painelId}
+        onClick={onToggle}
+      >
+        <ChevronDown
+          aria-hidden="true"
+          className={cn('size-4 shrink-0 text-muted-foreground transition-transform', aberto && 'rotate-180')}
+        />
+        <span className="min-w-0 flex-1">
+          <strong className="block truncate">{cliente.nome}</strong>
+          <span className="block font-mono text-sm text-muted-foreground">{cliente.documento}</span>
+        </span>
+        <span className="shrink-0 text-right">
+          <span className="numeric block font-semibold">{totalPedidos}</span>
+          <span className="block text-xs text-muted-foreground">pedido{totalPedidos === 1 ? '' : 's'}</span>
+        </span>
+      </button>
+
+      <div className="flex items-center justify-between gap-2 border-t px-4 py-2">
+        <span className="text-sm text-muted-foreground">{cliente.telefone}</span>
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="ghost" onClick={onEditar}>
+            Editar
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
+            aria-label={`Excluir ${cliente.nome}`}
+            title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
+            disabled={temPedidoAtivo}
+            onClick={onExcluir}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </Button>
+        </div>
+      </div>
+
+      {aberto ? (
+        <div id={painelId} className="border-t bg-muted/15 px-4 py-4">
+          <PedidosDoCliente pedidos={pedidos} pedidoExpandido={pedidoExpandido} onTogglePedido={onTogglePedido} />
+        </div>
+      ) : null}
+    </div>
   )
 }
 

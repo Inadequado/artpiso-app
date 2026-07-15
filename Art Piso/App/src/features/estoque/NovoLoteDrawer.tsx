@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { formatM2, loteComCodigo } from '@/data/mock-inventory'
+import { uid } from '@/lib/id'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque, Produto } from '@/types/inventory'
 
@@ -37,7 +38,7 @@ export function NovoLoteDrawer({
   function salvar() {
     if (!produto) return
     onSave({
-      id: crypto.randomUUID(),
+      id: uid(),
       produtoId: produto.id,
       produto: produto.produto,
       referencia: produto.referencia,

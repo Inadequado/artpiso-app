@@ -1,10 +1,11 @@
-import { AlertTriangle, ArrowRight, CalendarCheck, ImageOff, Link2, PackageCheck, Warehouse } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarCheck, ChevronDown, ImageOff, Link2, PackageCheck, SlidersHorizontal, Warehouse } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { usePrimaryAction } from '@/components/layout/primary-action'
 import { useSearchQuery } from '@/components/layout/search'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Drawer } from '@/components/ui/drawer'
 import { MetricCard } from '@/components/ui/metric-card'
 import { SelectMenu } from '@/components/ui/select-menu'
 import {
@@ -28,7 +29,7 @@ import { NovoLoteDrawer } from '@/features/estoque/NovoLoteDrawer'
 import { ProdutoDetalheDrawer } from '@/features/estoque/ProdutoDetalheDrawer'
 import { ReservaDrawer } from '@/features/reservas/ReservaDrawer'
 import { useGsapListRefresh } from '@/lib/animations'
-import type { LoteEstoque, Produto, StockStatus } from '@/types/inventory'
+import type { LoteEstoque, Produto, Reserva, StockStatus } from '@/types/inventory'
 
 const statusLabel: Record<StockStatus, string> = {
   disponivel: 'Disponível',
@@ -63,6 +64,7 @@ export function EstoquePage() {
   const [quadraFiltro, setQuadraFiltro] = useState('todas')
   const [marcaFiltro, setMarcaFiltro] = useState('todas')
   const [statusFiltro, setStatusFiltro] = useState('todas')
+  const [filtrosOpen, setFiltrosOpen] = useState(false)
   const produtosTableRef = useRef<HTMLTableElement>(null)
   const busca = useSearchQuery()
 
@@ -91,6 +93,8 @@ export function EstoquePage() {
   }, [produtos, quadraFiltro, marcaFiltro, statusFiltro, busca])
 
   const filtroAtivo = quadraFiltro !== 'todas' || marcaFiltro !== 'todas' || statusFiltro !== 'todas'
+  const filtrosAtivos =
+    Number(quadraFiltro !== 'todas') + Number(marcaFiltro !== 'todas') + Number(statusFiltro !== 'todas')
   const produtosAnimacaoKey = produtosFiltrados.map((produto) => produto.id).join('|')
 
   useGsapListRefresh(produtosTableRef, [produtosAnimacaoKey])
@@ -146,51 +150,70 @@ export function EstoquePage() {
         <MetricCard icon={Warehouse} tone="default" label="Estoque físico total" value={`${resumo.estoque} cx`} detail={`${formatM2(resumo.m2Estoque)} m² no depósito`} />
         <MetricCard icon={PackageCheck} tone="success" label="Disponível para venda" value={`${resumo.caixas} cx`} detail={`${formatM2(resumo.m2)} m²`} />
         <MetricCard icon={CalendarCheck} tone="reserved" label="Reservas ativas" value={`${resumo.reservadas} cx`} detail={`${formatM2(resumo.m2Reserva)} m² não entregues`} />
-        <MetricCard icon={AlertTriangle} tone="danger" label="Estoque a repor" value={`${produtosARepor} ${produtosARepor === 1 ? 'produto' : 'produtos'}`} detail="Baixo ou esgotado" />
+        <MetricCard icon={AlertTriangle} tone="danger" label="Estoque a repor" value={`${produtosARepor}`} detail={produtosARepor === 1 ? 'produto baixo ou esgotado' : 'produtos baixos ou esgotados'} />
       </section>
 
-      <section className="flex flex-wrap items-center gap-2">
-        <SelectMenu
-          className="w-48"
-          value={quadraFiltro}
-          onChange={setQuadraFiltro}
-          options={[
-            { value: 'todas', label: 'Todas as quadras' },
-            ...quadras.map((quadra) => ({ value: quadra, label: quadra })),
-          ]}
+      {/* Desktop: filtros inline acima da tabela. No mobile o botao fica dentro do card, abaixo do cabecalho. */}
+      <section className="hidden lg:block">
+        <FiltrosProduto
+          quadras={quadras}
+          marcas={marcas}
+          quadraFiltro={quadraFiltro}
+          marcaFiltro={marcaFiltro}
+          statusFiltro={statusFiltro}
+          onQuadra={setQuadraFiltro}
+          onMarca={setMarcaFiltro}
+          onStatus={setStatusFiltro}
+          onLimpar={limparFiltros}
+          filtroAtivo={filtroAtivo}
         />
-        <SelectMenu
-          className="w-48"
-          value={marcaFiltro}
-          onChange={setMarcaFiltro}
-          options={[
-            { value: 'todas', label: 'Todas as marcas' },
-            ...marcas.map((marca) => ({ value: marca, label: marca })),
-          ]}
-        />
-        <SelectMenu
-          className="w-52"
-          value={statusFiltro}
-          onChange={setStatusFiltro}
-          options={[
-            { value: 'todas', label: 'Toda disponibilidade' },
-            ...statusFiltravel.map((status) => ({ value: status, label: statusLabel[status] })),
-          ]}
-        />
-        {filtroAtivo ? (
-          <Button variant="ghost" size="sm" onClick={limparFiltros}>
-            Limpar filtros
-          </Button>
-        ) : null}
       </section>
 
-      <Card>
-        <CardHeader>
+      <Card className="max-lg:border-0 max-lg:bg-transparent">
+        <CardHeader className="max-lg:px-0">
           <CardTitle>Estoque por produto</CardTitle>
           <CardDescription>Cada linha agrupa os lotes de uma referência. Abra os detalhes para ver lotes, quadras e perdas.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <table ref={produtosTableRef} className="data-table">
+        <CardContent className="max-lg:p-0">
+          {/* Mobile: botao de filtros logo abaixo do cabecalho, antes da lista */}
+          <Button
+            variant="outline"
+            className="mb-4 w-full justify-between lg:hidden"
+            onClick={() => setFiltrosOpen(true)}
+          >
+            <span className="inline-flex items-center gap-2">
+              <SlidersHorizontal aria-hidden="true" className="size-4" />
+              Filtros
+              {filtrosAtivos > 0 ? (
+                <span className="flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
+                  {filtrosAtivos}
+                </span>
+              ) : null}
+            </span>
+            <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
+          </Button>
+
+          {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {produtosFiltrados.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Nenhum produto encontrado para os filtros selecionados.
+              </p>
+            ) : (
+              produtosFiltrados.map((produto) => (
+                <ProdutoCard
+                  key={produto.id}
+                  produto={produto}
+                  reservas={reservas}
+                  onReservar={() => openReserva(produto)}
+                  onDetalhe={() => openDetalhe(produto)}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Desktop: tabela completa */}
+          <table ref={produtosTableRef} className="data-table hidden lg:table">
             <thead>
               <tr>
                 <th className="w-16">Foto</th>
@@ -361,6 +384,157 @@ export function EstoquePage() {
           setDetalheOpen(true)
         }}
       />
+
+      <Drawer
+        open={filtrosOpen}
+        title="Filtros"
+        description="Refine o estoque por quadra, marca e disponibilidade."
+        onClose={() => setFiltrosOpen(false)}
+        footer={
+          <Button className="w-full" onClick={() => setFiltrosOpen(false)}>
+            Ver resultados
+          </Button>
+        }
+      >
+        <FiltrosProduto
+          stacked
+          quadras={quadras}
+          marcas={marcas}
+          quadraFiltro={quadraFiltro}
+          marcaFiltro={marcaFiltro}
+          statusFiltro={statusFiltro}
+          onQuadra={setQuadraFiltro}
+          onMarca={setMarcaFiltro}
+          onStatus={setStatusFiltro}
+          onLimpar={limparFiltros}
+          filtroAtivo={filtroAtivo}
+        />
+      </Drawer>
+    </div>
+  )
+}
+
+// Controles de filtro do Estoque. `stacked` = layout vertical full-width (dentro
+// do painel mobile); sem ele, layout inline (barra do desktop).
+function FiltrosProduto({
+  stacked = false,
+  quadras,
+  marcas,
+  quadraFiltro,
+  marcaFiltro,
+  statusFiltro,
+  onQuadra,
+  onMarca,
+  onStatus,
+  onLimpar,
+  filtroAtivo,
+}: {
+  stacked?: boolean
+  quadras: string[]
+  marcas: string[]
+  quadraFiltro: string
+  marcaFiltro: string
+  statusFiltro: string
+  onQuadra: (value: string) => void
+  onMarca: (value: string) => void
+  onStatus: (value: string) => void
+  onLimpar: () => void
+  filtroAtivo: boolean
+}) {
+  const selClass = stacked ? 'w-full' : 'w-48'
+  const statusClass = stacked ? 'w-full' : 'w-52'
+  return (
+    <div className={stacked ? 'flex flex-col gap-3' : 'flex flex-wrap items-center gap-2'}>
+      <SelectMenu
+        className={selClass}
+        value={quadraFiltro}
+        onChange={onQuadra}
+        options={[{ value: 'todas', label: 'Todas as quadras' }, ...quadras.map((quadra) => ({ value: quadra, label: quadra }))]}
+      />
+      <SelectMenu
+        className={selClass}
+        value={marcaFiltro}
+        onChange={onMarca}
+        options={[{ value: 'todas', label: 'Todas as marcas' }, ...marcas.map((marca) => ({ value: marca, label: marca }))]}
+      />
+      <SelectMenu
+        className={statusClass}
+        value={statusFiltro}
+        onChange={onStatus}
+        options={[{ value: 'todas', label: 'Toda disponibilidade' }, ...statusFiltravel.map((status) => ({ value: status, label: statusLabel[status] }))]}
+      />
+      {filtroAtivo ? (
+        <Button variant="ghost" size="sm" className={stacked ? 'w-full' : undefined} onClick={onLimpar}>
+          Limpar filtros
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
+// Card de produto para mobile/tablet (equivalente a uma linha da tabela do desktop).
+function ProdutoCard({
+  produto,
+  reservas,
+  onReservar,
+  onDetalhe,
+}: {
+  produto: Produto
+  reservas: Reserva[]
+  onReservar: () => void
+  onDetalhe: () => void
+}) {
+  const disponivel = caixasDisponiveisProduto(produto)
+  const status = statusProduto(produto)
+  const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
+  const meta = [produto.marca, produto.tamanho, produto.referencia ? `Ref. ${produto.referencia}` : '']
+    .filter(Boolean)
+    .join(' · ')
+
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex gap-3">
+        <ProdutoThumb foto={produto.foto} nome={produto.produto} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <strong className="text-pretty leading-tight">{produto.produto}</strong>
+            <Badge variant={statusVariant[status]} className="shrink-0">
+              {statusLabel[status]}
+            </Badge>
+          </div>
+          {meta ? <p className="mt-0.5 text-sm text-muted-foreground">{meta}</p> : null}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-baseline gap-2">
+        <strong className="numeric text-2xl font-black text-primary">{disponivel} cx</strong>
+        <span className="text-sm text-muted-foreground">{formatM2(m2DisponivelProduto(produto))} m² disponível</span>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        {produto.lotes.length > 1 ? (
+          <span className="inline-flex items-center gap-1 font-semibold text-primary">
+            <Link2 aria-hidden="true" className="size-3.5" />
+            {produto.lotes.length} lotes
+          </span>
+        ) : (
+          <span>1 lote</span>
+        )}
+        <span>{formatPreco(produto.precoM2)}/m²</span>
+        <span>
+          {qtdReservas} {qtdReservas === 1 ? 'reserva' : 'reservas'}
+        </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Button size="sm" disabled={disponivel <= 0} onClick={onReservar}>
+          Reservar
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onDetalhe}>
+          Detalhes
+          <ArrowRight aria-hidden="true" data-icon="inline-end" />
+        </Button>
+      </div>
     </div>
   )
 }

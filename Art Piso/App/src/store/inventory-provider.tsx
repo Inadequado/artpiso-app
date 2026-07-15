@@ -21,6 +21,7 @@ import {
   statusPorDisponivel,
   statusProduto,
 } from '@/data/mock-inventory'
+import { uid } from '@/lib/id'
 import { caixasTravadasReserva, regimePorData } from '@/lib/reserva-regime'
 import { useNotifications } from '@/store/notifications'
 import {
@@ -120,7 +121,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
 
   const adicionarCliente = useCallback((input: ClienteInput): Cliente => {
     const novo: Cliente = {
-      id: crypto.randomUUID(),
+      id: uid(),
       nome: input.nome.trim(),
       documento: input.documento.trim(),
       telefone: input.telefone.trim(),
@@ -154,7 +155,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const registrarMovimento = useCallback((input: NovoMovimento) => {
     setMovimentos((atual) => [
       {
-        id: crypto.randomUUID(),
+        id: uid(),
         tipo: input.tipo,
         titulo: input.titulo,
         detalhe: input.detalhe,
@@ -169,7 +170,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const adicionarQuadra = useCallback((dados: QuadraInput) => {
-    setQuadras((atual) => [...atual, { id: crypto.randomUUID(), ...dados }])
+    setQuadras((atual) => [...atual, { id: uid(), ...dados }])
     registrarMovimento({ tipo: 'quadra', titulo: 'Quadra registrada', detalhe: `${dados.numero} registrada no depósito` })
   }, [registrarMovimento])
 
@@ -226,7 +227,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   // Usuarios (mock ate o Supabase/auth): CRUD simples, sem movimento no historico
   // (o historico e de ajustes de ESTOQUE).
   const adicionarUsuario = useCallback((dados: UsuarioInput) => {
-    setUsuarios((atual) => [...atual, { id: crypto.randomUUID(), status: 'ativo', ...dados }])
+    setUsuarios((atual) => [...atual, { id: uid(), status: 'ativo', ...dados }])
   }, [])
 
   const atualizarUsuario = useCallback((id: string, dados: UsuarioInput) => {
@@ -336,7 +337,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const disponivelAgora = caixasDisponiveis(lote)
       const caixasTravadas = regime === 'rotacionando' ? 0 : Math.min(input.caixas, Math.max(0, disponivelAgora))
       const nova: Reserva = {
-        id: crypto.randomUUID(),
+        id: uid(),
         pedido: input.pedido?.trim() ? input.pedido.trim() : proximoNumeroPedido(atual.reservas),
         clienteId: input.clienteId,
         cliente: input.cliente.trim(),
@@ -394,7 +395,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         const caixasTravadas = regime === 'rotacionando' ? 0 : Math.min(item.caixas, disponivelAgora)
         acumuladoPorLote.set(lote.id, jaTravado + caixasTravadas)
         novasReservas.push({
-          id: crypto.randomUUID(),
+          id: uid(),
           pedido,
           clienteId: input.clienteId,
           cliente,
@@ -565,7 +566,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         const lote = atual.lotes.find((l) => l.id === item.loteId)
         if (!lote) continue
         reservas.push({
-          id: crypto.randomUUID(),
+          id: uid(),
           pedido: pedidoOriginal,
           clienteId,
           cliente,
@@ -645,7 +646,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           : sugerirRetiradas(loteParaEntrega.alocacoes, entregues)
         : []
       const entrega = {
-        id: crypto.randomUUID(),
+        id: uid(),
         data: agoraTexto(),
         responsavel: input.responsavel.trim(),
         caixas: entregues,
@@ -700,7 +701,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       const quadraDestino = quadras.find((q) => q.id === input.quadraId)
       const quadraNumero = quadraDestino?.numero ?? input.quadraId
       const estorno: EstornoReserva = {
-        id: crypto.randomUUID(),
+        id: uid(),
         data: agoraTexto(),
         responsavel: USUARIO_ATUAL,
         caixas: input.caixas,

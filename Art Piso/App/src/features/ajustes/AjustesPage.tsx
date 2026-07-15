@@ -60,7 +60,7 @@ export function AjustesPage() {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_360px] gap-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
@@ -82,7 +82,7 @@ export function AjustesPage() {
                     setAjusteSeq((seq) => seq + 1)
                     setAjusteAberto(action.tipo)
                   }}
-                  className="rounded-lg border bg-muted/20 p-5 text-left transition hover:bg-muted"
+                  className="rounded-lg border bg-muted/20 p-4 text-left transition hover:bg-muted sm:p-5"
                 >
                   <Icon aria-hidden="true" className="text-primary" data-icon="inline-start" />
                   <h3 className="mt-4 font-bold">{action.label}</h3>
@@ -101,7 +101,7 @@ export function AjustesPage() {
             </div>
             <CardDescription>Localizações físicas do depósito usadas nos lotes.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-4 gap-3">
+          <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {quadras.map((quadra) => (
               <QuadraCard
                 key={quadra.id}

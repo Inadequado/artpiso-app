@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { uid } from '@/lib/id'
 import {
   NotificationsContext,
   type Notificacao,
@@ -91,7 +92,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const notificar = useCallback((input: NovaNotificacao) => {
     const nova: Notificacao = {
-      id: crypto.randomUUID(),
+      id: uid(),
       tipo: input.tipo,
       titulo: input.titulo,
       descricao: input.descricao,

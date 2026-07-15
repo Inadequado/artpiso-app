@@ -87,7 +87,7 @@ export default function App() {
       case 'ajustes':
         return <AjustesPage />
       case 'configuracoes':
-        return <ConfiguracoesPage />
+        return <ConfiguracoesPage onLogout={handleLogout} />
     }
   }, [activeSection])
 

@@ -3,26 +3,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { RegimeTag } from '@/features/reservas/RegimeTag'
+import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { clienteDaReserva, enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { useInventory } from '@/store/inventory'
-import type { Reserva, ReservaStatus } from '@/types/inventory'
-
-const statusVariant: Record<ReservaStatus, 'reserved' | 'success' | 'danger' | 'warning' | 'default'> = {
-  reservado: 'reserved',
-  parcial: 'warning',
-  entregue: 'success',
-  cancelado: 'danger',
-  estornado: 'default',
-}
-
-const statusLabel: Record<ReservaStatus, string> = {
-  reservado: 'Reservado',
-  parcial: 'Entrega parcial',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado',
-  estornado: 'Estornado',
-}
+import type { Reserva } from '@/types/inventory'
 
 type DetalhesReservaDrawerProps = {
   /** Linha clicada; o drawer mostra TODAS as linhas do mesmo pedido (R-07). */
