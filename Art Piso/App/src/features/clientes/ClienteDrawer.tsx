@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { uid } from '@/lib/id'
 import { documentoCompleto, documentoValido, formatCpfCnpj, formatTelefone, onlyDigits } from '@/lib/masks'
 import { useInventory, type ClienteInput } from '@/store/inventory'
 import type { Cliente, EnderecoCliente } from '@/types/inventory'
@@ -60,7 +61,7 @@ export function ClienteDrawer({
   }
 
   function adicionarEndereco() {
-    setEnderecos((atual) => [...atual, { id: crypto.randomUUID(), apelido: '', endereco: '' }])
+    setEnderecos((atual) => [...atual, { id: uid(), apelido: '', endereco: '' }])
   }
 
   function atualizarEndereco(id: string, patch: Partial<EnderecoEdit>) {

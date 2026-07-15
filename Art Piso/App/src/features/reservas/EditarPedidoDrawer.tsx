@@ -14,6 +14,7 @@ import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPre
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { statusLabel, statusVariant } from '@/features/reservas/status'
+import { uid } from '@/lib/id'
 import { formatData } from '@/lib/masks'
 import { caixasTravadasReserva, dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type EditarPedidoInput } from '@/store/inventory'
@@ -111,7 +112,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
 
   function adicionarItem() {
     if (!builderLote || !builderPodeAdicionar) return
-    setItens((atual) => [...atual, { key: crypto.randomUUID(), loteId: builderLote.id, caixas: builderCaixas }])
+    setItens((atual) => [...atual, { key: uid(), loteId: builderLote.id, caixas: builderCaixas }])
     setBuilderLoteId('')
     setBuilderBusca('')
     setBuilderCaixas('')
