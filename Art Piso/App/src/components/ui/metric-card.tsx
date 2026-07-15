@@ -30,13 +30,13 @@ export function MetricCard({ icon: Icon, label, value, detail, tone = 'default' 
     <Card className={cn('relative overflow-hidden', t.card)}>
       <div className={cn('pointer-events-none absolute inset-0 bg-gradient-to-r via-transparent to-transparent', t.gradient)} />
       <CardContent className="relative flex items-stretch p-0">
-        <div className="flex w-1/3 items-center justify-center">
-          <Icon aria-hidden="true" className={cn('size-10', t.icon)} />
+        <div className="flex w-1/4 items-center justify-center sm:w-1/3">
+          <Icon aria-hidden="true" className={cn('size-8 sm:size-10', t.icon)} />
         </div>
-        <div className="min-w-0 flex-1 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-          <p className="mt-3 text-3xl font-black numeric">{value}</p>
-          {detail ? <p className="mt-1 text-sm text-muted-foreground">{detail}</p> : null}
+        <div className="min-w-0 flex-1 p-3 sm:p-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground sm:text-xs">{label}</p>
+          <p className="mt-2 text-2xl font-black numeric sm:mt-3 sm:text-3xl">{value}</p>
+          {detail ? <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{detail}</p> : null}
         </div>
       </CardContent>
     </Card>

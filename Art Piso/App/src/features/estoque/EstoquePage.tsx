@@ -28,7 +28,7 @@ import { NovoLoteDrawer } from '@/features/estoque/NovoLoteDrawer'
 import { ProdutoDetalheDrawer } from '@/features/estoque/ProdutoDetalheDrawer'
 import { ReservaDrawer } from '@/features/reservas/ReservaDrawer'
 import { useGsapListRefresh } from '@/lib/animations'
-import type { LoteEstoque, Produto, StockStatus } from '@/types/inventory'
+import type { LoteEstoque, Produto, Reserva, StockStatus } from '@/types/inventory'
 
 const statusLabel: Record<StockStatus, string> = {
   disponivel: 'Disponível',
@@ -151,7 +151,7 @@ export function EstoquePage() {
 
       <section className="flex flex-wrap items-center gap-2">
         <SelectMenu
-          className="w-48"
+          className="w-full sm:w-48"
           value={quadraFiltro}
           onChange={setQuadraFiltro}
           options={[
@@ -160,7 +160,7 @@ export function EstoquePage() {
           ]}
         />
         <SelectMenu
-          className="w-48"
+          className="w-full sm:w-48"
           value={marcaFiltro}
           onChange={setMarcaFiltro}
           options={[
@@ -169,7 +169,7 @@ export function EstoquePage() {
           ]}
         />
         <SelectMenu
-          className="w-52"
+          className="w-full sm:w-52"
           value={statusFiltro}
           onChange={setStatusFiltro}
           options={[
@@ -184,13 +184,33 @@ export function EstoquePage() {
         ) : null}
       </section>
 
-      <Card>
-        <CardHeader>
+      <Card className="max-lg:border-0 max-lg:bg-transparent">
+        <CardHeader className="max-lg:px-1">
           <CardTitle>Estoque por produto</CardTitle>
           <CardDescription>Cada linha agrupa os lotes de uma referência. Abra os detalhes para ver lotes, quadras e perdas.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <table ref={produtosTableRef} className="data-table">
+        <CardContent className="max-lg:p-0">
+          {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            {produtosFiltrados.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Nenhum produto encontrado para os filtros selecionados.
+              </p>
+            ) : (
+              produtosFiltrados.map((produto) => (
+                <ProdutoCard
+                  key={produto.id}
+                  produto={produto}
+                  reservas={reservas}
+                  onReservar={() => openReserva(produto)}
+                  onDetalhe={() => openDetalhe(produto)}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Desktop: tabela completa */}
+          <table ref={produtosTableRef} className="data-table hidden lg:table">
             <thead>
               <tr>
                 <th className="w-16">Foto</th>
@@ -361,6 +381,73 @@ export function EstoquePage() {
           setDetalheOpen(true)
         }}
       />
+    </div>
+  )
+}
+
+// Card de produto para mobile/tablet (equivalente a uma linha da tabela do desktop).
+function ProdutoCard({
+  produto,
+  reservas,
+  onReservar,
+  onDetalhe,
+}: {
+  produto: Produto
+  reservas: Reserva[]
+  onReservar: () => void
+  onDetalhe: () => void
+}) {
+  const disponivel = caixasDisponiveisProduto(produto)
+  const status = statusProduto(produto)
+  const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
+  const meta = [produto.marca, produto.tamanho, produto.referencia ? `Ref. ${produto.referencia}` : '']
+    .filter(Boolean)
+    .join(' · ')
+
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex gap-3">
+        <ProdutoThumb foto={produto.foto} nome={produto.produto} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <strong className="text-pretty leading-tight">{produto.produto}</strong>
+            <Badge variant={statusVariant[status]} className="shrink-0">
+              {statusLabel[status]}
+            </Badge>
+          </div>
+          {meta ? <p className="mt-0.5 text-sm text-muted-foreground">{meta}</p> : null}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-baseline gap-2">
+        <strong className="numeric text-2xl font-black text-primary">{disponivel} cx</strong>
+        <span className="text-sm text-muted-foreground">{formatM2(m2DisponivelProduto(produto))} m² disponível</span>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        {produto.lotes.length > 1 ? (
+          <span className="inline-flex items-center gap-1 font-semibold text-primary">
+            <Link2 aria-hidden="true" className="size-3.5" />
+            {produto.lotes.length} lotes
+          </span>
+        ) : (
+          <span>1 lote</span>
+        )}
+        <span>{formatPreco(produto.precoM2)}/m²</span>
+        <span>
+          {qtdReservas} {qtdReservas === 1 ? 'reserva' : 'reservas'}
+        </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Button size="sm" disabled={disponivel <= 0} onClick={onReservar}>
+          Reservar
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onDetalhe}>
+          Detalhes
+          <ArrowRight aria-hidden="true" data-icon="inline-end" />
+        </Button>
+      </div>
     </div>
   )
 }
