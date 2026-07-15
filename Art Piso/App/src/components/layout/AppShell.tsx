@@ -103,10 +103,8 @@ export function AppShell({
   const [verTodasOpen, setVerTodasOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const [mobileAccountOpen, setMobileAccountOpen] = useState(false)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
-  const mobileAccountRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLSpanElement>(null)
 
   const { notificacoes, naoLidas, ringTick, marcarTodasLidas, marcarLida } = useNotifications()
@@ -166,27 +164,6 @@ export function AppShell({
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [accountOpen])
-
-  useEffect(() => {
-    if (!mobileAccountOpen) return
-
-    function onPointerDown(event: PointerEvent) {
-      if (!mobileAccountRef.current?.contains(event.target as Node)) {
-        setMobileAccountOpen(false)
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setMobileAccountOpen(false)
-    }
-
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [mobileAccountOpen])
 
   return (
     <div className="dark min-h-[100dvh] bg-background text-foreground lg:flex">
@@ -425,46 +402,6 @@ export function AppShell({
                   </span>
                 ) : null}
               </Button>
-              <div ref={mobileAccountRef} className="relative">
-                <button
-                  type="button"
-                  aria-haspopup="menu"
-                  aria-expanded={mobileAccountOpen}
-                  aria-label="Conta"
-                  className="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
-                  onClick={() => setMobileAccountOpen((open) => !open)}
-                >
-                  AP
-                </button>
-                {mobileAccountOpen ? (
-                  <div className="absolute right-0 top-12 z-50 w-56 rounded-lg border bg-card shadow-2xl" role="menu">
-                    <div className="border-b p-4">
-                      <p className="text-sm font-bold">Administrador</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Gerente geral</p>
-                    </div>
-                    <div className="flex flex-col p-2">
-                      {accountMenuItems.map((item) => {
-                        const Icon = item.icon
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            role="menuitem"
-                            className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
-                            onClick={() => {
-                              setMobileAccountOpen(false)
-                              if (item.id === 'sair') onLogout?.()
-                            }}
-                          >
-                            <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
-                            <span className="text-sm font-semibold">{item.label}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
             </div>
           </div>
           {mobileSearchOpen ? (

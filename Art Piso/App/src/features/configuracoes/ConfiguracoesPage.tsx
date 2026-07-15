@@ -1,4 +1,4 @@
-import { Power, PowerOff, Trash2 } from 'lucide-react'
+import { LogOut, Power, PowerOff, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,7 +28,7 @@ const statusLabel: Record<Usuario['status'], string> = {
   ausente: 'Ausente',
 }
 
-export function ConfiguracoesPage() {
+export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
   const { usuarios, adicionarUsuario, atualizarUsuario, removerUsuario, alternarStatusUsuario } = useInventory()
   const [usuarioOpen, setUsuarioOpen] = useState(false)
   const [usuarioSeq, setUsuarioSeq] = useState(0)
@@ -66,6 +66,25 @@ export function ConfiguracoesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Conta — no mobile o acesso de conta vive aqui; no desktop fica na sidebar. */}
+      <Card className="lg:hidden">
+        <CardHeader className="flex-row items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+            AP
+          </span>
+          <div className="min-w-0">
+            <CardTitle>Administrador</CardTitle>
+            <CardDescription>Gerente geral</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" className="w-full" onClick={onLogout}>
+            <LogOut aria-hidden="true" data-icon="inline-start" />
+            Sair
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div>
