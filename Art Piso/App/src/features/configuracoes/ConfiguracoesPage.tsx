@@ -223,7 +223,7 @@ function UsuarioCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <strong className="block truncate">{usuario.nome}</strong>
-          <p className="truncate text-sm text-muted-foreground">{usuario.email}</p>
+          <p className="truncate text-sm text-muted-foreground">{paraUsuarioExibicao(usuario.email)}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <Badge variant="reserved">{roleLabel[usuario.role]}</Badge>
@@ -238,7 +238,9 @@ function UsuarioCard({
         <Button
           size="sm"
           variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground disabled:opacity-40"
+          title={usuario.role === 'admin' ? 'Status de administrador é gerenciado direto no banco' : undefined}
+          disabled={usuario.role === 'admin'}
           onClick={onToggleStatus}
         >
           {usuario.status === 'ativo' ? (

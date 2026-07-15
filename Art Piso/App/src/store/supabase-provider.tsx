@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { proximoNumeroPedido } from '@/data/mock-inventory'
+import { uid } from '@/lib/id'
 import { parseDataPrevista, regimePorData } from '@/lib/reserva-regime'
 import { supabase } from '@/lib/supabase'
 import { useNotifications } from '@/store/notifications'
@@ -460,11 +461,11 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     // Contrato sincrono (o ClienteSelector usa o retorno na hora): cria com id
     // local (otimista) e persiste em seguida; erro reverte no recarregar.
     const novo: Cliente = {
-      id: crypto.randomUUID(),
+      id: uid(),
       nome: input.nome,
       documento: input.documento,
       telefone: input.telefone,
-      enderecos: (input.enderecos ?? []).map((e) => ({ ...e, id: e.id || crypto.randomUUID() })),
+      enderecos: (input.enderecos ?? []).map((e) => ({ ...e, id: e.id || uid() })),
     }
     setClientes((atual) => [...atual, novo].sort((a, b) => a.nome.localeCompare(b.nome)))
     executar('Erro ao cadastrar cliente', async () => {
@@ -494,7 +495,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
       if (erroDel) throw erroDel
       if (input.enderecos?.length) {
         const { error: erroIns } = await supabase!.from('cliente_enderecos').insert(
-          input.enderecos.map((e) => ({ id: e.id || crypto.randomUUID(), cliente_id: id, apelido: e.apelido ?? null, endereco: e.endereco })),
+          input.enderecos.map((e) => ({ id: e.id || uid(), cliente_id: id, apelido: e.apelido ?? null, endereco: e.endereco })),
         )
         if (erroIns) throw erroIns
       }
