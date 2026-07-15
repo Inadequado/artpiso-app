@@ -8,7 +8,10 @@ export type ClienteInput = Omit<Cliente, 'id'>
 export type QuadraInput = Pick<Quadra, 'numero' | 'descricao'>
 
 /** Dados de cadastro/edicao do usuario (id e status vivem no store). */
-export type UsuarioInput = Omit<Usuario, 'id' | 'status'>
+export type UsuarioInput = Omit<Usuario, 'id' | 'status'> & {
+  /** Senha de login (modo Supabase): obrigatoria no cadastro; na edicao, preenchida = redefinir. Mock ignora. */
+  senha?: string
+}
 
 /** Quadra fica FORA do patch (Q1): localizacao muda so via Ajustes -> Mover lote de quadra. */
 export type AtualizarLotePatch = {

@@ -181,6 +181,7 @@ function UsuarioDrawer({
   const { usuarios } = useInventory()
   const [nome, setNome] = useState(usuario?.nome ?? '')
   const [email, setEmail] = useState(usuario?.email ?? '')
+  const [senha, setSenha] = useState('')
   const [role, setRole] = useState<UserRole>(usuario?.role ?? 'vendedor')
 
   // E-mail e a identidade de login: formato basico + sem duplicar com outro usuario.
@@ -196,7 +197,10 @@ function UsuarioDrawer({
         ? `E-mail já usado por ${emailDuplicado.nome}.`
         : undefined
 
-  const valido = nome.trim().length > 0 && emailFormatoOk && !emailDuplicado
+  // Senha de login: obrigatoria no cadastro; na edicao so quando quiser redefinir.
+  const senhaOk = usuario ? senha === '' || senha.length >= 6 : senha.length >= 6
+
+  const valido = nome.trim().length > 0 && emailFormatoOk && !emailDuplicado && senhaOk
 
   return (
     <Drawer
@@ -210,7 +214,7 @@ function UsuarioDrawer({
           <Button
             className="flex-[2]"
             disabled={!valido}
-            onClick={() => onSave({ nome: nome.trim(), email: email.trim(), role })}
+            onClick={() => onSave({ nome: nome.trim(), email: email.trim(), role, senha: senha || undefined })}
           >
             {usuario ? 'Salvar alterações' : 'Adicionar usuário'}
           </Button>
@@ -225,6 +229,21 @@ function UsuarioDrawer({
           <Input type="email" name="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nome@artpiso.com.br" />
           {emailMensagem ? (
             <p className="mt-1.5 text-xs font-semibold text-danger">{emailMensagem}</p>
+          ) : null}
+        </Field>
+        <Field label="Senha" optional={Boolean(usuario)}>
+          <Input
+            type="password"
+            name="senha"
+            autoComplete="new-password"
+            value={senha}
+            onChange={(event) => setSenha(event.target.value)}
+            placeholder={usuario ? 'Deixe em branco para manter a atual' : 'Mínimo 6 caracteres'}
+          />
+          {senha.length > 0 && senha.length < 6 ? (
+            <p className="mt-1.5 text-xs font-semibold text-danger">A senha precisa de pelo menos 6 caracteres.</p>
+          ) : usuario ? (
+            <p className="mt-1.5 text-xs text-muted-foreground">Preencher redefine a senha de login deste usuário.</p>
           ) : null}
         </Field>
         <div className="flex flex-col gap-2">

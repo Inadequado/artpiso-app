@@ -104,7 +104,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     const [vwEstoque, tQuadras, tProfiles, tClientes, tMovimentos, tReservas] = await Promise.all([
       supabase.from('vw_estoque').select('*').order('nome').order('lote'),
       supabase.from('quadras').select('id, numero, descricao, status').order('numero'),
-      supabase.from('profiles').select('id, nome, role, status').order('nome'),
+      supabase.from('profiles').select('id, nome, email, role, status').order('nome'),
       supabase.from('clientes').select('id, nome, documento, telefone, cliente_enderecos(id, apelido, endereco)').order('nome'),
       supabase.from('movimentos').select('id, tipo, detalhe, observacao, lote_id, produto_id, created_at, profiles(nome)').order('created_at', { ascending: false }).limit(200),
       supabase.from('reservas').select(`
@@ -145,9 +145,8 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     setQuadras((tQuadras.data ?? []).map((r): Quadra => ({
       id: r.id, numero: r.numero, descricao: r.descricao, status: r.status ?? undefined,
     })))
-    // E-mail vive em auth.users (nao exposto para outros usuarios); exibicao usa o nome.
     setUsuarios((tProfiles.data ?? []).map((r): Usuario => ({
-      id: r.id, nome: r.nome, email: '', role: r.role, status: r.status,
+      id: r.id, nome: r.nome, email: r.email ?? '', role: r.role, status: r.status,
     })))
     setClientes((tClientes.data ?? []).map((r): Cliente => ({
       id: r.id, nome: r.nome, documento: r.documento, telefone: r.telefone,
@@ -261,9 +260,53 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     if (error) throw error
   }, [])
 
-  const proximaFatia = useCallback((acao: string) => {
-    notificar({ tipo: 'info', titulo: 'Ainda não migrado', descricao: `${acao} chega na próxima fatia do modo Supabase.` })
-  }, [notificar])
+  // -------------------------------------------------------------- usuarios
+  // Criar/remover/trocar senha exigem a service_role, que vive na Edge
+  // Function admin-usuarios (ela mesma confere se quem chama e admin).
+  const invocarAdminUsuarios = useCallback(async (body: Record<string, unknown>) => {
+    const { data, error } = await supabase!.functions.invoke('admin-usuarios', { body })
+    if (error) throw new Error('Função de usuários indisponível. Ela foi publicada? (npx supabase functions deploy admin-usuarios)')
+    const retorno = data as { ok: boolean; erro?: string }
+    if (!retorno.ok) throw new Error(retorno.erro ?? 'Erro na função de usuários.')
+  }, [])
+
+  const adicionarUsuario = useCallback<InventoryContextValue['adicionarUsuario']>((dados) => {
+    executar('Erro ao criar usuário', async () => {
+      await invocarAdminUsuarios({ acao: 'criar', email: dados.email, senha: dados.senha, nome: dados.nome, role: dados.role })
+      notificar({ tipo: 'info', titulo: 'Usuário criado', descricao: `${dados.nome} (${dados.email}) — papel ${dados.role}`, silencioso: true })
+    })
+  }, [executar, invocarAdminUsuarios, notificar])
+
+  const atualizarUsuario = useCallback<InventoryContextValue['atualizarUsuario']>((id, dados) => {
+    const atual = usuarios.find((item) => item.id === id)
+    executar('Erro ao atualizar usuário', async () => {
+      // Nome/papel vivem em profiles (policy de admin); e-mail/senha vivem no Auth (via funcao)
+      const { error } = await supabase!.from('profiles').update({ nome: dados.nome, role: dados.role }).eq('id', id)
+      if (error) throw error
+      const emailMudou = Boolean(atual && dados.email.trim().toLowerCase() !== atual.email.trim().toLowerCase())
+      if (emailMudou || dados.senha) {
+        await invocarAdminUsuarios({
+          acao: 'atualizar',
+          id,
+          email: emailMudou ? dados.email : undefined,
+          senha: dados.senha || undefined,
+        })
+      }
+    })
+  }, [executar, invocarAdminUsuarios, usuarios])
+
+  const removerUsuario = useCallback((id: string) => {
+    executar('Erro ao remover usuário', () => invocarAdminUsuarios({ acao: 'remover', id }))
+  }, [executar, invocarAdminUsuarios])
+
+  const alternarStatusUsuario = useCallback((id: string) => {
+    const atual = usuarios.find((item) => item.id === id)
+    if (!atual) return
+    executar('Erro ao alternar status do usuário', async () => {
+      const { error } = await supabase!.from('profiles').update({ status: atual.status === 'ativo' ? 'ausente' : 'ativo' }).eq('id', id)
+      if (error) throw error
+    })
+  }, [executar, usuarios])
 
   // ------------------------------------------------------------- quadras
   const adicionarQuadra = useCallback((dados: QuadraInput) => {
@@ -614,10 +657,10 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     atualizarQuadra,
     removerQuadra,
     alternarStatusQuadra,
-    adicionarUsuario: () => proximaFatia('Cadastro de usuários'),
-    atualizarUsuario: () => proximaFatia('Edição de usuários'),
-    removerUsuario: () => proximaFatia('Remoção de usuários'),
-    alternarStatusUsuario: () => proximaFatia('Status de usuários'),
+    adicionarUsuario,
+    atualizarUsuario,
+    removerUsuario,
+    alternarStatusUsuario,
     adicionarCliente,
     atualizarCliente,
     removerCliente,
