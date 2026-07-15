@@ -48,6 +48,11 @@
     border-left: 1px solid var(--color-border);
     background: var(--color-card);
     box-shadow: -20px 0 40px rgb(15 23 42 / 0.12);
+    /* [FIX mobile] fullscreen no celular: o topo (titulo + X) nao pode ficar sob
+       a status bar/notch e o footer nao pode ficar sob o home indicator.
+       safe-top-boot cobre o boot do iOS (ver index.html). No desktop env=0. */
+    padding-top: max(env(safe-area-inset-top), var(--safe-top-boot, 0px));
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .drawer-panel--wide {

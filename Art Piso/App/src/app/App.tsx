@@ -6,6 +6,7 @@ import { ConfiguracoesPage } from '@/features/configuracoes/ConfiguracoesPage'
 import { EstoquePage } from '@/features/estoque/EstoquePage'
 import { ReservasPage } from '@/features/reservas/ReservasPage'
 import { AppShell, type AppSection } from '@/components/layout/AppShell'
+import { SplashScreen } from '@/components/layout/SplashScreen'
 import { SignInPage } from '@/components/ui/sign-in'
 import { InventoryProvider } from '@/store/inventory-provider'
 import { NotificationsProvider } from '@/store/notifications-provider'
@@ -22,6 +23,7 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [activeSection, setActiveSection] = useState<AppSection>('estoque')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSplash, setShowSplash] = useState(true)
 
   function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -54,29 +56,30 @@ export default function App() {
     }
   }, [activeSection])
 
-  if (!authenticated) {
-    return (
-      <SignInPage
-        description="Gerencie estoque, reservas e ajustes em um só lugar."
-        onSignIn={handleSignIn}
-      />
-    )
-  }
-
   return (
-    <NotificationsProvider>
-      <InventoryProvider>
-        <AppShell
-          activeSection={activeSection}
-          title={titles[activeSection]}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        >
-          {page}
-        </AppShell>
-      </InventoryProvider>
-    </NotificationsProvider>
+    <>
+      {showSplash ? <SplashScreen onDone={() => setShowSplash(false)} /> : null}
+      {authenticated ? (
+        <NotificationsProvider>
+          <InventoryProvider>
+            <AppShell
+              activeSection={activeSection}
+              title={titles[activeSection]}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onNavigate={handleNavigate}
+              onLogout={handleLogout}
+            >
+              {page}
+            </AppShell>
+          </InventoryProvider>
+        </NotificationsProvider>
+      ) : (
+        <SignInPage
+          description="Gerencie estoque, reservas e ajustes em um só lugar."
+          onSignIn={handleSignIn}
+        />
+      )}
+    </>
   )
 }
