@@ -43,6 +43,11 @@ Deno.serve(async (req) => {
       if (!email || !senha || String(senha).length < 6) {
         return resposta({ ok: false, erro: 'E-mail e senha (mínimo 6 caracteres) são obrigatórios.' })
       }
+      // Papel admin so pode ser concedido direto no banco (decisao do usuario);
+      // a funcao roda com service_role, entao o trigger de protecao nao a cobre.
+      if (role !== 'vendedor' && role !== 'gerente') {
+        return resposta({ ok: false, erro: 'Papel admin só pode ser concedido direto no banco.' })
+      }
       const { data: novo, error } = await admin.auth.admin.createUser({
         email,
         password: senha,

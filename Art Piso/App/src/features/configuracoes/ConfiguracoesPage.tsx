@@ -18,7 +18,9 @@ const roleLabel: Record<UserRole, string> = {
   vendedor: 'Vendedor',
 }
 
-const roleOptions = (Object.keys(roleLabel) as UserRole[]).map((role) => ({
+// Papel admin FORA das opcoes (decisao do usuario, 2026-07-14): admin so e
+// concedido direto no banco — o app nunca cria nem promove administradores.
+const roleOptions = (['gerente', 'vendedor'] as UserRole[]).map((role) => ({
   value: role,
   label: roleLabel[role],
 }))
@@ -101,9 +103,14 @@ export function ConfiguracoesPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="size-8 text-muted-foreground hover:text-foreground"
+                        className="size-8 text-muted-foreground hover:text-foreground disabled:opacity-40"
                         aria-label={usuario.status === 'ativo' ? `Desativar ${usuario.nome}` : `Ativar ${usuario.nome}`}
-                        title={usuario.status === 'ativo' ? 'Desativar usuário' : 'Ativar usuário'}
+                        title={
+                          usuario.role === 'admin'
+                            ? 'Status de administrador é gerenciado direto no banco'
+                            : usuario.status === 'ativo' ? 'Desativar usuário' : 'Ativar usuário'
+                        }
+                        disabled={usuario.role === 'admin'}
                         onClick={() => alternarStatusUsuario(usuario.id)}
                       >
                         {usuario.status === 'ativo' ? (
@@ -136,7 +143,6 @@ export function ConfiguracoesPage() {
         key={usuarioSeq}
         open={usuarioOpen}
         usuario={usuarioEdit}
-        ultimoAdmin={Boolean(usuarioEdit && ehUltimoAdmin(usuarioEdit))}
         onClose={() => setUsuarioOpen(false)}
         onSave={salvarUsuario}
       />
@@ -167,14 +173,11 @@ export function ConfiguracoesPage() {
 function UsuarioDrawer({
   open,
   usuario,
-  ultimoAdmin,
   onClose,
   onSave,
 }: {
   open: boolean
   usuario: Usuario | null
-  /** Editando o unico admin do sistema: papel travado (nao pode ficar sem administrador). */
-  ultimoAdmin: boolean
   onClose: () => void
   onSave: (dados: UsuarioInput) => void
 }) {
@@ -248,13 +251,13 @@ function UsuarioDrawer({
         </Field>
         <div className="flex flex-col gap-2">
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Papel</span>
-          {ultimoAdmin ? (
+          {usuario?.role === 'admin' ? (
             <>
               <div className="flex h-10 items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
                 {roleLabel.admin}
               </div>
               <p className="text-xs text-muted-foreground">
-                Único administrador do sistema — cadastre outro admin antes de mudar este papel.
+                Papel de administrador é definido direto no banco de dados, não pelo app.
               </p>
             </>
           ) : (

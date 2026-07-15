@@ -302,11 +302,17 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   const alternarStatusUsuario = useCallback((id: string) => {
     const atual = usuarios.find((item) => item.id === id)
     if (!atual) return
+    // Regra do usuario (2026-07-14): status de ADMIN so muda direto no banco
+    // (o trigger fn_protege_admin reforça; aqui e a mensagem amigavel).
+    if (atual.role === 'admin') {
+      notificar({ tipo: 'info', titulo: 'Ação bloqueada', descricao: 'Status de administrador é gerenciado direto no banco.' })
+      return
+    }
     executar('Erro ao alternar status do usuário', async () => {
       const { error } = await supabase!.from('profiles').update({ status: atual.status === 'ativo' ? 'ausente' : 'ativo' }).eq('id', id)
       if (error) throw error
     })
-  }, [executar, usuarios])
+  }, [executar, notificar, usuarios])
 
   // ------------------------------------------------------------- quadras
   const adicionarQuadra = useCallback((dados: QuadraInput) => {
