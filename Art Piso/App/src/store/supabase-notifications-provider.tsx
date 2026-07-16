@@ -13,7 +13,10 @@ import {
  * - Diretas (acao do usuario) entram via RPC fn_notificar_cliente;
  * - Derivadas (estoque baixo, furo, pico de perda) nascem no BANCO (triggers);
  * - Realtime: qualquer aparelho ouve os inserts — o sino toca em todos.
- * "Lida" e GLOBAL (conta compartilhada no tablet) — decisao consciente.
+ * "Lida" e POR USUARIO (tabela notificacao_leitura): o app le de
+ * vw_notificacoes_usuario com o `lida` ja derivado p/ auth.uid(). A conta
+ * compartilhada (balcao) e 1 user_id => "lida" efetivamente global naquele
+ * login; admin e gerente tem badge independente.
  */
 
 function tempoRelativo(iso: string) {
@@ -25,6 +28,7 @@ function tempoRelativo(iso: string) {
   return `${Math.floor(horas / 24)} d`
 }
 
+// Linha da view vw_notificacoes_usuario (lida ja derivado p/ o usuario).
 type LinhaNotificacao = {
   id: string
   tipo: Notificacao['tipo']
@@ -34,6 +38,9 @@ type LinhaNotificacao = {
   lida: boolean
   created_at: string
 }
+
+// Linha CRUA da tabela notificacoes (sem lida — o estado de leitura vive noutra tabela).
+type LinhaNotificacaoNova = Omit<LinhaNotificacao, 'lida'>
 
 function paraNotificacao(linha: LinhaNotificacao): Notificacao {
   return {
@@ -46,6 +53,18 @@ function paraNotificacao(linha: LinhaNotificacao): Notificacao {
   }
 }
 
+// Notificacao recem-inserida: nasce NAO lida para todos.
+function paraNotificacaoNova(linha: LinhaNotificacaoNova): Notificacao {
+  return {
+    id: linha.id,
+    tipo: linha.tipo,
+    titulo: linha.titulo,
+    descricao: linha.descricao,
+    tempo: tempoRelativo(linha.created_at),
+    lida: false,
+  }
+}
+
 export function SupabaseNotificationsProvider({ children }: { children: ReactNode }) {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([])
   const [ringTick, setRingTick] = useState(0)
@@ -53,7 +72,7 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
   const carregar = useCallback(async () => {
     if (!supabase) return
     const { data, error } = await supabase
-      .from('notificacoes')
+      .from('vw_notificacoes_usuario')
       .select('id, tipo, titulo, descricao, silencioso, lida, created_at')
       .order('created_at', { ascending: false })
       .limit(50)
@@ -72,13 +91,15 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
     const canal = supabase
       .channel('sino-notificacoes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacoes' }, (payload) => {
-        const linha = payload.new as LinhaNotificacao
-        setNotificacoes((atual) => (atual.some((n) => n.id === linha.id) ? atual : [paraNotificacao(linha), ...atual]))
+        const linha = payload.new as LinhaNotificacaoNova
+        setNotificacoes((atual) => (atual.some((n) => n.id === linha.id) ? atual : [paraNotificacaoNova(linha), ...atual]))
         if (!linha.silencioso) setRingTick((tick) => tick + 1)
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notificacoes' }, (payload) => {
-        const linha = payload.new as LinhaNotificacao
-        setNotificacoes((atual) => atual.map((n) => (n.id === linha.id ? { ...n, lida: linha.lida } : n)))
+      // Meu "lido" chega por notificacao_leitura (a RLS entrega so as MINHAS linhas):
+      // mantem a sincronia entre aparelhos do mesmo login (ex.: tablets do balcao).
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacao_leitura' }, (payload) => {
+        const linha = payload.new as { notificacao_id: string }
+        setNotificacoes((atual) => atual.map((n) => (n.id === linha.notificacao_id ? { ...n, lida: true } : n)))
       })
       .subscribe()
     return () => {
@@ -102,7 +123,7 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
   const marcarTodasLidas = useCallback(() => {
     setNotificacoes((atual) => atual.map((item) => (item.lida ? item : { ...item, lida: true })))
     void (async () => {
-      const { error } = await supabase!.from('notificacoes').update({ lida: true }).eq('lida', false)
+      const { error } = await supabase!.rpc('fn_marcar_todas_lidas')
       if (error) console.warn('Erro ao marcar lidas:', error.message)
     })()
   }, [])
@@ -110,7 +131,7 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
   const marcarLida = useCallback((id: string) => {
     setNotificacoes((atual) => atual.map((item) => (item.id === id && !item.lida ? { ...item, lida: true } : item)))
     void (async () => {
-      const { error } = await supabase!.from('notificacoes').update({ lida: true }).eq('id', id)
+      const { error } = await supabase!.rpc('fn_marcar_lida', { p_notificacao_id: id })
       if (error) console.warn('Erro ao marcar lida:', error.message)
     })()
   }, [])
