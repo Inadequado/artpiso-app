@@ -13,6 +13,7 @@ import { enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory
 import { onlyDigits } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import type { Cliente, Reserva, ReservaStatus } from '@/types/inventory'
 
 const statusAtivo = (status: ReservaStatus) => status === 'reservado' || status === 'parcial'
@@ -205,6 +206,7 @@ function ClienteRow({
   onEditar: () => void
   onExcluir: () => void
 }) {
+  const { podeEditar } = useSessao()
   const painelId = `cliente-${cliente.id}-pedidos`
   // R-07: pedido multi-item vira N linhas com o mesmo PED — a coluna conta PEDIDOS, nao linhas.
   const totalPedidos = new Set(pedidos.map((pedido) => pedido.pedido)).size
@@ -237,32 +239,34 @@ function ClienteRow({
         <td>{cliente.telefone}</td>
         <td className="numeric text-center font-semibold">{totalPedidos}</td>
         <td>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={(event) => {
-                event.stopPropagation()
-                onEditar()
-              }}
-            >
-              Editar
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
-              aria-label={`Excluir ${cliente.nome}`}
-              title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
-              disabled={temPedidoAtivo}
-              onClick={(event) => {
-                event.stopPropagation()
-                onExcluir()
-              }}
-            >
-              <Trash2 aria-hidden="true" className="size-4" />
-            </Button>
-          </div>
+          {podeEditar ? (
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onEditar()
+                }}
+              >
+                Editar
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
+                aria-label={`Excluir ${cliente.nome}`}
+                title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
+                disabled={temPedidoAtivo}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onExcluir()
+                }}
+              >
+                <Trash2 aria-hidden="true" className="size-4" />
+              </Button>
+            </div>
+          ) : null}
         </td>
       </tr>
       {aberto ? (
@@ -301,6 +305,7 @@ function ClienteCard({
   onEditar: () => void
   onExcluir: () => void
 }) {
+  const { podeEditar } = useSessao()
   const painelId = `cliente-card-${cliente.id}-pedidos`
   // R-07: pedido multi-item vira N linhas com o mesmo PED — a coluna conta PEDIDOS, nao linhas.
   const totalPedidos = new Set(pedidos.map((pedido) => pedido.pedido)).size
@@ -331,22 +336,24 @@ function ClienteCard({
 
       <div className="flex items-center justify-between gap-2 border-t px-4 py-2">
         <span className="text-sm text-muted-foreground">{cliente.telefone}</span>
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={onEditar}>
-            Editar
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
-            aria-label={`Excluir ${cliente.nome}`}
-            title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
-            disabled={temPedidoAtivo}
-            onClick={onExcluir}
-          >
-            <Trash2 aria-hidden="true" className="size-4" />
-          </Button>
-        </div>
+        {podeEditar ? (
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" onClick={onEditar}>
+              Editar
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 text-muted-foreground hover:text-danger disabled:opacity-40"
+              aria-label={`Excluir ${cliente.nome}`}
+              title={temPedidoAtivo ? 'Cliente com pedido ativo não pode ser excluído' : 'Excluir cliente'}
+              disabled={temPedidoAtivo}
+              onClick={onExcluir}
+            >
+              <Trash2 aria-hidden="true" className="size-4" />
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {aberto ? (

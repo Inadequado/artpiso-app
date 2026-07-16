@@ -22,6 +22,7 @@ import {
   statusProduto,
 } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import { CadastroProdutoDrawer } from '@/features/estoque/CadastroProdutoDrawer'
 import { EditarLoteDrawer } from '@/features/estoque/EditarLoteDrawer'
 import { EditarProdutoDrawer } from '@/features/estoque/EditarProdutoDrawer'
@@ -49,6 +50,7 @@ const statusFiltravel: StockStatus[] = ['disponivel', 'baixo', 'esgotado']
 
 export function EstoquePage() {
   const { lotes: listaLotes, reservas, adicionarLote, criarPedido } = useInventory()
+  const { podeEditar } = useSessao()
   const [reservaOpen, setReservaOpen] = useState(false)
   const [reservaSeq, setReservaSeq] = useState(0)
   const [detalheOpen, setDetalheOpen] = useState(false)
@@ -286,9 +288,11 @@ export function EstoquePage() {
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <Button size="sm" disabled={disponivel <= 0} onClick={() => openReserva(produto)}>
-                          Reservar
-                        </Button>
+                        {podeEditar ? (
+                          <Button size="sm" disabled={disponivel <= 0} onClick={() => openReserva(produto)}>
+                            Reservar
+                          </Button>
+                        ) : null}
                         <Button variant="ghost" size="sm" onClick={() => openDetalhe(produto)}>
                           Detalhes
                           <ArrowRight aria-hidden="true" data-icon="inline-end" />
@@ -484,6 +488,7 @@ function ProdutoCard({
   onReservar: () => void
   onDetalhe: () => void
 }) {
+  const { podeEditar } = useSessao()
   const disponivel = caixasDisponiveisProduto(produto)
   const status = statusProduto(produto)
   const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
@@ -526,10 +531,12 @@ function ProdutoCard({
         </span>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Button size="sm" disabled={disponivel <= 0} onClick={onReservar}>
-          Reservar
-        </Button>
+      <div className={podeEditar ? 'mt-3 grid grid-cols-2 gap-2' : 'mt-3 grid grid-cols-1 gap-2'}>
+        {podeEditar ? (
+          <Button size="sm" disabled={disponivel <= 0} onClick={onReservar}>
+            Reservar
+          </Button>
+        ) : null}
         <Button variant="ghost" size="sm" onClick={onDetalhe}>
           Detalhes
           <ArrowRight aria-hidden="true" data-icon="inline-end" />

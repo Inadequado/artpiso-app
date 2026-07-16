@@ -11,6 +11,8 @@ import { SignInPage } from '@/components/ui/sign-in'
 import { paraEmailLogin } from '@/lib/login'
 import { dataSource, supabase } from '@/lib/supabase'
 import { InventoryProvider } from '@/store/inventory-provider'
+import { useSessao } from '@/store/sessao'
+import { SessaoProvider } from '@/store/sessao-provider'
 import { SupabaseInventoryProvider } from '@/store/supabase-provider'
 import { NotificationsProvider } from '@/store/notifications-provider'
 import { SupabaseNotificationsProvider } from '@/store/supabase-notifications-provider'
@@ -27,8 +29,6 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(dataSource === 'mock' ? false : null as boolean | null)
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
-  const [activeSection, setActiveSection] = useState<AppSection>('estoque')
-  const [searchQuery, setSearchQuery] = useState('')
   const [showSplash, setShowSplash] = useState(true)
 
   // Modo Supabase: sessao persistida (recarregar a pagina nao desloga) + observador de auth.
@@ -69,29 +69,7 @@ export default function App() {
   function handleLogout() {
     if (supabase) void supabase.auth.signOut()
     setAuthenticated(false)
-    setActiveSection('estoque')
-    setSearchQuery('')
   }
-
-  function handleNavigate(section: AppSection) {
-    setActiveSection(section)
-    setSearchQuery('')
-  }
-
-  const page = useMemo(() => {
-    switch (activeSection) {
-      case 'estoque':
-        return <EstoquePage />
-      case 'reservas':
-        return <ReservasPage />
-      case 'clientes':
-        return <ClientesPage />
-      case 'ajustes':
-        return <AjustesPage />
-      case 'configuracoes':
-        return <ConfiguracoesPage onLogout={handleLogout} />
-    }
-  }, [activeSection])
 
   const DataProvider = dataSource === 'supabase' ? SupabaseInventoryProvider : InventoryProvider
   const BellProvider = dataSource === 'supabase' ? SupabaseNotificationsProvider : NotificationsProvider
@@ -103,20 +81,13 @@ export default function App() {
         // Modo Supabase: aguardando o getSession inicial (a splash cobre este vao)
         <div className="flex h-dvh items-center justify-center bg-background text-sm text-muted-foreground">Carregando…</div>
       ) : authenticated ? (
-        <BellProvider>
-          <DataProvider>
-            <AppShell
-              activeSection={activeSection}
-              title={titles[activeSection]}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onNavigate={handleNavigate}
-              onLogout={handleLogout}
-            >
-              {page}
-            </AppShell>
-          </DataProvider>
-        </BellProvider>
+        <SessaoProvider>
+          <BellProvider>
+            <DataProvider>
+              <AreaLogada onLogout={handleLogout} />
+            </DataProvider>
+          </BellProvider>
+        </SessaoProvider>
       ) : (
         <SignInPage
           description="Gerencie estoque, reservas e ajustes em um só lugar."
@@ -126,5 +97,49 @@ export default function App() {
         />
       )}
     </>
+  )
+}
+
+/** Area autenticada: navegacao + guarda de secao por papel (Configuracoes e so do admin). */
+function AreaLogada({ onLogout }: { onLogout: () => void }) {
+  const { ehAdmin } = useSessao()
+  const [activeSection, setActiveSection] = useState<AppSection>('estoque')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Guarda de rota: papel sem acesso a Configuracoes nunca renderiza a secao
+  const section: AppSection = activeSection === 'configuracoes' && !ehAdmin ? 'estoque' : activeSection
+
+  function handleNavigate(proxima: AppSection) {
+    if (proxima === 'configuracoes' && !ehAdmin) return
+    setActiveSection(proxima)
+    setSearchQuery('')
+  }
+
+  const page = useMemo(() => {
+    switch (section) {
+      case 'estoque':
+        return <EstoquePage />
+      case 'reservas':
+        return <ReservasPage />
+      case 'clientes':
+        return <ClientesPage />
+      case 'ajustes':
+        return <AjustesPage />
+      case 'configuracoes':
+        return <ConfiguracoesPage onLogout={onLogout} />
+    }
+  }, [section, onLogout])
+
+  return (
+    <AppShell
+      activeSection={section}
+      title={titles[section]}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      onNavigate={handleNavigate}
+      onLogout={onLogout}
+    >
+      {page}
+    </AppShell>
   )
 }

@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Drawer } from '@/components/ui/drawer'
 import { caixasDisponiveis, caixasDisponiveisProduto, formatM2, formatPreco, m2Disponivel, m2DisponivelProduto, precoPorCaixa, quadraLabel, quadraLabelDetalhada, statusLote } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import type { LoteEstoque, Produto, StockStatus } from '@/types/inventory'
 
 const statusLabel: Record<StockStatus, string> = {
@@ -65,6 +66,7 @@ export function ProdutoDetalheDrawer({
   onEditarLote: (lote: LoteEstoque) => void
 }) {
   const { reservas, movimentos, removerLote, removerProduto } = useInventory()
+  const { podeEditar } = useSessao()
   const [loteExcluir, setLoteExcluir] = useState<LoteEstoque | null>(null)
   const [confirmarExcluirProduto, setConfirmarExcluirProduto] = useState(false)
 
@@ -94,16 +96,18 @@ export function ProdutoDetalheDrawer({
       title="Detalhe do produto"
       onClose={onClose}
       footer={
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onReservar}>
-            <CalendarPlus aria-hidden="true" data-icon="inline-start" />
-            Criar reserva
-          </Button>
-          <Button className="flex-1" onClick={onNovoLote}>
-            <Plus aria-hidden="true" data-icon="inline-start" />
-            Novo lote
-          </Button>
-        </div>
+        podeEditar ? (
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={onReservar}>
+              <CalendarPlus aria-hidden="true" data-icon="inline-start" />
+              Criar reserva
+            </Button>
+            <Button className="flex-1" onClick={onNovoLote}>
+              <Plus aria-hidden="true" data-icon="inline-start" />
+              Novo lote
+            </Button>
+          </div>
+        ) : undefined
       }
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr] lg:items-start">
@@ -116,16 +120,18 @@ export function ProdutoDetalheDrawer({
                 {[produto.marca, produto.tamanho].filter(Boolean).join(' - ')}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Editar produto"
-              title="Editar dados do produto"
-              onClick={onEditarProduto}
-            >
-              <PenLine aria-hidden="true" className="size-4" />
-            </Button>
+            {podeEditar ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                aria-label="Editar produto"
+                title="Editar dados do produto"
+                onClick={onEditarProduto}
+              >
+                <PenLine aria-hidden="true" className="size-4" />
+              </Button>
+            ) : null}
           </div>
           <div className="overflow-hidden rounded-lg border bg-muted/30">
             {produto.foto ? (
@@ -139,17 +145,19 @@ export function ProdutoDetalheDrawer({
           {produto.descricao ? (
             <p className="whitespace-pre-line text-sm text-muted-foreground">{produto.descricao}</p>
           ) : null}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start text-muted-foreground hover:text-danger disabled:opacity-40"
-            disabled={produtoTemReservas}
-            title={produtoTemReservas ? 'Produto com reservas ativas não pode ser excluído' : 'Excluir produto e todos os seus lotes'}
-            onClick={() => setConfirmarExcluirProduto(true)}
-          >
-            <Trash2 aria-hidden="true" data-icon="inline-start" />
-            Excluir produto
-          </Button>
+          {podeEditar ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start text-muted-foreground hover:text-danger disabled:opacity-40"
+              disabled={produtoTemReservas}
+              title={produtoTemReservas ? 'Produto com reservas ativas não pode ser excluído' : 'Excluir produto e todos os seus lotes'}
+              onClick={() => setConfirmarExcluirProduto(true)}
+            >
+              <Trash2 aria-hidden="true" data-icon="inline-start" />
+              Excluir produto
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-6">
@@ -193,6 +201,7 @@ export function ProdutoDetalheDrawer({
                       <p className="numeric text-xs text-muted-foreground">{formatM2(m2Disponivel(lote))} m²</p>
                     </div>
                     <Badge variant={statusVariant[status]}>{statusLabel[status]}</Badge>
+                    {podeEditar ? (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -203,6 +212,8 @@ export function ProdutoDetalheDrawer({
                     >
                       <PenLine aria-hidden="true" className="size-4" />
                     </Button>
+                    ) : null}
+                    {podeEditar ? (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -218,6 +229,7 @@ export function ProdutoDetalheDrawer({
                     >
                       <Trash2 aria-hidden="true" className="size-4" />
                     </Button>
+                    ) : null}
                   </div>
                 </div>
               )

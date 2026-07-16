@@ -11,6 +11,7 @@ import { SelectMenu } from '@/components/ui/select-menu'
 import { useGsapListRefresh } from '@/lib/animations'
 import { paraEmailLogin, paraUsuarioExibicao } from '@/lib/login'
 import { useInventory, type UsuarioInput } from '@/store/inventory'
+import { papelLabel, useSessao } from '@/store/sessao'
 import type { Usuario, UserRole } from '@/types/inventory'
 
 const roleLabel: Record<UserRole, string> = {
@@ -33,6 +34,7 @@ const statusLabel: Record<Usuario['status'], string> = {
 
 export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
   const { usuarios, adicionarUsuario, atualizarUsuario, removerUsuario, alternarStatusUsuario } = useInventory()
+  const sessao = useSessao()
   const [usuarioOpen, setUsuarioOpen] = useState(false)
   const [usuarioSeq, setUsuarioSeq] = useState(0)
   const [usuarioEdit, setUsuarioEdit] = useState<Usuario | null>(null)
@@ -76,8 +78,8 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
             AP
           </span>
           <div className="min-w-0">
-            <CardTitle>Administrador</CardTitle>
-            <CardDescription>Gerente geral</CardDescription>
+            <CardTitle>{sessao.nome}</CardTitle>
+            <CardDescription>{papelLabel[sessao.papel]}</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

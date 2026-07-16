@@ -22,6 +22,7 @@ import { useGsapListRefresh } from '@/lib/animations'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import type { Reserva } from '@/types/inventory'
 
 const statusTabs = [
@@ -62,6 +63,7 @@ export function ReservasPage() {
   const [estornoReserva, setEstornoReserva] = useState<Reserva | null>(null)
   const [estornoSeq, setEstornoSeq] = useState(0)
   const [detalhesReserva, setDetalhesReserva] = useState<Reserva | null>(null)
+  const { podeEditar } = useSessao()
   const reservasTableRef = useRef<HTMLTableElement>(null)
   const busca = useSearchQuery()
 
@@ -290,7 +292,7 @@ export function ReservasPage() {
                     </td>
                     <td className="text-center">
                       <div className="flex items-center justify-center gap-2">
-                        {reserva.status === 'reservado' || reserva.status === 'parcial' ? (
+                        {podeEditar && (reserva.status === 'reservado' || reserva.status === 'parcial') ? (
                           <>
                             <Button
                               size="sm"
@@ -312,7 +314,7 @@ export function ReservasPage() {
                               </Button>
                             )}
                           </>
-                        ) : reserva.status === 'entregue' ? (
+                        ) : podeEditar && reserva.status === 'entregue' ? (
                           <Button
                             size="sm"
                             variant="outline"
@@ -486,6 +488,7 @@ function ReservaCard({
   onEditarSaldo: () => void
   onEstorno: () => void
 }) {
+  const { podeEditar } = useSessao()
   const ativo = reserva.status === 'reservado' || reserva.status === 'parcial'
   return (
     <div
@@ -539,7 +542,7 @@ function ReservaCard({
         </div>
       </div>
 
-      {ativo || reserva.status === 'entregue' ? (
+      {podeEditar && (ativo || reserva.status === 'entregue') ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {ativo ? (
             <>

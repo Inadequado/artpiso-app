@@ -11,6 +11,7 @@ import { movimentoIcon, movimentoTone } from '@/features/ajustes/movimento-style
 import { QuadraDrawer } from '@/features/configuracoes/QuadraDrawer'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import type { LoteEstoque, Movimento, Quadra } from '@/types/inventory'
 
 type AjusteAction =
@@ -30,6 +31,7 @@ const historicoRecenteLimite = 6
 export function AjustesPage() {
   const { lotes, movimentos, quadras, adicionarQuadra, atualizarQuadra, removerQuadra, alternarStatusQuadra } =
     useInventory()
+  const { podeEditar } = useSessao()
   const [ajusteAberto, setAjusteAberto] = useState<AjusteTipo | null>(null)
   const [ajusteSeq, setAjusteSeq] = useState(0)
   const [quadraOpen, setQuadraOpen] = useState(false)
@@ -62,6 +64,7 @@ export function AjustesPage() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
       <div className="flex flex-col gap-6">
+        {podeEditar ? (
         <Card>
           <CardHeader>
             <CardTitle>Central de ajustes</CardTitle>
@@ -92,6 +95,7 @@ export function AjustesPage() {
             })}
           </CardContent>
         </Card>
+        ) : null}
 
         <Card>
           <CardHeader>
@@ -195,6 +199,7 @@ function QuadraCard({
   onDelete: () => void
   onToggleStatus: () => void
 }) {
+  const { podeEditar } = useSessao()
   const ocupacao = ocupacaoQuadra(quadra, lotes)
   const temLotes = ocupacao.lotes > 0
   const ocupada = quadra.status === 'ocupado'
@@ -207,6 +212,7 @@ function QuadraCard({
             <p className="text-xl font-black text-primary">{quadra.numero}</p>
             <p className="text-sm text-muted-foreground">{quadra.descricao}</p>
           </div>
+          {podeEditar ? (
           <div className="-mr-2 -mt-2 flex items-center gap-1">
             <Button
               type="button"
@@ -232,24 +238,31 @@ function QuadraCard({
               <Trash2 aria-hidden="true" className="size-4" />
             </Button>
           </div>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-2">
           <button
             type="button"
             aria-pressed={ocupada}
-            title={ocupada ? 'Marcar como disponível' : 'Marcar como ocupada'}
+            title={
+              podeEditar
+                ? ocupada ? 'Marcar como disponível' : 'Marcar como ocupada'
+                : ocupada ? 'Ocupada' : 'Disponível'
+            }
+            disabled={!podeEditar}
             onClick={onToggleStatus}
             className={cn(
               'flex items-center gap-2 self-start rounded-md border px-2.5 py-1.5 text-xs font-bold transition-colors',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60',
+              'disabled:pointer-events-none',
               ocupada
                 ? 'border-warning/40 bg-warning/10 text-warning hover:bg-warning/20'
                 : 'border-success/40 bg-success/10 text-success hover:bg-success/20',
             )}
           >
             {ocupada ? 'Ocupada' : 'Disponível'}
-            <ArrowRightLeft aria-hidden="true" className="size-3.5 opacity-70" />
+            {podeEditar ? <ArrowRightLeft aria-hidden="true" className="size-3.5 opacity-70" /> : null}
           </button>
 
           <p className="text-xs text-muted-foreground">

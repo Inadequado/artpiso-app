@@ -7,6 +7,7 @@ import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { clienteDaReserva, enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { useInventory } from '@/store/inventory'
+import { useSessao } from '@/store/sessao'
 import type { Reserva } from '@/types/inventory'
 
 type DetalhesReservaDrawerProps = {
@@ -23,6 +24,7 @@ type DetalhesReservaDrawerProps = {
  */
 export function DetalhesReservaDrawer({ reserva, onClose, onEdit }: DetalhesReservaDrawerProps) {
   const { clientes, reservas } = useInventory()
+  const { podeEditar } = useSessao()
   const cli = reserva ? clienteDaReserva(reserva, clientes) : undefined
   const clienteNome = cli?.nome ?? reserva?.cliente ?? ''
   const clienteDoc = cli?.documento ?? reserva?.documento
@@ -44,7 +46,7 @@ export function DetalhesReservaDrawer({ reserva, onClose, onEdit }: DetalhesRese
       description={reserva ? `Pedido ${reserva.pedido}` : undefined}
       onClose={onClose}
       footer={
-        linhaEditavel && onEdit ? (
+        podeEditar && linhaEditavel && onEdit ? (
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={onClose}>
               Fechar

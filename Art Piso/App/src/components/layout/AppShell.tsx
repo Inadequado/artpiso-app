@@ -32,6 +32,7 @@ import { ringBell } from '@/lib/animations'
 import { playNotificationSound } from '@/lib/sound'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/store/notifications'
+import { papelLabel, useSessao } from '@/store/sessao'
 
 export type AppSection = 'estoque' | 'reservas' | 'clientes' | 'ajustes' | 'configuracoes'
 
@@ -98,7 +99,10 @@ export function AppShell({
   onNavigate,
   onLogout,
 }: AppShellProps) {
-  const primaryAction = sectionAction[activeSection]
+  const { nome, papel, ehAdmin, podeEditar } = useSessao()
+  // Gating por papel (B1): vendedor nao ve acao primaria/FAB; Configuracoes e so do admin
+  const primaryAction = podeEditar ? sectionAction[activeSection] : null
+  const itensNav = ehAdmin ? navItems : navItems.filter((item) => item.id !== 'configuracoes')
   const primaryActionRef = useRef<(() => void) | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [verTodasOpen, setVerTodasOpen] = useState(false)
@@ -179,7 +183,7 @@ export function AppShell({
           </div>
 
           <nav className="flex flex-1 flex-col gap-2 p-4">
-            {navItems.map((item) => {
+            {itensNav.map((item) => {
               const Icon = item.icon
               const active = activeSection === item.id
               return (
@@ -207,8 +211,8 @@ export function AppShell({
             {accountOpen ? (
               <div className="absolute bottom-20 left-4 z-50 w-[232px] rounded-lg border bg-card shadow-2xl" role="menu">
                 <div className="border-b p-4">
-                  <p className="text-sm font-bold">Administrador</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Gerente geral</p>
+                  <p className="text-sm font-bold">{nome}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{papelLabel[papel]}</p>
                 </div>
                 <div className="flex flex-col p-2">
                   {accountMenuItems.map((item) => {
@@ -248,8 +252,8 @@ export function AppShell({
                 AP
               </span>
               <span className="min-w-0 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
-                <span className="block text-sm font-bold">Administrador</span>
-                <span className="block text-xs text-muted-foreground">Gerente geral</span>
+                <span className="block text-sm font-bold">{nome}</span>
+                <span className="block text-xs text-muted-foreground">{papelLabel[papel]}</span>
               </span>
             </button>
           </div>
@@ -451,7 +455,7 @@ export function AppShell({
         </button>
       ) : null}
 
-      <BottomNav items={navItems} activeSection={activeSection} onNavigate={onNavigate} />
+      <BottomNav items={itensNav} activeSection={activeSection} onNavigate={onNavigate} />
 
       <NotificationsDrawer
         open={verTodasOpen}
