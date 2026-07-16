@@ -112,7 +112,9 @@ export function AppShell({
   }, [ringTick])
 
   function abrirNotificacoes() {
-    // Abrir nao marca mais todas como lidas: a marcacao virou granular (por item ou botao "Marcar todas").
+    // Abrir o sino ja marca todas como vistas (comportamento "abriu = viu"): o badge zera
+    // e o realce de nao-lida some. Historico continua acessivel em "Ver todas".
+    if (!notificationsOpen && naoLidas > 0) marcarTodasLidas()
     setNotificationsOpen((open) => !open)
   }
 
@@ -303,15 +305,6 @@ export function AppShell({
                       <h2 className="font-bold">Notificações</h2>
                       <p className="mt-1 text-xs text-muted-foreground">Alertas operacionais do estoque.</p>
                     </div>
-                    {naoLidas > 0 ? (
-                      <button
-                        type="button"
-                        onClick={marcarTodasLidas}
-                        className="shrink-0 text-xs font-semibold text-primary transition hover:underline"
-                      >
-                        Marcar todas
-                      </button>
-                    ) : null}
                   </div>
                   <div className="flex max-h-80 flex-col overflow-y-auto p-2">
                     {notificacoes.length === 0 ? (
@@ -390,7 +383,10 @@ export function AppShell({
                 size="icon"
                 className="relative"
                 aria-label={naoLidas > 0 ? `Notificações (${naoLidas} não lidas)` : 'Notificações'}
-                onClick={() => setVerTodasOpen(true)}
+                onClick={() => {
+                  if (naoLidas > 0) marcarTodasLidas()
+                  setVerTodasOpen(true)
+                }}
               >
                 <Bell aria-hidden="true" />
                 {naoLidas > 0 ? (
