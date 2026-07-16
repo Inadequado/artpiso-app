@@ -256,7 +256,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     const entrando = caixasDisponiveis(lote)
     if (lotesDoProduto.length > 0 && entrando > 0) {
       const disponivelAntes = lotesDoProduto.reduce((total, item) => total + caixasDisponiveis(item), 0)
-      const statusAntes = statusPorDisponivel(disponivelAntes)
+      const statusAntes = statusPorDisponivel(disponivelAntes, lote.limiteEstoqueBaixo)
       if (statusAntes === 'baixo' || statusAntes === 'esgotado') {
         notificar({
           tipo: 'estoque',
@@ -747,7 +747,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       // a repor (baixo/esgotado) e a entrada trouxe caixas de volta.
       const lotesDoProduto = lotes.filter((item) => item.produtoId === lote.produtoId)
       const disponivelAntes = lotesDoProduto.reduce((total, item) => total + caixasDisponiveis(item), 0)
-      const statusAntes = statusPorDisponivel(disponivelAntes)
+      const statusAntes = statusPorDisponivel(disponivelAntes, lote.limiteEstoqueBaixo)
       if (statusAntes === 'baixo' || statusAntes === 'esgotado') {
         notificar({
           tipo: 'estoque',

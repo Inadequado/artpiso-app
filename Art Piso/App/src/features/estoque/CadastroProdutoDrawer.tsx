@@ -29,6 +29,7 @@ export function CadastroProdutoDrawer({
   const [referencia, setReferencia] = useState('')
   const [marca, setMarca] = useState('')
   const [tamanho, setTamanho] = useState('')
+  const [limiteBaixo, setLimiteBaixo] = useState('10')
   const [descricao, setDescricao] = useState('')
   const [lote, setLote] = useState('')
   const [quadra, setQuadra] = useState('')
@@ -107,7 +108,7 @@ export function CadastroProdutoDrawer({
   const totalM2 = Number.isFinite(m2Caixa) && m2Caixa > 0 ? estoque * m2Caixa : 0
   const dadosProdutoValidos = produtoExistente
     ? true
-    : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0)
+    : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0 && Number(limiteBaixo) >= 1)
   const loteDuplicado = loteComCodigo(lote, lotes)
   // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
   const valido = Boolean(dadosProdutoValidos && lote.trim() && !loteDuplicado && quadra.trim() && estoque > 0)
@@ -128,6 +129,7 @@ export function CadastroProdutoDrawer({
       m2PorCaixa: m2Caixa,
       pecasPorCaixa: pecasCaixa,
       precoM2: precoNum,
+      limiteEstoqueBaixo: produtoExistente ? produtoExistente.limiteEstoqueBaixo : Math.max(1, Number(limiteBaixo) || 10),
       descricao: produtoExistente ? produtoExistente.descricao : descricao.trim() || undefined,
       caixasEstoque: estoque,
       caixasReserva: 0,
@@ -221,6 +223,21 @@ export function CadastroProdutoDrawer({
                 ) : null}
               </Field>
             </div>
+          )}
+          {produtoExistente ? null : (
+            <Field
+              label="Avisar estoque baixo em (caixas)"
+              hint="Quando o disponível deste produto ficar abaixo disso, ele alerta estoque baixo."
+            >
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                value={limiteBaixo}
+                onChange={(e) => setLimiteBaixo(e.target.value)}
+                placeholder="10"
+              />
+            </Field>
           )}
           {produtoExistente ? null : (
             <Field label="Descrição" optional>

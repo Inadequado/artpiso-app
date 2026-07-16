@@ -29,6 +29,8 @@ export type AtualizarProdutoPatch = {
   m2PorCaixa: number
   pecasPorCaixa: number
   precoM2: number
+  /** Limiar de "estoque baixo" (cx) do produto. */
+  limiteEstoqueBaixo: number
   /** Descricao livre do produto. Enviar sempre (undefined limpa a descricao). */
   descricao?: string
   /** Foto do produto (data URL). Enviar sempre (undefined remove a foto). */

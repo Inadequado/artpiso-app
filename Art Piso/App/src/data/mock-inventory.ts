@@ -588,10 +588,13 @@ export function loteComCodigo(codigo: string, lotes: LoteEstoque[], ignorarLoteI
   return lotes.find((lote) => lote.id !== ignorarLoteId && lote.lote.trim().toLowerCase() === alvo)
 }
 
-/** Status derivado das caixas disponiveis. Fonte unica para lote e produto. */
-export function statusPorDisponivel(caixas: number): StockStatus {
+/** Limiar padrao de "estoque baixo" (cx) quando o produto nao define o seu. */
+export const LIMITE_ESTOQUE_BAIXO_PADRAO = 10
+
+/** Status derivado das caixas disponiveis. `limite` = a partir de quantas cx alerta "baixo". */
+export function statusPorDisponivel(caixas: number, limite = LIMITE_ESTOQUE_BAIXO_PADRAO): StockStatus {
   if (caixas <= 0) return 'esgotado'
-  if (caixas < 10) return 'baixo'
+  if (caixas < limite) return 'baixo'
   return 'disponivel'
 }
 
@@ -635,6 +638,7 @@ export function agruparPorProduto(lista: LoteEstoque[]): Produto[] {
         precoM2: lote.precoM2,
         descricao: lote.descricao,
         foto: lote.foto,
+        limiteEstoqueBaixo: lote.limiteEstoqueBaixo,
         lotes: [lote],
       })
     }
@@ -655,7 +659,7 @@ export function m2DisponivelProduto(produto: Produto) {
  * enquanto houver caixas disponiveis, o produto fica disponivel (ou baixo).
  */
 export function statusProduto(produto: Produto): StockStatus {
-  return statusPorDisponivel(caixasDisponiveisProduto(produto))
+  return statusPorDisponivel(caixasDisponiveisProduto(produto), produto.limiteEstoqueBaixo)
 }
 
 /** Numero de reservas ATIVAS (reservado ou entrega parcial em aberto) de um produto. */

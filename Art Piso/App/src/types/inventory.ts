@@ -66,6 +66,8 @@ export type LoteEstoque = {
   precoM2: number
   /** Descricao livre (acabamento, detalhes tecnicos). Atributo de produto: igual em todos os lotes. Opcional. */
   descricao?: string
+  /** Limiar de "estoque baixo" (cx) do PRODUTO — atributo de produto, igual em todos os lotes. Ausente = padrao. */
+  limiteEstoqueBaixo?: number
   caixasEstoque: number
   caixasReserva: number
   caixasPerda: number
@@ -87,6 +89,8 @@ export type Produto = {
   precoM2: number
   descricao?: string
   foto?: string
+  /** Caixas disponiveis a partir das quais o PRODUTO alerta "estoque baixo". Ausente = padrao. */
+  limiteEstoqueBaixo?: number
   lotes: LoteEstoque[]
 }
 

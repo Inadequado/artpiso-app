@@ -28,6 +28,7 @@ export function EditarProdutoDrawer({
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? String(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? String(produto.precoM2) : '')
+  const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '10')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
   const [foto, setFoto] = useState(produto?.foto)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -60,7 +61,8 @@ export function EditarProdutoDrawer({
       marca.trim() &&
       m2Num > 0 &&
       pecasNum > 0 &&
-      precoNum > 0,
+      precoNum > 0 &&
+      Number(limiteBaixo) >= 1,
   )
   const variosLotes = (produto?.lotes.length ?? 0) > 1
 
@@ -82,6 +84,7 @@ export function EditarProdutoDrawer({
       m2PorCaixa: m2Num,
       pecasPorCaixa: pecasNum,
       precoM2: precoNum,
+      limiteEstoqueBaixo: Math.max(1, Number(limiteBaixo) || 10),
       descricao: descricao.trim() || undefined,
       foto,
     })
@@ -145,6 +148,19 @@ export function EditarProdutoDrawer({
               ) : null}
             </Field>
           </div>
+          <Field
+            label="Avisar estoque baixo em (caixas)"
+            hint="Quando o disponível deste produto ficar abaixo disso, ele alerta estoque baixo."
+          >
+            <Input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={limiteBaixo}
+              onChange={(e) => setLimiteBaixo(e.target.value)}
+              placeholder="10"
+            />
+          </Field>
           <Field label="Descrição" optional>
             <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
           </Field>

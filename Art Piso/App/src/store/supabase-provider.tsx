@@ -137,6 +137,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
       pecasPorCaixa: r.pecas_por_caixa,
       precoM2: Number(r.preco_m2),
       descricao: r.descricao ?? undefined,
+      limiteEstoqueBaixo: r.limite_estoque_baixo_cx ?? undefined,
       caixasEstoque: r.caixas_estoque ?? 0,
       caixasReserva: r.caixas_reserva ?? 0,
       caixasPerda: r.caixas_perda ?? 0,
@@ -383,6 +384,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
           tamanho_nominal: lote.tamanho || null,
           descricao: lote.descricao ?? null,
           preco_m2: lote.precoM2,
+          limite_estoque_baixo_cx: lote.limiteEstoqueBaixo ?? undefined,
           foto: lote.foto ?? null,
         })
         if (error) throw error
@@ -430,6 +432,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
         marca: patch.marca,
         tamanho_nominal: patch.tamanho || null,
         preco_m2: patch.precoM2,
+        limite_estoque_baixo_cx: patch.limiteEstoqueBaixo,
         descricao: patch.descricao ?? null,
         foto: patch.foto ?? null,
       }).eq('id', produtoId)
