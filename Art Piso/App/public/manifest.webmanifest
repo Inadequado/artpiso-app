@@ -4,6 +4,7 @@
   "description": "Controle de estoque de pisos — caixas, lotes, reservas e ajustes.",
   "lang": "pt-BR",
   "dir": "ltr",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
