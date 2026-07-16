@@ -12,11 +12,14 @@ type BottomNavProps = {
 
 // Navegacao inferior fixa — visivel so no mobile/tablet (< lg). No desktop a
 // sidebar assume (ver AppShell). Padding inferior respeita a safe-area do notch.
+// Colunas = nº de itens (o menu varia por papel: 5 p/ admin, 4 p/ os demais), entao
+// o grid e dinamico para os itens ocuparem a largura toda, sem buraco a direita.
 export function BottomNav({ items, activeSection, onNavigate }: BottomNavProps) {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       {items.map((item) => {
         const Icon = item.icon
