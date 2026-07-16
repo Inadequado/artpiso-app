@@ -13,6 +13,8 @@ import type { UserRole } from '@/types/inventory'
 export type Sessao = {
   nome: string
   papel: UserRole
+  /** Login do usuario (sem o dominio sintetico), ex.: "balcao". */
+  usuario: string
   /** Configuracoes e visivel/acessivel so para admin. */
   ehAdmin: boolean
   /** Vendedor e leitura pura: esconde toda acao de escrita. */
@@ -25,11 +27,11 @@ export const papelLabel: Record<UserRole, string> = {
   vendedor: 'Vendedor',
 }
 
-export function montarSessao(nome: string, papel: UserRole): Sessao {
-  return { nome, papel, ehAdmin: papel === 'admin', podeEditar: papel !== 'vendedor' }
+export function montarSessao(nome: string, papel: UserRole, usuario: string): Sessao {
+  return { nome, papel, usuario, ehAdmin: papel === 'admin', podeEditar: papel !== 'vendedor' }
 }
 
-export const sessaoMock = montarSessao('Administrador', 'admin')
+export const sessaoMock = montarSessao('Administrador', 'admin', 'admin')
 
 export const SessaoContext = createContext<Sessao>(sessaoMock)
 

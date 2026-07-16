@@ -21,11 +21,12 @@ export function SessaoProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id)
         .maybeSingle()
       if (!ativo) return
+      const usuario = paraUsuarioExibicao(user.email ?? 'usuário')
       // Perfil ausente (nao deveria acontecer): assume o papel MAIS restrito.
       setSessao(
         perfil
-          ? montarSessao(perfil.nome, perfil.role as UserRole)
-          : montarSessao(paraUsuarioExibicao(user.email ?? 'usuário'), 'vendedor'),
+          ? montarSessao(perfil.nome, perfil.role as UserRole, usuario)
+          : montarSessao(usuario, 'vendedor', usuario),
       )
     })()
     return () => {

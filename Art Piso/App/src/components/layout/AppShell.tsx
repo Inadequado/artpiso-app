@@ -4,12 +4,10 @@ import {
   CalendarCheck,
   CalendarPlus,
   ChevronRight,
-  KeyRound,
   LogOut,
   Plus,
   Search,
   Settings,
-  ShieldCheck,
   SlidersHorizontal,
   UserPlus,
   UserRound,
@@ -25,6 +23,7 @@ import { IosVh } from '@/components/layout/IosVh'
 import { NotificationsDrawer } from '@/components/layout/NotificationsDrawer'
 import { notificacaoIcon, notificacaoTone } from '@/components/layout/notification-style'
 import { PrimaryActionContext } from '@/components/layout/primary-action'
+import { PerfilDrawer } from '@/features/perfil/PerfilDrawer'
 import { SearchContext } from '@/components/layout/search'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,18 +70,6 @@ const accountMenuItems: Array<{ id: string; label: string; description: string; 
     icon: UserRound,
   },
   {
-    id: 'login',
-    label: 'Configuracoes de login',
-    description: 'Acessos, senha e autenticacao',
-    icon: KeyRound,
-  },
-  {
-    id: 'permissoes',
-    label: 'Permissoes',
-    description: 'Perfis e niveis de acesso',
-    icon: ShieldCheck,
-  },
-  {
     id: 'sair',
     label: 'Sair',
     description: 'Encerrar sessao do sistema',
@@ -107,6 +94,7 @@ export function AppShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [verTodasOpen, setVerTodasOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [perfilOpen, setPerfilOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const accountRef = useRef<HTMLDivElement>(null)
@@ -226,6 +214,7 @@ export function AppShell({
                         onClick={() => {
                           setAccountOpen(false)
                           if (item.id === 'sair') onLogout?.()
+                          if (item.id === 'perfil') setPerfilOpen(true)
                         }}
                       >
                         <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
@@ -463,6 +452,8 @@ export function AppShell({
         onClose={() => setVerTodasOpen(false)}
         onMarcarLida={marcarLida}
       />
+
+      <PerfilDrawer open={perfilOpen} onClose={() => setPerfilOpen(false)} />
     </div>
   )
 }
