@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { uid } from '@/lib/id'
-import { formatDecimalPonto, formatMoeda, onlyDigits, parseMoeda } from '@/lib/masks'
+import { formatDecimalPonto, formatMedida, formatMoeda, parseMoeda } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -213,9 +213,9 @@ export function CadastroProdutoDrawer({
             <div className="grid grid-cols-2 gap-4">
               <Field label="Tamanho (cm)" optional>
                 <div className="flex items-center gap-2">
-                  <Input inputMode="numeric" value={largura} onChange={(e) => setLargura(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+                  <Input inputMode="decimal" value={largura} onChange={(e) => setLargura(formatMedida(e.target.value))} placeholder="60" className="text-center" />
                   <span aria-hidden="true" className="text-muted-foreground">×</span>
-                  <Input inputMode="numeric" value={comprimento} onChange={(e) => setComprimento(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+                  <Input inputMode="decimal" value={comprimento} onChange={(e) => setComprimento(formatMedida(e.target.value))} placeholder="60" className="text-center" />
                 </div>
               </Field>
               <Field label="Preço de venda (R$/m²)">

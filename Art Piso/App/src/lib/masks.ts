@@ -142,6 +142,17 @@ export function parseMoeda(value: string): number {
 }
 
 /**
+ * Mascara de MEDIDA (um lado do tamanho, em cm): digitos + UMA virgula decimal.
+ * Aceita ponto como atalho (vira virgula). Ex.: "83,2" / "83.2" -> "83,2"; "60" -> "60".
+ * O tamanho e texto de exibicao (nunca vira number), entao a virgula fica no valor salvo.
+ */
+export function formatMedida(value: string): string {
+  const limpo = value.replace(/\./g, ',').replace(/[^0-9,]/g, '')
+  const [inteiro, ...resto] = limpo.split(',')
+  return resto.length ? `${inteiro},${resto.join('')}` : inteiro
+}
+
+/**
  * Mascara decimal de 2 casas com PONTO (para campos numericos lidos com Number()):
  * o usuario digita so numeros e o ponto entra sozinho. Ex.: "216" -> "2.16"; vazio -> "".
  */
