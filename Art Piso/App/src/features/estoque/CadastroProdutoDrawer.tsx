@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { uid } from '@/lib/id'
-import { formatDecimalPonto, formatMoeda, parseMoeda } from '@/lib/masks'
+import { formatDecimalPonto, formatMoeda, onlyDigits, parseMoeda } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -30,7 +30,8 @@ export function CadastroProdutoDrawer({
   const [nome, setNome] = useState('')
   const [referencia, setReferencia] = useState('')
   const [marca, setMarca] = useState('')
-  const [tamanho, setTamanho] = useState('')
+  const [largura, setLargura] = useState('')
+  const [comprimento, setComprimento] = useState('')
   const [limiteBaixo, setLimiteBaixo] = useState('')
   const [descricao, setDescricao] = useState('')
   const [lote, setLote] = useState('')
@@ -43,6 +44,8 @@ export function CadastroProdutoDrawer({
   const [estoque, setEstoque] = useState(0)
   const [foto, setFoto] = useState<string | undefined>(undefined)
   const { lotes, quadras } = useInventory()
+  // Tamanho vira "LxC" so quando os dois lados estao preenchidos (campo opcional).
+  const tamanhoFinal = largura.trim() && comprimento.trim() ? `${largura.trim()}x${comprimento.trim()}` : ''
 
   const produtosExistentes = agruparPorProduto(lotes)
   // Chaves normalizadas (sem acento/caixa/espaco duplo; referencia ignora separadores):
@@ -116,7 +119,7 @@ export function CadastroProdutoDrawer({
       produto: produtoExistente ? produtoExistente.produto : nome.trim().toUpperCase(),
       referencia: produtoExistente ? produtoExistente.referencia : referencia.trim(),
       marca: produtoExistente ? produtoExistente.marca : marca.trim(),
-      tamanho: produtoExistente ? produtoExistente.tamanho : tamanho.trim(),
+      tamanho: produtoExistente ? produtoExistente.tamanho : tamanhoFinal,
       lote: lote.trim(),
       alocacoes: [{ quadra: quadra.trim(), caixas: estoque }],
       bitola: bitola.trim(),
@@ -209,7 +212,11 @@ export function CadastroProdutoDrawer({
           {produtoExistente ? null : (
             <div className="grid grid-cols-2 gap-4">
               <Field label="Tamanho (cm)" optional>
-                <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
+                <div className="flex items-center gap-2">
+                  <Input inputMode="numeric" value={largura} onChange={(e) => setLargura(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+                  <span aria-hidden="true" className="text-muted-foreground">×</span>
+                  <Input inputMode="numeric" value={comprimento} onChange={(e) => setComprimento(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+                </div>
               </Field>
               <Field label="Preço de venda (R$/m²)">
                 <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />

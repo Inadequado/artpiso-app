@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatPreco } from '@/data/mock-inventory'
-import { formatDecimalPonto, formatMoeda, parseMoeda } from '@/lib/masks'
+import { formatDecimalPonto, formatMoeda, onlyDigits, parseMoeda } from '@/lib/masks'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
 
@@ -26,7 +26,10 @@ export function EditarProdutoDrawer({
   const [nome, setNome] = useState(produto?.produto ?? '')
   const [referencia, setReferencia] = useState(produto?.referencia ?? '')
   const [marca, setMarca] = useState(produto?.marca ?? '')
-  const [tamanho, setTamanho] = useState(produto?.tamanho ?? '')
+  // Tamanho e guardado como "LxC"; separa nos dois campos ao abrir e recompoe no save.
+  const partesTamanho = (produto?.tamanho ?? '').split(/[x×]/i)
+  const [largura, setLargura] = useState(onlyDigits(partesTamanho[0] ?? ''))
+  const [comprimento, setComprimento] = useState(onlyDigits(partesTamanho[1] ?? ''))
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? formatDecimalPonto(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? formatMoeda(produto.precoM2) : '')
@@ -51,6 +54,7 @@ export function EditarProdutoDrawer({
   const nomeChave = chaveNome(nome)
   const nomeDuplicado = nomeChave ? outros.find((p) => chaveNome(p.produto) === nomeChave) : undefined
 
+  const tamanhoFinal = largura.trim() && comprimento.trim() ? `${largura.trim()}x${comprimento.trim()}` : ''
   const m2Num = Number(m2PorCaixa)
   const pecasNum = Number(pecasPorCaixa)
   const precoNum = parseMoeda(preco)
@@ -73,7 +77,7 @@ export function EditarProdutoDrawer({
       produto: nome.trim().toUpperCase(),
       referencia: referencia.trim(),
       marca: marca.trim(),
-      tamanho: tamanho.trim(),
+      tamanho: tamanhoFinal,
       m2PorCaixa: m2Num,
       pecasPorCaixa: pecasNum,
       precoM2: precoNum,
@@ -132,7 +136,11 @@ export function EditarProdutoDrawer({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Tamanho (cm)" optional>
-              <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
+              <div className="flex items-center gap-2">
+                <Input inputMode="numeric" value={largura} onChange={(e) => setLargura(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+                <span aria-hidden="true" className="text-muted-foreground">×</span>
+                <Input inputMode="numeric" value={comprimento} onChange={(e) => setComprimento(onlyDigits(e.target.value))} placeholder="60" className="text-center" />
+              </div>
             </Field>
             <Field label="Preço de venda (R$/m²)">
               <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
