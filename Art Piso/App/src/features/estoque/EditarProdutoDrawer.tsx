@@ -23,7 +23,7 @@ export function EditarProdutoDrawer({
   onClose: () => void
 }) {
   const { atualizarProduto, lotes } = useInventory()
-  const [nome, setNome] = useState(produto?.produto ?? '')
+  const [nome, setNome] = useState((produto?.produto ?? '').toUpperCase())
   const [referencia, setReferencia] = useState(produto?.referencia ?? '')
   const [marca, setMarca] = useState(produto?.marca ?? '')
   const [tamanho, setTamanho] = useState(produto?.tamanho ?? '')
@@ -70,7 +70,7 @@ export function EditarProdutoDrawer({
   function salvar() {
     if (!produto || !valido) return
     atualizarProduto(produto.id, {
-      produto: nome.trim(),
+      produto: nome.trim().toUpperCase(),
       referencia: referencia.trim(),
       marca: marca.trim(),
       tamanho: tamanho.trim(),
@@ -103,7 +103,7 @@ export function EditarProdutoDrawer({
       {produto ? (
         <div className="flex flex-col gap-6">
           <Field label="Nome do produto">
-            <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Porcelanato Branco Acetinado" />
+            <Input value={nome} onChange={(e) => setNome(e.target.value.toUpperCase())} placeholder="Ex: Porcelanato Branco Acetinado" />
             {nomeDuplicado ? (
               <p className="mt-1.5 text-xs font-semibold text-danger">
                 Já existe outro produto com este nome

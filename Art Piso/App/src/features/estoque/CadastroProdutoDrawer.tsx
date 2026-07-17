@@ -113,7 +113,7 @@ export function CadastroProdutoDrawer({
       id: uid(),
       // Novo lote de produto existente herda o produtoId dele; produto novo ganha id proprio.
       produtoId: produtoExistente?.id ?? uid(),
-      produto: produtoExistente ? produtoExistente.produto : nome.trim(),
+      produto: produtoExistente ? produtoExistente.produto : nome.trim().toUpperCase(),
       referencia: produtoExistente ? produtoExistente.referencia : referencia.trim(),
       marca: produtoExistente ? produtoExistente.marca : marca.trim(),
       tamanho: produtoExistente ? produtoExistente.tamanho : tamanho.trim(),
@@ -155,7 +155,7 @@ export function CadastroProdutoDrawer({
           <Field label="Nome do produto">
             <Autocomplete
               value={nome}
-              onChange={setNome}
+              onChange={(v) => setNome(v.toUpperCase())}
               onSelect={selecionarProduto}
               options={sugestoes}
               placeholder="Ex: Porcelanato Branco Acetinado"
