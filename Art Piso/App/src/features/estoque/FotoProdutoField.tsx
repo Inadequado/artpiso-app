@@ -11,6 +11,24 @@ import { supabase } from '@/lib/supabase'
  * e entregam um data URL WebP; o upload pro Storage acontece so no salvar
  * (provider). O bloco de link so aparece no modo Supabase (precisa da Edge Function).
  */
+/**
+ * Erro HTTP da Edge Function (403 sem permissao, 500...): o motivo real vem no
+ * corpo `{ erro }`, que o supabase-js esconde em `error.context` (a Response).
+ * Extrai essa mensagem para o usuario ver o problema exato, nao um generico.
+ */
+async function mensagemDoErroHttp(error: unknown): Promise<string> {
+  const ctx = (error as { context?: Response }).context
+  if (ctx && typeof ctx.json === 'function') {
+    try {
+      const corpo = await ctx.json()
+      if (corpo?.erro) return String(corpo.erro)
+    } catch {
+      // corpo nao-JSON: cai no fallback
+    }
+  }
+  return 'Não foi possível baixar a imagem deste link.'
+}
+
 export function FotoProdutoField({
   value,
   onChange,
@@ -45,7 +63,7 @@ export function FotoProdutoField({
     setProcessando(true)
     try {
       const { data, error } = await supabase.functions.invoke('buscar-imagem', { body: { url } })
-      if (error) throw new Error('Não foi possível baixar a imagem deste link.')
+      if (error) throw new Error(await mensagemDoErroHttp(error))
       if (!data?.ok) throw new Error(data?.erro ?? 'Não foi possível usar este link.')
       onChange(await processarImagem(data.dataUrl as string))
       setLink('')

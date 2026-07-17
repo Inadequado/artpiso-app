@@ -1,7 +1,8 @@
 // ART PISO — Edge Function: baixa a imagem de um LINK de catalogo (Forma B).
 // O navegador nao baixa de outro site (CORS); o servidor baixa e devolve os
 // bytes (data URL). O client entao recorta/comprime e sobe pro Storage.
-// So ADMIN chama. Guardas anti-SSRF: so http/https, sem host interno/privado,
+// So admin/gerente chama (ambos gerenciam produtos). Guardas anti-SSRF:
+// so http/https, sem host interno/privado,
 // content-type image/*, tamanho limitado.
 // Contrato: POST { url } -> 200 { ok: true, dataUrl } | { ok: false, erro }.
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -69,7 +70,9 @@ Deno.serve(async (req) => {
     const { data: { user } } = await clienteUsuario.auth.getUser()
     if (!user) return resposta({ ok: false, erro: 'Não autenticado.' }, 401)
     const { data: perfil } = await clienteUsuario.from('profiles').select('role').eq('id', user.id).single()
-    if (perfil?.role !== 'admin') return resposta({ ok: false, erro: 'Apenas administradores podem buscar imagens.' }, 403)
+    if (perfil?.role !== 'admin' && perfil?.role !== 'gerente') {
+      return resposta({ ok: false, erro: 'Apenas administradores ou gerentes podem buscar imagens.' }, 403)
+    }
 
     const { url } = await req.json()
     if (!url || typeof url !== 'string') return resposta({ ok: false, erro: 'Link da imagem é obrigatório.' })
