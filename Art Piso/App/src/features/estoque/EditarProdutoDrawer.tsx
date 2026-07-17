@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatPreco } from '@/data/mock-inventory'
+import { formatMoeda, parseMoeda } from '@/lib/masks'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
 
@@ -28,7 +29,7 @@ export function EditarProdutoDrawer({
   const [tamanho, setTamanho] = useState(produto?.tamanho ?? '')
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? String(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
-  const [preco, setPreco] = useState(produto ? String(produto.precoM2) : '')
+  const [preco, setPreco] = useState(produto ? formatMoeda(produto.precoM2) : '')
   const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '10')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
   const [foto, setFoto] = useState(produto?.foto)
@@ -52,7 +53,7 @@ export function EditarProdutoDrawer({
 
   const m2Num = Number(m2PorCaixa)
   const pecasNum = Number(pecasPorCaixa)
-  const precoNum = Number(preco)
+  const precoNum = parseMoeda(preco)
   const valido = Boolean(
     produto &&
       nome.trim() &&
@@ -134,7 +135,7 @@ export function EditarProdutoDrawer({
               <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
             </Field>
             <Field label="Preço de venda (R$/m²)">
-              <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
+              <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
               {precoNum > 0 && m2Num > 0 ? (
                 <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Num)} por caixa</p>
               ) : null}

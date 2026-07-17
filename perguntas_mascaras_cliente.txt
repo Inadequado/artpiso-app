@@ -1,0 +1,172 @@
+========================================
+ART PISO - CAMPOS E FORMATOS
+Perguntas para o cliente
+========================================
+
+Como usar: cada bloco tem uma pergunta e uma
+linha "R:" para voce escrever a resposta.
+Pode responder direto no celular.
+
+Data da conversa: ___/___/______
+Quem respondeu: ______________________
+
+
+----------------------------------------
+1) PRECO DE VENDA (R$/m2)
+----------------------------------------
+Hoje: digita so o numero (ex: 89.90),
+com PONTO no lugar da virgula, sem "R$".
+
+Perguntas:
+- Prefere digitar com VIRGULA (89,90)?
+- Quer que apareca "R$" automatico
+  no campo (ex: R$ 89,90)?
+
+R: Aparecer "R$" automatico, e adicionar
+   virgula e ponto automatico, seguindo os padroes de valores
+
+
+----------------------------------------
+2) DATA DE ENTREGA
+----------------------------------------
+Hoje: digita no formato DD/MM/AAAA.
+Obs: hoje o sistema NAO barra data
+impossivel (aceita 31/02).
+
+Perguntas:
+- Prefere digitar a data ou escolher
+  num CALENDARIO?
+- Deve impedir data que nao existe?
+- Pode marcar data no passado?
+
+R: digitar a data, impedir data no passado e data que nao existe
+   ____________________________________
+
+
+----------------------------------------
+3) CODIGO DO LOTE
+----------------------------------------
+Hoje: campo livre (ex: L-2405).
+
+Perguntas:
+- Existe um PADRAO de codigo que a loja
+  ja usa? Qual? (ex: sempre comeca com
+  "L-", tem X numeros, tem letra...)
+- De onde vem esse codigo? (fabricante,
+  nota fiscal, criado pela loja?)
+
+R: lote sera campo livre, alterar o placeholder para algo generico, tipo "Digite aqui..."
+   ____________________________________
+   ____________________________________
+
+
+----------------------------------------
+4) REFERENCIA DO PRODUTO
+----------------------------------------
+Hoje: campo livre (ex: POR-6060-BL).
+
+Perguntas:
+- Existe padrao de referencia?
+- Vem do fabricante ou a loja cria?
+
+R: referencia sera campo livre, alterar o placeholder para algo generico, tipo "Digite aqui..."
+   ____________________________________
+
+
+----------------------------------------
+5) BITOLA E TONALIDADE
+----------------------------------------
+Hoje: campos livres.
+(Bitola ex: 2  /  Tonalidade ex: A3)
+
+Perguntas:
+- Tem formato fixo? (so numero? letra+
+  numero?)
+- Sao sempre preenchidos ou as vezes
+  ficam em branco?
+
+R: sempre preenchidos, altere o placeholder para somente numeros, mas permita digitar letras
+   ____________________________________
+
+
+----------------------------------------
+6) TAMANHO DO PISO
+----------------------------------------
+Hoje: campo livre em cm (ex: 60x60).
+
+Perguntas:
+- E sempre no formato AAxBB?
+- A unidade e sempre centimetro?
+
+R: deixe como esta_____________________
+   ____________________________________
+
+
+----------------------------------------
+7) NUMERO DO PEDIDO
+----------------------------------------
+Hoje: o sistema SUGERE automatico
+(ex: PED-0001) mas deixa editar a mao.
+
+Perguntas:
+- Pode deixar so o automatico (TRAVAR)?
+- Ou precisam digitar um numero proprio
+  (nota, sistema antigo, etc)?
+
+R: somente numeros, digitar o numero proprio, remover sugestão
+   ____________________________________
+
+
+----------------------------------------
+8) TELEFONE DO CLIENTE
+----------------------------------------
+Hoje: formato (31) 90000-0000,
+fixo e celular, so Brasil.
+
+Perguntas:
+- Atende so telefone do Brasil?
+- O DDD e sempre obrigatorio?
+
+R: pode deixar como está________
+   ____________________________________
+
+
+----------------------------------------
+9) DOCUMENTO DO CLIENTE (CPF/CNPJ)
+----------------------------------------
+Hoje: aceita CPF ou CNPJ, exige um
+valido, e obrigatorio.
+
+Perguntas:
+- Documento e SEMPRE obrigatorio ou tem
+  cliente sem documento (so nome)?
+- Aceita cadastrar so com CPF, so com
+  CNPJ, ou os dois servem?
+
+R: deixa como esta_____________________
+   ____________________________________
+
+
+----------------------------------------
+10) SENHA DE ACESSO
+----------------------------------------
+Hoje: minimo de 6 caracteres.
+
+Perguntas:
+- 6 caracteres esta bom?
+- Querem regra mais forte? (ex: exigir
+  letra + numero, minimo maior)
+
+R: ________________deixa como esta_
+   ____________________________________
+
+
+========================================
+ESPACO LIVRE / OUTRAS OBSERVACOES
+========================================
+
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________
+_______________________________________

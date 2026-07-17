@@ -84,3 +84,46 @@ export function formatData(value: string): string {
   if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
   return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
 }
+
+/** True quando a data DD/MM/AAAA existe de verdade no calendario (rejeita 31/02, 00/00...). */
+export function dataValida(value: string): boolean {
+  const d = onlyDigits(value)
+  if (d.length !== 8) return false
+  const dia = Number(d.slice(0, 2))
+  const mes = Number(d.slice(2, 4))
+  const ano = Number(d.slice(4, 8))
+  if (mes < 1 || mes > 12 || dia < 1) return false
+  const data = new Date(ano, mes - 1, dia)
+  // Se o dia "estourou" o mes (ex.: 31/04), o Date normaliza para o mes seguinte; comparamos de volta.
+  return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia
+}
+
+/** True quando a data DD/MM/AAAA (valida) esta antes de hoje. Hoje NAO conta como passado. */
+export function dataNoPassado(value: string): boolean {
+  if (!dataValida(value)) return false
+  const d = onlyDigits(value)
+  const data = new Date(Number(d.slice(4, 8)), Number(d.slice(2, 4)) - 1, Number(d.slice(0, 2)))
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  return data.getTime() < hoje.getTime()
+}
+
+/**
+ * Mascara de moeda BRL no modelo "centavos": o usuario digita apenas numeros e eles
+ * preenchem da direita para a esquerda. Ex.: "8990" -> "R$ 89,90"; vazio -> "".
+ */
+export function formatMoeda(value: string | number): string {
+  const digitos = typeof value === 'number' ? String(Math.round(value * 100)) : onlyDigits(value)
+  if (digitos === '') return ''
+  const centavos = Number(digitos)
+  return (centavos / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+}
+
+/** Converte a string mascarada (ou qualquer entrada) em numero. "R$ 89,90" -> 89.9; vazio -> 0. */
+export function parseMoeda(value: string): number {
+  const digitos = onlyDigits(value)
+  return digitos === '' ? 0 : Number(digitos) / 100
+}

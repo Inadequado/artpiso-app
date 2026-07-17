@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { uid } from '@/lib/id'
+import { formatMoeda, parseMoeda } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -96,7 +97,7 @@ export function CadastroProdutoDrawer({
   // Evita lote-irmao com dados divergentes do mesmo produtoId (achado da revisao de telas).
   const m2Caixa = produtoExistente ? produtoExistente.m2PorCaixa : Number(m2PorCaixa)
   const pecasCaixa = produtoExistente ? produtoExistente.pecasPorCaixa : Number(pecasPorCaixa)
-  const precoNum = produtoExistente ? produtoExistente.precoM2 : Number(preco)
+  const precoNum = produtoExistente ? produtoExistente.precoM2 : parseMoeda(preco)
   const totalM2 = Number.isFinite(m2Caixa) && m2Caixa > 0 ? estoque * m2Caixa : 0
   const dadosProdutoValidos = produtoExistente
     ? true
@@ -209,7 +210,7 @@ export function CadastroProdutoDrawer({
                 <Input value={tamanho} onChange={(e) => setTamanho(e.target.value)} placeholder="Ex: 60x60" />
               </Field>
               <Field label="Preço de venda (R$/m²)">
-                <Input type="number" inputMode="decimal" step="0.01" min={0} value={preco} onChange={(e) => setPreco(e.target.value)} placeholder="89.90" />
+                <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
                 {precoNum > 0 && m2Caixa > 0 ? (
                   <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Caixa)} por caixa</p>
                 ) : null}
