@@ -1,5 +1,5 @@
-import { ImagePlus, Info as InfoIcon, Save, X } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { Info as InfoIcon, Save } from 'lucide-react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Autocomplete } from '@/components/ui/autocomplete'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Stepper } from '@/components/ui/stepper'
 import { Textarea } from '@/components/ui/textarea'
+import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { uid } from '@/lib/id'
 import { cn } from '@/lib/utils'
@@ -40,7 +41,6 @@ export function CadastroProdutoDrawer({
   const [preco, setPreco] = useState('')
   const [estoque, setEstoque] = useState(0)
   const [foto, setFoto] = useState<string | undefined>(undefined)
-  const fileRef = useRef<HTMLInputElement>(null)
   const { lotes, quadras } = useInventory()
 
   const produtosExistentes = agruparPorProduto(lotes)
@@ -89,14 +89,6 @@ export function CadastroProdutoDrawer({
     if (!produto) return
     setNome(produto.produto)
     setReferencia(produto.referencia)
-  }
-
-  function onFotoSelecionada(event: React.ChangeEvent<HTMLInputElement>) {
-    const arquivo = event.target.files?.[0]
-    if (!arquivo) return
-    const reader = new FileReader()
-    reader.onload = () => setFoto(typeof reader.result === 'string' ? reader.result : undefined)
-    reader.readAsDataURL(arquivo)
   }
 
   // Com produto existente, os dados do produto vem da ENTIDADE, nunca dos inputs: os campos
@@ -244,41 +236,7 @@ export function CadastroProdutoDrawer({
               <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
             </Field>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            aria-hidden="true"
-            tabIndex={-1}
-            onChange={onFotoSelecionada}
-          />
-          {produtoExistente ? null : foto ? (
-            <div className="flex items-center gap-3 rounded-lg border p-3">
-              <img src={foto} alt="Prévia do produto" className="size-16 rounded-md border object-cover" />
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Foto adicionada</span>
-                <div className="flex gap-3">
-                  <button type="button" className="text-xs font-semibold text-primary hover:underline" onClick={() => fileRef.current?.click()}>
-                    Trocar
-                  </button>
-                  <button type="button" className="flex items-center gap-1 text-xs font-semibold text-danger hover:underline" onClick={() => setFoto(undefined)}>
-                    <X aria-hidden="true" className="size-3" /> Remover
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center text-muted-foreground transition-colors hover:bg-muted/40"
-            >
-              <ImagePlus aria-hidden="true" className="size-7" />
-              <span className="text-sm font-semibold text-foreground">Adicionar foto do produto</span>
-              <span className="text-xs">Opcional · JPG ou PNG</span>
-            </button>
-          )}
+          {produtoExistente ? null : <FotoProdutoField value={foto} onChange={setFoto} />}
         </section>
 
         <section className="flex flex-col gap-4">

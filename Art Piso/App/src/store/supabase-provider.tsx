@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { proximoNumeroPedido } from '@/data/mock-inventory'
+import { persistirFotoProduto } from '@/lib/foto-produto'
 import { uid } from '@/lib/id'
 import { parseDataPrevista, regimePorData } from '@/lib/reserva-regime'
 import { supabase } from '@/lib/supabase'
@@ -376,6 +377,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
       const { data: existente, error: erroBusca } = await supabase!.from('produtos').select('id').eq('id', lote.produtoId).maybeSingle()
       if (erroBusca) throw erroBusca
       if (!existente) {
+        const fotoUrl = await persistirFotoProduto(lote.produtoId, lote.foto)
         const { error } = await supabase!.from('produtos').insert({
           id: lote.produtoId,
           nome: lote.produto,
@@ -385,7 +387,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
           descricao: lote.descricao ?? null,
           preco_m2: lote.precoM2,
           limite_estoque_baixo_cx: lote.limiteEstoqueBaixo ?? undefined,
-          foto: lote.foto ?? null,
+          foto: fotoUrl,
         })
         if (error) throw error
       }
@@ -426,6 +428,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   const atualizarProduto = useCallback<InventoryContextValue['atualizarProduto']>((produtoId, patch) => {
     const atual = lotes.find((l) => l.produtoId === produtoId)
     executar('Erro ao atualizar produto', async () => {
+      const fotoUrl = await persistirFotoProduto(produtoId, patch.foto)
       const { error } = await supabase!.from('produtos').update({
         nome: patch.produto,
         referencia: patch.referencia || null,
@@ -434,7 +437,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
         preco_m2: patch.precoM2,
         limite_estoque_baixo_cx: patch.limiteEstoqueBaixo,
         descricao: patch.descricao ?? null,
-        foto: patch.foto ?? null,
+        foto: fotoUrl,
       }).eq('id', produtoId)
       if (error) throw error
       // m2/caixa e pecas/caixa vivem no LOTE; a edicao pelo produto aplica em massa (RPC)

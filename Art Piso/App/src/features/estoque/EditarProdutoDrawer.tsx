@@ -1,11 +1,12 @@
-import { ImagePlus, Info as InfoIcon, Save, X } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { Info as InfoIcon, Save } from 'lucide-react'
+import { useState } from 'react'
 import { Autocomplete } from '@/components/ui/autocomplete'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatPreco } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
@@ -31,7 +32,6 @@ export function EditarProdutoDrawer({
   const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '10')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
   const [foto, setFoto] = useState(produto?.foto)
-  const fileRef = useRef<HTMLInputElement>(null)
 
   // Marcas existentes no autocomplete (mesmo padrao do cadastro): nao fragmentar o catalogo.
   const todosProdutos = agruparPorProduto(lotes)
@@ -65,14 +65,6 @@ export function EditarProdutoDrawer({
       Number(limiteBaixo) >= 1,
   )
   const variosLotes = (produto?.lotes.length ?? 0) > 1
-
-  function onFotoSelecionada(event: React.ChangeEvent<HTMLInputElement>) {
-    const arquivo = event.target.files?.[0]
-    if (!arquivo) return
-    const reader = new FileReader()
-    reader.onload = () => setFoto(typeof reader.result === 'string' ? reader.result : undefined)
-    reader.readAsDataURL(arquivo)
-  }
 
   function salvar() {
     if (!produto || !valido) return
@@ -164,41 +156,7 @@ export function EditarProdutoDrawer({
           <Field label="Descrição" optional>
             <Textarea rows={3} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Acabamento, detalhes técnicos…" />
           </Field>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            aria-hidden="true"
-            tabIndex={-1}
-            onChange={onFotoSelecionada}
-          />
-          {foto ? (
-            <div className="flex items-center gap-3 rounded-lg border p-3">
-              <img src={foto} alt="Prévia do produto" className="size-16 rounded-md border object-cover" />
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Foto do produto</span>
-                <div className="flex gap-3">
-                  <button type="button" className="text-xs font-semibold text-primary hover:underline" onClick={() => fileRef.current?.click()}>
-                    Trocar
-                  </button>
-                  <button type="button" className="flex items-center gap-1 text-xs font-semibold text-danger hover:underline" onClick={() => setFoto(undefined)}>
-                    <X aria-hidden="true" className="size-3" /> Remover
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center text-muted-foreground transition-colors hover:bg-muted/40"
-            >
-              <ImagePlus aria-hidden="true" className="size-7" />
-              <span className="text-sm font-semibold text-foreground">Adicionar foto do produto</span>
-              <span className="text-xs">Opcional · JPG ou PNG</span>
-            </button>
-          )}
+          <FotoProdutoField value={foto} onChange={setFoto} />
           <div className="grid grid-cols-2 gap-4">
             <Field label="m² por caixa">
               <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />
