@@ -30,7 +30,7 @@ export function EditarProdutoDrawer({
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? formatDecimalPonto(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? formatMoeda(produto.precoM2) : '')
-  const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '10')
+  const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
   const [foto, setFoto] = useState(produto?.foto)
 
@@ -77,7 +77,7 @@ export function EditarProdutoDrawer({
       m2PorCaixa: m2Num,
       pecasPorCaixa: pecasNum,
       precoM2: precoNum,
-      limiteEstoqueBaixo: Math.max(1, Number(limiteBaixo) || 10),
+      limiteEstoqueBaixo: Math.max(1, Number(limiteBaixo)),
       descricao: descricao.trim() || undefined,
       foto,
     })
@@ -151,7 +151,7 @@ export function EditarProdutoDrawer({
               min={1}
               value={limiteBaixo}
               onChange={(e) => setLimiteBaixo(e.target.value)}
-              placeholder="10"
+              placeholder="0"
             />
           </Field>
           <Field label="Descrição" optional>

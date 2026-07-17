@@ -31,7 +31,7 @@ export function CadastroProdutoDrawer({
   const [referencia, setReferencia] = useState('')
   const [marca, setMarca] = useState('')
   const [tamanho, setTamanho] = useState('')
-  const [limiteBaixo, setLimiteBaixo] = useState('10')
+  const [limiteBaixo, setLimiteBaixo] = useState('')
   const [descricao, setDescricao] = useState('')
   const [lote, setLote] = useState('')
   const [quadra, setQuadra] = useState('')
@@ -124,7 +124,7 @@ export function CadastroProdutoDrawer({
       m2PorCaixa: m2Caixa,
       pecasPorCaixa: pecasCaixa,
       precoM2: precoNum,
-      limiteEstoqueBaixo: produtoExistente ? produtoExistente.limiteEstoqueBaixo : Math.max(1, Number(limiteBaixo) || 10),
+      limiteEstoqueBaixo: produtoExistente ? produtoExistente.limiteEstoqueBaixo : Math.max(1, Number(limiteBaixo)),
       descricao: produtoExistente ? produtoExistente.descricao : descricao.trim() || undefined,
       caixasEstoque: estoque,
       caixasReserva: 0,
@@ -230,7 +230,7 @@ export function CadastroProdutoDrawer({
                 min={1}
                 value={limiteBaixo}
                 onChange={(e) => setLimiteBaixo(e.target.value)}
-                placeholder="10"
+                placeholder="0"
               />
             </Field>
           )}
