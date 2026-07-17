@@ -15,7 +15,7 @@ import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { uid } from '@/lib/id'
-import { formatData } from '@/lib/masks'
+import { erroDataEntrega, formatData } from '@/lib/masks'
 import { caixasTravadasReserva, dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type EditarPedidoInput } from '@/store/inventory'
 import type { Cliente, Reserva } from '@/types/inventory'
@@ -131,7 +131,8 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
     { caixas: 0, valor: 0, disponivel: 0 },
   )
 
-  const valido = cliente !== null && itens.length >= 1 && itens.every(itemValido)
+  const dataErro = erroDataEntrega(dataPrevista)
+  const valido = cliente !== null && itens.length >= 1 && itens.every(itemValido) && !dataErro
 
   function confirmar() {
     if (!reserva || !valido || !cliente) return
@@ -340,6 +341,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
                 onChange={(event) => setDataPrevista(formatData(event.target.value))}
                 placeholder="DD/MM/AAAA"
               />
+              {dataErro ? <p className="mt-1.5 text-xs font-semibold text-danger">{dataErro}</p> : null}
             </Field>
 
             {entregaLonga ? (

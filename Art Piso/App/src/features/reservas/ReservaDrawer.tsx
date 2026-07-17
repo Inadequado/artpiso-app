@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
-import { formatData } from '@/lib/masks'
+import { erroDataEntrega, formatData } from '@/lib/masks'
 import { dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type NovoPedidoInput } from '@/store/inventory'
 import type { Cliente, LoteEstoque } from '@/types/inventory'
@@ -123,7 +123,8 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
   }
   const algumItemExcede = itens.some(itemExcedeDisponivel)
 
-  const valido = itens.length > 0 && clienteSelecionado !== null && !pedidoExistente && !algumItemExcede
+  const dataErro = erroDataEntrega(dataPrevista)
+  const valido = itens.length > 0 && clienteSelecionado !== null && !pedidoExistente && !algumItemExcede && !dataErro
 
   function confirmar() {
     if (!valido || !clienteSelecionado) return
@@ -341,6 +342,7 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
               onChange={(event) => setDataPrevista(formatData(event.target.value))}
               placeholder="DD/MM/AAAA"
             />
+            {dataErro ? <p className="mt-1.5 text-xs font-semibold text-danger">{dataErro}</p> : null}
           </Field>
 
           {entregaLonga ? (

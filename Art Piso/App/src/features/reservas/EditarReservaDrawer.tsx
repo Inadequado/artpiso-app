@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, clienteDaReserva, formatM2, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
-import { formatData } from '@/lib/masks'
+import { erroDataEntrega, formatData } from '@/lib/masks'
 import { caixasTravadasReserva, dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type EditarReservaInput } from '@/store/inventory'
 import type { Cliente, Reserva } from '@/types/inventory'
@@ -45,7 +45,8 @@ export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReser
   const entregaLonga = dataPrevistaLonga(dataPrevista)
   const m2 = lote && quantidadeValida ? quantidade * lote.m2PorCaixa : 0
   const excedeu = Boolean(lote) && !entregaLonga && quantidade > maxDisponivel
-  const valido = Boolean(lote && reserva) && quantidadeValida && !excedeu && clienteSelecionado !== null
+  const dataErro = erroDataEntrega(dataPrevista)
+  const valido = Boolean(lote && reserva) && quantidadeValida && !excedeu && clienteSelecionado !== null && !dataErro
 
   function confirmar() {
     if (!lote || !reserva || !valido || !clienteSelecionado) return
@@ -159,6 +160,7 @@ export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReser
                 onChange={(event) => setDataPrevista(formatData(event.target.value))}
                 placeholder="DD/MM/AAAA"
               />
+              {dataErro ? <p className="mt-1.5 text-xs font-semibold text-danger">{dataErro}</p> : null}
             </Field>
 
             {entregaLonga ? (

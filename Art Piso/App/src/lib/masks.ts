@@ -109,6 +109,19 @@ export function dataNoPassado(value: string): boolean {
 }
 
 /**
+ * Mensagem de erro de uma data de ENTREGA digitada (campo opcional). Vazio = sem erro.
+ * Cobre incompleta, inexistente (31/02) e no passado. undefined = data ok para salvar.
+ */
+export function erroDataEntrega(value: string): string | undefined {
+  const d = onlyDigits(value)
+  if (d.length === 0) return undefined
+  if (d.length < 8) return 'Data incompleta.'
+  if (!dataValida(value)) return 'Data inexistente. Confira o dia e o mês.'
+  if (dataNoPassado(value)) return 'A data não pode estar no passado.'
+  return undefined
+}
+
+/**
  * Mascara de moeda BRL no modelo "centavos": o usuario digita apenas numeros e eles
  * preenchem da direita para a esquerda. Ex.: "8990" -> "R$ 89,90"; vazio -> "".
  */
