@@ -213,12 +213,12 @@ export function CadastroProdutoDrawer({
             <div className="grid grid-cols-2 gap-4">
               <Field label="Tamanho (cm)" optional>
                 <div className="flex items-center gap-2">
-                  <Input inputMode="decimal" value={largura} onChange={(e) => setLargura(formatMedida(e.target.value))} placeholder="60" className="text-center" />
+                  <Input inputMode="decimal" value={largura} onChange={(e) => setLargura(formatMedida(e.target.value))} placeholder="60" className="w-16 text-center" />
                   <span aria-hidden="true" className="text-muted-foreground">×</span>
-                  <Input inputMode="decimal" value={comprimento} onChange={(e) => setComprimento(formatMedida(e.target.value))} placeholder="60" className="text-center" />
+                  <Input inputMode="decimal" value={comprimento} onChange={(e) => setComprimento(formatMedida(e.target.value))} placeholder="60" className="w-16 text-center" />
                 </div>
               </Field>
-              <Field label="Preço de venda (R$/m²)">
+              <Field label="Preço (R$/m²)">
                 <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
                 {precoNum > 0 && m2Caixa > 0 ? (
                   <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Caixa)} por caixa</p>
