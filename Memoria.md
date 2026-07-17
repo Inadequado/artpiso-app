@@ -85,6 +85,17 @@ Estado vivo do Art Piso: regras validadas, decisoes, perguntas abertas, aprendiz
   - LIMITE conhecido: as reservas do MOCK nao tem clienteId semeado (casam por nome) - renomear um cliente mock quebraria o vinculo das reservas antigas dele; some quando entrar Supabase/FK. A reserva ainda guarda cliente/doc/telefone como copia (fallback); os readers preferem a entidade.
   - ESC empilhado: `Drawer` ganhou prop `closeOnEsc`; com o sub-cadastro aberto, so o drawer de cima responde ao Esc.
 
+### Mascaras / Formatos de campo (decisao do CLIENTE, 2026-07-17)
+Origem: questionario `perguntas_mascaras_cliente.txt` (raiz) levado ao cliente e preenchido. Helpers em `src/lib/masks.ts`. Implementado, verificado (`npm run build`) e pushado no mesmo dia.
+- **Preco de venda (R$/m2)**: mascara de MOEDA BRL modelo "centavos" (`formatMoeda`/`parseMoeda`) — digita so numero e vira `R$ 89,90` (virgula decimal, ponto no milhar). Salva como number. Cadastro + Editar produto. Motivo: cliente quer "R$" e separadores automaticos no padrao brasileiro.
+- **m2 por caixa**: mascara DECIMAL com ponto automatico, 2 casas (`formatDecimalPonto`, ex.: `216` -> `2.16`). Placeholder de m2 E de pecas/caixa = `0` (era `2.16`/`6`). Cadastro + Editar produto. Pecas/caixa segue inteiro sem mascara.
+- **Data prevista de entrega**: cliente escolheu DIGITAR (nao calendario). Passou a BARRAR data inexistente (31/02) e no PASSADO (`erroDataEntrega`; hoje conta como valido). Campo segue OPCIONAL (vazio = ok). Aplicado em Nova reserva, Editar reserva, Editar pedido.
+- **Codigo do lote e Referencia**: cliente confirmou que NAO ha padrao de fabricante -> seguem campos LIVRES; so trocou placeholder de exemplo (`L-2405`/`POR-6060-BL`) por generico `Digite aqui...`.
+- **Bitola e Tonalidade**: cliente disse "sempre preenchidos" -> viraram OBRIGATORIOS (Cadastro, Novo lote, Editar lote; saiu a prop `optional` e o `|| undefined` do save). Campo ACEITA letra (tonalidade tipo A3), so o placeholder virou numerico.
+- **Numero do pedido**: cliente quer digitar o proprio numero -> agora e SO digitos (`onlyDigits`), OBRIGATORIO, e a SUGESTAO automatica foi REMOVIDA (tirou `proximoNumeroPedido` do default e da mensagem de duplicado; bloqueio de duplicado mantido). Supera a parte "PED auto-preenchido" do fluxo antigo de reserva.
+- **SEM mudanca (cliente pediu deixar como esta)**: Tamanho (livre, `60x60`), Telefone (BR fixo/celular, mascara ja existente), Documento CPF/CNPJ (obrigatorio + DV, ja existente), Senha (min 6).
+- Pendencia separada que NAO entrou nesta rodada: mascara do IDENTIFICADOR DE QUADRA (Q-13) — segue aberta, aguardando dados reais (ver "UNICO item aberto da Fase 1" no Estado Atual).
+
 ### UI / plataforma
 - Acao primaria do topo e contextual por secao (`usePrimaryAction`): Estoque=Novo produto/lote, Reservas=Nova Reserva, Clientes=Novo cliente; Ajustes/Configuracoes sem botao.
 - Dashboard de Reservas: cards mostram ESTADO OPERACIONAL atual, nao vaidade (2026-06-21). DROPADO o card "Entregues" — contagem acumulada vitalicia so cresce e nao orienta decisao (a aba "Entregue" ja navega o historico). Cards atuais (4, grid-cols-4): Reservas ativas (aguardando entrega) · Caixas separadas (separadas no estoque) · Rotacionando (estoque girando ate a entrega) · Entrega parcial (saldo em aberto). Principio reaplicavel: metrica de painel deve ser acionavel, nao placar acumulado.
