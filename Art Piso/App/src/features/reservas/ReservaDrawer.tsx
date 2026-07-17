@@ -9,10 +9,10 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, proximoNumeroPedido, quadraLabel } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
-import { erroDataEntrega, formatData } from '@/lib/masks'
+import { erroDataEntrega, formatData, onlyDigits } from '@/lib/masks'
 import { dataPrevistaLonga } from '@/lib/reserva-regime'
 import { useInventory, type NovoPedidoInput } from '@/store/inventory'
 import type { Cliente, LoteEstoque } from '@/types/inventory'
@@ -38,7 +38,7 @@ type ReservaDrawerProps = {
  */
 export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onConfirm }: ReservaDrawerProps) {
   const { lotes: todosLotes, reservas, clientes } = useInventory()
-  const [pedido, setPedido] = useState(() => proximoNumeroPedido(reservas))
+  const [pedido, setPedido] = useState('')
   const [itens, setItens] = useState<ItemPedido[]>([])
   // Item em construcao (entrada do carrinho).
   const [loteId, setLoteId] = useState(loteFixo?.id ?? '')
@@ -124,14 +124,15 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
   const algumItemExcede = itens.some(itemExcedeDisponivel)
 
   const dataErro = erroDataEntrega(dataPrevista)
-  const valido = itens.length > 0 && clienteSelecionado !== null && !pedidoExistente && !algumItemExcede && !dataErro
+  const valido =
+    itens.length > 0 && clienteSelecionado !== null && pedido.trim() !== '' && !pedidoExistente && !algumItemExcede && !dataErro
 
   function confirmar() {
     if (!valido || !clienteSelecionado) return
     const enderecoEscolhido =
       enderecoId !== 'retirada' ? clienteSelecionado.enderecos?.find((item) => item.id === enderecoId) : undefined
     onConfirm({
-      pedido: pedido.trim() || undefined,
+      pedido: pedido.trim(),
       clienteId: clienteSelecionado.id,
       cliente: clienteSelecionado.nome,
       documento: clienteSelecionado.documento,
@@ -319,16 +320,16 @@ export function ReservaDrawer({ open, onClose, lote: loteFixo, lotesProduto, onC
           <Field label="Número do pedido">
             <Input
               name="pedido"
+              inputMode="numeric"
               autoComplete="off"
               value={pedido}
-              onChange={(event) => setPedido(event.target.value)}
-              placeholder="PED-XXXX"
+              onChange={(event) => setPedido(onlyDigits(event.target.value))}
+              placeholder="Digite o número"
             />
             {pedidoExistente ? (
               <p className="mt-1.5 text-xs font-semibold text-danger">
                 Número já usado no pedido de{' '}
-                {clienteDaReserva(pedidoExistente, clientes)?.nome ?? pedidoExistente.cliente}. Sugerido:{' '}
-                {proximoNumeroPedido(reservas)}.
+                {clienteDaReserva(pedidoExistente, clientes)?.nome ?? pedidoExistente.cliente}.
               </p>
             ) : null}
           </Field>
