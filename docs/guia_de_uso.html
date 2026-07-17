@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia de Uso — Art Piso</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}img{max-width:100%}</style>
+</head>
+<body>
+<title>Guia de Uso — Art Piso</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --bg-alt: #eef1f5;
+    --card: #ffffff;
+    --fg: #16181d;
+    --muted: #5b6472;
+    --muted-2: #8b94a3;
+    --border: #e3e7ee;
+    --border-strong: #cfd6e0;
+    --brand: #1e3a8a;
+    --brand-soft: #e7ecf9;
+    --ok: #067a54;
+    --ok-soft: #daf1e6;
+    --low: #c85a12;
+    --low-soft: #fbe7d6;
+    --bad: #c62828;
+    --bad-soft: #fadedd;
+    --rsv: #475569;
+    --rsv-soft: #e5e9ef;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --measure: 66ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0a0c;
+      --bg-alt: #101015;
+      --card: #16161b;
+      --fg: #ededf1;
+      --muted: #a1a1ad;
+      --muted-2: #71717f;
+      --border: #26262d;
+      --border-strong: #34343d;
+      --brand: #8aa4ff;
+      --brand-soft: #1a2138;
+      --ok: #34d399;
+      --ok-soft: #0d2a20;
+      --low: #f9903f;
+      --low-soft: #33200f;
+      --bad: #f26a6a;
+      --bad-soft: #331414;
+      --rsv: #b6becb;
+      --rsv-soft: #22262e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fa; --bg-alt: #eef1f5; --card: #ffffff; --fg: #16181d; --muted: #5b6472; --muted-2: #8b94a3;
+    --border: #e3e7ee; --border-strong: #cfd6e0; --brand: #1e3a8a; --brand-soft: #e7ecf9;
+    --ok: #067a54; --ok-soft: #daf1e6; --low: #c85a12; --low-soft: #fbe7d6; --bad: #c62828; --bad-soft: #fadedd;
+    --rsv: #475569; --rsv-soft: #e5e9ef; --shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0a0c; --bg-alt: #101015; --card: #16161b; --fg: #ededf1; --muted: #a1a1ad; --muted-2: #71717f;
+    --border: #26262d; --border-strong: #34343d; --brand: #8aa4ff; --brand-soft: #1a2138;
+    --ok: #34d399; --ok-soft: #0d2a20; --low: #f9903f; --low-soft: #33200f; --bad: #f26a6a; --bad-soft: #331414;
+    --rsv: #b6becb; --rsv-soft: #22262e; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-sans); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+  /* ---------- Header ---------- */
+  header.top { border-bottom: 1px solid var(--border); background: linear-gradient(180deg, var(--bg-alt), var(--bg)); }
+  .brandline { display: flex; align-items: center; gap: 14px; padding-top: 40px; }
+  .mark { width: 42px; height: 42px; border-radius: 10px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 18px; letter-spacing: .02em; flex: 0 0 auto; box-shadow: var(--shadow); }
+  :root[data-theme="dark"] .mark, .mark { }
+  @media (prefers-color-scheme: dark) { .mark { color: #0a0a0c; } }
+  :root[data-theme="dark"] .mark { color: #0a0a0c; }
+  :root[data-theme="light"] .mark { color: #fff; }
+  .brandline .name { font-weight: 800; font-size: 20px; letter-spacing: -.01em; }
+  .brandline .kind { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .18em; color: var(--muted); }
+  h1.title { font-size: clamp(30px, 5vw, 46px); line-height: 1.05; letter-spacing: -.02em; margin: 22px 0 10px; text-wrap: balance; font-weight: 800; }
+  .lede { color: var(--muted); font-size: 18px; max-width: 60ch; margin: 0 0 8px; }
+  .headmeta { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 22px 0 36px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* ---------- Layout ---------- */
+  .grid { display: grid; grid-template-columns: 1fr; gap: 0; padding-top: 30px; padding-bottom: 80px; }
+  @media (min-width: 1000px) { .grid { grid-template-columns: 244px minmax(0, 1fr); gap: 56px; } }
+
+  /* ---------- TOC ---------- */
+  .toc { border: 1px solid var(--border); border-radius: 14px; background: var(--card); margin-bottom: 28px; }
+  .toc > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .toc > summary::-webkit-details-marker { display: none; }
+  .toc > summary::after { content: "▾"; float: right; }
+  .toc[open] > summary::after { content: "▴"; }
+  .toc ol { list-style: none; margin: 0; padding: 4px 8px 12px; counter-reset: t; }
+  .toc a { display: flex; gap: 10px; align-items: baseline; padding: 7px 8px; border-radius: 8px; color: var(--muted); font-size: 13.5px; line-height: 1.35; }
+  .toc a:hover { background: var(--bg-alt); color: var(--fg); text-decoration: none; }
+  .toc a.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+  .toc a .n { font-family: var(--font-mono); font-size: 11px; color: var(--muted-2); min-width: 16px; }
+  .toc a.active .n { color: var(--brand); }
+  @media (min-width: 1000px) {
+    .toc { position: sticky; top: 20px; margin-bottom: 0; align-self: start; max-height: calc(100dvh - 40px); overflow: auto; }
+    .toc > summary { display: none; }
+  }
+
+  /* ---------- Content ---------- */
+  main { min-width: 0; }
+  section.feat { scroll-margin-top: 24px; padding: 8px 0 40px; border-bottom: 1px solid var(--border); }
+  section.feat:last-of-type { border-bottom: 0; }
+  .eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .18em; font-size: 11.5px; color: var(--brand); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .eyebrow .num { color: var(--muted-2); }
+  h2 { font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -.015em; line-height: 1.12; margin: 12px 0 6px; text-wrap: balance; font-weight: 800; }
+  h3 { font-size: 16px; margin: 26px 0 4px; letter-spacing: -.01em; }
+  .purpose { color: var(--muted); font-size: 17px; max-width: var(--measure); margin: 0 0 6px; }
+  p, li { max-width: var(--measure); }
+  main p { color: var(--fg); }
+
+  /* role chips */
+  .roles { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 6px; }
+  .chip { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--muted); font-weight: 600; }
+  .chip.on { border-color: transparent; }
+  .chip.admin.on { background: var(--brand-soft); color: var(--brand); }
+  .chip.ger.on { background: var(--ok-soft); color: var(--ok); }
+  .chip.vend.on { background: var(--rsv-soft); color: var(--rsv); }
+
+  /* steps */
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 18px 0; display: flex; flex-direction: column; gap: 12px; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 44px; min-height: 30px; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 28px; height: 28px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); font-family: var(--font-mono); font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+  ul.plain { padding-left: 18px; margin: 12px 0; }
+  ul.plain li { margin: 5px 0; }
+  code, .k { font-family: var(--font-mono); font-size: .88em; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
+
+  /* callout */
+  .note { border: 1px solid var(--border); border-left: 3px solid var(--brand); background: var(--card); border-radius: 10px; padding: 14px 16px; margin: 18px 0; box-shadow: var(--shadow); }
+  .note.warn { border-left-color: var(--low); }
+  .note.tip { border-left-color: var(--ok); }
+  .note .lab { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+  .note.warn .lab { color: var(--low); }
+  .note.tip .lab { color: var(--ok); }
+  .note p { margin: 0; max-width: none; }
+
+  /* screenshot placeholder */
+  figure.shot { margin: 22px 0; border: 1.5px dashed var(--border-strong); border-radius: 12px; background: repeating-linear-gradient(135deg, transparent, transparent 11px, var(--bg-alt) 11px, var(--bg-alt) 12px); padding: 26px 20px; text-align: center; }
+  figure.shot .tag { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .16em; font-weight: 700; color: var(--muted-2); border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px 10px; background: var(--card); display: inline-block; }
+  figure.shot figcaption { margin-top: 12px; color: var(--muted); font-size: 13.5px; }
+  figure.shot figcaption b { color: var(--fg); }
+
+  /* flow pipeline */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 20px 0; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); overflow-x: auto; box-shadow: var(--shadow); }
+  .fn { border: 1px solid var(--border-strong); border-radius: 9px; padding: 8px 12px; font-weight: 600; font-size: 13.5px; white-space: nowrap; background: var(--bg-alt); }
+  .fn.b { border-color: transparent; background: var(--brand-soft); color: var(--brand); }
+  .fn.g { border-color: transparent; background: var(--ok-soft); color: var(--ok); }
+  .fa { color: var(--muted-2); font-size: 15px; }
+  .flow .opt { font-family: var(--font-mono); font-size: 10px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .1em; }
+
+  /* status legend + badges */
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; padding: 5px 10px; border-radius: 999px; }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); } .badge.ok .dot { background: var(--ok); }
+  .badge.low { background: var(--low-soft); color: var(--low); } .badge.low .dot { background: var(--low); }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); } .badge.bad .dot { background: var(--bad); }
+  .badge.rsv { background: var(--rsv-soft); color: var(--rsv); } .badge.rsv .dot { background: var(--rsv); }
+  .legend .li { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--card); }
+  .legend .li p { font-size: 13px; color: var(--muted); margin: 8px 0 0; max-width: none; }
+
+  /* fields table (masks) */
+  .fields { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .fields th, .fields td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .fields th { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--muted); font-weight: 700; }
+  .fields td:first-child { font-weight: 600; white-space: nowrap; }
+  .fields .ex { font-family: var(--font-mono); color: var(--brand); }
+  .tablescroll { overflow-x: auto; }
+
+  footer.end { border-top: 1px solid var(--border); color: var(--muted); font-size: 13.5px; padding: 30px 0 60px; }
+  footer.end .mono { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .1em; font-size: 11px; color: var(--muted-2); }
+
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brandline">
+      <div class="mark">AP</div>
+      <div>
+        <div class="name">Art Piso</div>
+        <div class="kind">Controle de estoque · Guia de uso</div>
+      </div>
+    </div>
+    <h1 class="title">Como usar o Art Piso, tela por tela</h1>
+    <p class="lede">Um passo a passo de cada funcionalidade do sistema — do cadastro de um piso até a entrega ao cliente. Pensado para quem opera a loja e o depósito.</p>
+    <div class="headmeta">
+      <span>Caixas são a verdade</span>
+      <span>m² é sempre calculado</span>
+      <span>Disponível = Estoque − Reserva − Perda</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <!-- ================= TOC ================= -->
+    <details class="toc" open>
+      <summary>Índice</summary>
+      <ol>
+        <li><a href="#visao"><span class="n">01</span> Visão geral e papéis</a></li>
+        <li><a href="#login"><span class="n">02</span> Entrar no sistema</a></li>
+        <li><a href="#estoque"><span class="n">03</span> Estoque (tela principal)</a></li>
+        <li><a href="#cadastro"><span class="n">04</span> Cadastrar um produto</a></li>
+        <li><a href="#produto"><span class="n">05</span> Detalhe, lotes e edição</a></li>
+        <li><a href="#reservas"><span class="n">06</span> Reservas e pedidos</a></li>
+        <li><a href="#entrega"><span class="n">07</span> Confirmar entrega</a></li>
+        <li><a href="#devolucao"><span class="n">08</span> Registrar devolução</a></li>
+        <li><a href="#clientes"><span class="n">09</span> Clientes</a></li>
+        <li><a href="#ajustes"><span class="n">10</span> Ajustes de estoque</a></li>
+        <li><a href="#config"><span class="n">11</span> Configurações (admin)</a></li>
+        <li><a href="#perfil"><span class="n">12</span> Perfil e senha</a></li>
+        <li><a href="#sino"><span class="n">13</span> Notificações (o sino)</a></li>
+        <li><a href="#preenchimento"><span class="n">14</span> Guia de preenchimento</a></li>
+      </ol>
+    </details>
+
+    <main>
+      <div class="note tip">
+        <span class="lab">Sobre este guia</span>
+        <p>As áreas tracejadas marcadas <b>IMAGEM</b> são espaços reservados para os prints reais de cada tela — cole a captura da loja no lugar indicado pela legenda.</p>
+      </div>
+
+      <!-- 01 -->
+      <section class="feat" id="visao">
+        <div class="eyebrow"><span class="num">01</span> Fundamentos</div>
+        <h2>Visão geral e papéis</h2>
+        <p class="purpose">O Art Piso controla o estoque por <b>Produto + Lote</b>. Toda quantidade nasce em <b>caixas</b>; o m² é sempre calculado a partir das caixas — você nunca digita m² à mão.</p>
+
+        <div class="flow" role="img" aria-label="Fluxo geral: cadastrar produto, estoque, reserva, entrega e devolução">
+          <span class="fn b">Cadastrar produto</span><span class="fa">→</span>
+          <span class="fn">Estoque</span><span class="fa">→</span>
+          <span class="fn">Reserva</span><span class="fa">→</span>
+          <span class="fn g">Entrega</span><span class="fa">→</span>
+          <span class="fn">Devolução</span><span class="opt">se precisar</span>
+        </div>
+
+        <h3>Os três papéis de acesso</h3>
+        <div class="roles">
+          <span class="chip admin on">Admin</span>
+          <span class="chip ger on">Gerente</span>
+          <span class="chip vend on">Vendedor</span>
+        </div>
+        <ul class="plain">
+          <li><b>Admin</b> — acesso total. Único que exclui produtos e abre <b>Configurações</b> (usuários e quadras).</li>
+          <li><b>Gerente</b> — opera o dia a dia e cria/edita produtos (incluindo foto e medidas). <b>Não</b> exclui produto e <b>não</b> acessa Configurações.</li>
+          <li><b>Vendedor</b> — <b>somente visualização</b>. É a conta compartilhada do tablet na loja; não tem botões de edição.</li>
+        </ul>
+        <div class="note">
+          <span class="lab">Regra de ouro</span>
+          <p>O que o papel esconde na tela, o sistema também bloqueia por baixo. Um vendedor não consegue alterar nada, mesmo que tente.</p>
+        </div>
+      </section>
+
+      <!-- 02 -->
+      <section class="feat" id="login">
+        <div class="eyebrow"><span class="num">02</span> Acesso</div>
+        <h2>Entrar no sistema</h2>
+        <p class="purpose">A entrada aceita <b>usuário simples</b> (ex.: <code>balcao</code>) ou <b>e-mail completo</b>, mais a senha.</p>
+        <ol class="steps">
+          <li>No campo <b>Usuário ou e-mail</b>, digite seu login (o admin usa o e-mail; contas da loja podem usar só o nome de usuário).</li>
+          <li>Digite a <b>senha</b>. O ícone do olho mostra/esconde o que foi digitado.</li>
+          <li>Marque <b>Manter conectado</b> no tablet da loja para não precisar logar toda hora.</li>
+          <li>Toque em <b>Entrar</b>. Esqueceu a senha? Use <b>Esqueci minha senha</b> — ou peça ao admin para redefinir.</li>
+        </ol>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print da <b>tela de login</b> — campos de usuário/senha e o botão Entrar.</figcaption></figure>
+      </section>
+
+      <!-- 03 -->
+      <section class="feat" id="estoque">
+        <div class="eyebrow"><span class="num">03</span> Tela principal</div>
+        <h2>Estoque</h2>
+        <p class="purpose">A tela inicial mostra o inventário <b>por produto</b>. As caixas são o número em destaque; o m² aparece como apoio.</p>
+        <ol class="steps">
+          <li>Use a <b>busca</b> no topo para achar um produto pelo nome ou referência.</li>
+          <li>Cada cartão mostra o <b>disponível em caixas</b> e um selo de situação (veja a legenda abaixo).</li>
+          <li>Toque num produto para abrir o <b>detalhe</b> — dados, lotes e histórico.</li>
+          <li>Para incluir algo novo, use a ação principal <b>Novo cadastro</b> (produto + lote) ou <b>Novo lote</b> dentro de um produto.</li>
+        </ol>
+
+        <h3>O que cada selo significa</h3>
+        <div class="legend">
+          <div class="li"><span class="badge ok"><span class="dot"></span>Disponível</span><p>Estoque acima do limite configurado para o produto.</p></div>
+          <div class="li"><span class="badge low"><span class="dot"></span>Estoque baixo</span><p>Disponível abaixo do limite que você definiu naquele produto.</p></div>
+          <div class="li"><span class="badge bad"><span class="dot"></span>Esgotado</span><p>O produto inteiro zerou (todos os lotes).</p></div>
+          <div class="li"><span class="badge rsv"><span class="dot"></span>Reservado</span><p>Caixas comprometidas com um pedido — saem do disponível.</p></div>
+        </div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print da tela de <b>Estoque</b> com a lista de produtos e os selos de situação.</figcaption></figure>
+        <div class="note">
+          <span class="lab">Vendedor</span>
+          <p>No perfil vendedor, a tela é a mesma — só sem os botões de criar/editar. Serve para consultar preço, disponível e localização.</p>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section class="feat" id="cadastro">
+        <div class="eyebrow"><span class="num">04</span> Cadastro</div>
+        <h2>Cadastrar um produto</h2>
+        <p class="purpose">O <b>Novo cadastro</b> registra o produto e já vincula o <b>primeiro lote</b> ao estoque, em duas etapas na mesma tela.</p>
+        <div class="roles"><span class="chip admin on">Admin</span><span class="chip ger on">Gerente</span><span class="chip vend">Vendedor</span></div>
+
+        <h3>Etapa 1 — Informações do produto</h3>
+        <ul class="plain">
+          <li><b>Nome</b> — digite normalmente; o sistema salva em MAIÚSCULAS automaticamente.</li>
+          <li><b>Referência</b> (opcional) e <b>Marca</b> — a marca sugere as já cadastradas para não duplicar.</li>
+          <li><b>Tamanho (cm)</b> — dois campos: largura <code>×</code> comprimento (ex.: <code>60</code> × <code>60</code>). Aceita vírgula (ex.: <code>83,2</code>).</li>
+          <li><b>Preço (R$/m²)</b> — digite só os números; vira <code>R$ 0,00</code> sozinho.</li>
+          <li><b>Avisar estoque baixo (caixas)</b> — <b>obrigatório</b>: a partir de quantas caixas este produto deve alertar. Cada produto tem o seu.</li>
+          <li><b>Foto</b> — envie um arquivo <b>ou</b> cole o link da imagem do catálogo; o sistema baixa e guarda.</li>
+        </ul>
+
+        <h3>Etapa 2 — Dados do lote</h3>
+        <ul class="plain">
+          <li><b>Código do lote</b> e <b>Quadra</b> (onde ficará no depósito).</li>
+          <li><b>Bitola</b> e <b>Tonalidade</b> — <b>obrigatórios</b> (evitam misturar caixas diferentes no piso do cliente).</li>
+          <li><b>Caixas em estoque</b> — a quantidade inicial. O total em m² é calculado na hora.</li>
+        </ul>
+        <div class="note tip">
+          <span class="lab">Reaproveitamento</span>
+          <p>Se o nome ou a referência já existir, o sistema entende que você está adicionando um <b>novo lote</b> a um produto existente — e mantém as medidas e o preço dele.</p>
+        </div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do <b>Novo cadastro</b>, mostrando as duas etapas (produto e lote).</figcaption></figure>
+      </section>
+
+      <!-- 05 -->
+      <section class="feat" id="produto">
+        <div class="eyebrow"><span class="num">05</span> Manutenção</div>
+        <h2>Detalhe do produto, lotes e edição</h2>
+        <p class="purpose">Dentro de um produto você vê os lotes, o histórico de perdas e as ações de manutenção.</p>
+        <ul class="plain">
+          <li><b>Novo lote</b> — vincula outro lote ao mesmo produto (herda medidas e preço).</li>
+          <li><b>Editar produto</b> — muda nome, referência, marca, tamanho, preço, foto e o limite de aviso. Alterar <b>medidas</b> vale para <b>todos os lotes</b> da referência.</li>
+          <li><b>Editar lote</b> — ajusta código, bitola e tonalidade. Para mudar as caixas de lugar, use <b>Ajustes → Mover</b>.</li>
+          <li><b>Excluir produto</b> — <span class="badge" style="background:var(--brand-soft);color:var(--brand)">só admin</span>. Bloqueado se houver reserva ativa.</li>
+        </ul>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do <b>detalhe de um produto</b>, com lotes e o histórico de perdas.</figcaption></figure>
+      </section>
+
+      <!-- 06 -->
+      <section class="feat" id="reservas">
+        <div class="eyebrow"><span class="num">06</span> Vendas</div>
+        <h2>Reservas e pedidos</h2>
+        <p class="purpose">Uma <b>Nova reserva</b> monta um <b>pedido</b> com um ou mais itens (como um carrinho). Cada item é um lote com uma quantidade de caixas.</p>
+        <ol class="steps">
+          <li><b>Cliente</b> — busque um existente ou cadastre na hora. Se ele tiver obras, escolha o <b>endereço de entrega</b> ou deixe <b>Retirada na loja</b>.</li>
+          <li><b>Itens</b> — escolha o produto/lote, informe as <b>caixas</b> (o m² aparece sozinho) e toque em <b>Adicionar item</b>. Repita para vários lotes.</li>
+          <li><b>Número do pedido</b> — digite o número (só dígitos); é obrigatório e não pode repetir.</li>
+          <li><b>Data prevista de entrega</b> (opcional) — o sistema recusa data que não existe ou no passado.</li>
+          <li>Confira o total e toque em <b>Confirmar reserva</b>.</li>
+        </ol>
+
+        <h3>Rápida ou encomenda — o regime da reserva</h3>
+        <p class="purpose">A data decide se as caixas travam agora ou continuam girando:</p>
+        <div class="flow" role="img" aria-label="Regime: entrega próxima trava; entrega distante rotaciona">
+          <span class="fn">Data de entrega</span><span class="fa">→</span>
+          <span class="fn b">Próxima = trava as caixas</span>
+          <span class="fa">/</span>
+          <span class="fn g">Distante = deixa girar</span>
+          <span class="opt">encomenda</span>
+        </div>
+        <div class="note">
+          <span class="lab">Encomenda distante</span>
+          <p>Numa entrega distante, aparece a opção <b>manter reservado agora</b> — ligue para separar as caixas mesmo assim (ex.: pedido urgente). O sistema avisa se faltar estoque para separar tudo.</p>
+        </div>
+        <p>Depois de criada, use <b>Ver pedido</b> para acompanhar, <b>Editar pedido</b> (mexe no pedido inteiro) ou <b>Editar reserva</b> (uma linha).</p>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print da <b>Nova reserva</b> com o carrinho de itens e os dados do pedido.</figcaption></figure>
+      </section>
+
+      <!-- 07 -->
+      <section class="feat" id="entrega">
+        <div class="eyebrow"><span class="num">07</span> Saída</div>
+        <h2>Confirmar entrega</h2>
+        <p class="purpose">A entrega pode ser <b>total</b> ou <b>parcial</b>, e diz de qual quadra as caixas saem.</p>
+        <ol class="steps">
+          <li>Informe o <b>responsável</b> pela entrega (motorista ou cliente).</li>
+          <li>Digite as <b>caixas a entregar agora</b>. Se for menos que o saldo, vira <b>entrega parcial</b> e o restante fica em aberto.</li>
+          <li>Se o lote estiver em <b>mais de uma quadra</b>, o sistema sugere de onde tirar — ajuste a divisão se as caixas saírem de outro lugar.</li>
+          <li>Toque em <b>Finalizar entrega</b>.</li>
+        </ol>
+        <div class="note tip">
+          <span class="lab">Reserva em rotação</span>
+          <p>Se o lote original não tiver caixas suficientes, o sistema oferece <b>outro lote do mesmo produto</b> para completar a entrega.</p>
+        </div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print de <b>Confirmar entrega</b>, com o campo de caixas e a divisão por quadra.</figcaption></figure>
+      </section>
+
+      <!-- 08 -->
+      <section class="feat" id="devolucao">
+        <div class="eyebrow"><span class="num">08</span> Retorno</div>
+        <h2>Registrar devolução</h2>
+        <p class="purpose">Quando o cliente devolve caixas já entregues, elas voltam ao estoque do lote.</p>
+        <ol class="steps">
+          <li>Informe as <b>caixas a devolver</b> (no máximo o que foi entregue).</li>
+          <li>Escolha a <b>quadra de destino</b> — é onde as caixas voltam a ficar alocadas.</li>
+          <li>Registre o <b>motivo</b> (opcional) e confirme a devolução.</li>
+        </ol>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print de <b>Registrar devolução</b>.</figcaption></figure>
+      </section>
+
+      <!-- 09 -->
+      <section class="feat" id="clientes">
+        <div class="eyebrow"><span class="num">09</span> Cadastro</div>
+        <h2>Clientes</h2>
+        <p class="purpose">O cliente é identificado pelo <b>documento</b>. Cada um pode ter várias obras (endereços).</p>
+        <ol class="steps">
+          <li><b>Nome</b> ou razão social.</li>
+          <li><b>CPF / CNPJ</b> — o sistema formata e valida os dígitos; não deixa cadastrar documento inválido ou repetido.</li>
+          <li><b>Telefone</b> — formatado automaticamente.</li>
+          <li><b>Endereços de entrega</b> (opcional) — adicione quantas obras precisar; sem endereço, os pedidos saem como retirada na loja.</li>
+        </ol>
+        <div class="note">
+          <span class="lab">Histórico</span>
+          <p>No cliente você vê os pedidos dele. Um cliente com pedido ativo não pode ser excluído (evita registro órfão).</p>
+        </div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do cadastro de <b>Cliente</b> com documento, telefone e endereços.</figcaption></figure>
+      </section>
+
+      <!-- 10 -->
+      <section class="feat" id="ajustes">
+        <div class="eyebrow"><span class="num">10</span> Operação</div>
+        <h2>Ajustes de estoque</h2>
+        <p class="purpose">Tudo que mexe na quantidade de um lote sem ser venda passa aqui — e fica no histórico, com quem fez e quando.</p>
+        <div class="flow" role="img" aria-label="Quatro tipos de ajuste">
+          <span class="fn g">Adicionar estoque</span>
+          <span class="fn">Registrar perda</span>
+          <span class="fn">Mover de quadra</span>
+          <span class="fn">Corrigir quantidade</span>
+        </div>
+        <ul class="plain">
+          <li><b>Adicionar estoque</b> — entrada de uma remessa nova num lote existente; escolha a quadra de destino.</li>
+          <li><b>Registrar perda</b> — quebra/avaria. O <b>motivo é obrigatório</b>; informe também os pisos danificados se quiser. A caixa inteira vira perda.</li>
+          <li><b>Mover de quadra</b> — leva caixas de uma quadra para outra (parcial ou total). O estoque do lote não muda, só o lugar.</li>
+          <li><b>Corrigir quantidade</b> — acerto administrativo após uma contagem. Não deixa reduzir abaixo do que já está comprometido (reserva + perda).</li>
+        </ul>
+
+        <h3>Quadras (dentro de Ajustes)</h3>
+        <p>O selo <b>Disponível/Ocupada</b> no cartão da quadra é um botão: um toque alterna, e a mudança entra no histórico. Criar/editar quadras fica em <b>Configurações</b>.</p>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print da tela de <b>Ajustes</b> com os quatro tipos e os cartões de quadra.</figcaption></figure>
+      </section>
+
+      <!-- 11 -->
+      <section class="feat" id="config">
+        <div class="eyebrow"><span class="num">11</span> Administração</div>
+        <h2>Configurações</h2>
+        <p class="purpose">Área <b>exclusiva do admin</b>: usuários de login e quadras do depósito.</p>
+        <div class="roles"><span class="chip admin on">Admin</span><span class="chip ger">Gerente</span><span class="chip vend">Vendedor</span></div>
+
+        <h3>Usuários</h3>
+        <ol class="steps">
+          <li>Toque em <b>Adicionar usuário</b>.</li>
+          <li>Informe <b>Nome</b>, <b>Usuário (login)</b> — nome curto sem e-mail (ex.: <code>balcao</code>) ou um e-mail completo — e uma <b>senha</b> (mín. 6).</li>
+          <li>Escolha o <b>papel</b>: gerente ou vendedor. (O papel <b>admin</b> só é concedido direto no banco, por segurança.)</li>
+          <li>Depois, dá para <b>ativar/desativar</b> ou <b>excluir</b>. O último admin nunca pode ser excluído.</li>
+        </ol>
+
+        <h3>Quadras</h3>
+        <p>Cadastre cada local do depósito. O identificador tem o prefixo fixo <code>Q-</code>: você digita só o número e o sistema salva como <code>Q-13</code>.</p>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print de <b>Configurações</b> — lista de usuários e cadastro de quadra.</figcaption></figure>
+      </section>
+
+      <!-- 12 -->
+      <section class="feat" id="perfil">
+        <div class="eyebrow"><span class="num">12</span> Conta</div>
+        <h2>Perfil e senha</h2>
+        <p class="purpose">No <b>Perfil</b> você vê seu usuário e papel, e troca a própria senha.</p>
+        <ol class="steps">
+          <li>Abra o <b>Perfil</b> pelo menu de conta.</li>
+          <li>Em <b>Trocar senha</b>, informe a <b>senha atual</b>, a <b>nova senha</b> (mín. 6) e a confirmação.</li>
+          <li>Toque em <b>Salvar nova senha</b>.</li>
+        </ol>
+        <div class="note"><span class="lab">Vendedor</span><p>A conta compartilhada de vendedor não mostra a troca de senha (é só leitura).</p></div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do <b>Perfil</b> com o bloco de trocar senha.</figcaption></figure>
+      </section>
+
+      <!-- 13 -->
+      <section class="feat" id="sino">
+        <div class="eyebrow"><span class="num">13</span> Avisos</div>
+        <h2>Notificações — o sino</h2>
+        <p class="purpose">O sino junta os avisos automáticos do sistema. Ao <b>abrir o sino</b>, tudo é marcado como visto — não há botão manual.</p>
+        <ul class="plain">
+          <li><b>Estoque baixo</b> — o disponível de um produto passou abaixo do limite dele.</li>
+          <li><b>Esgotado</b> — o produto zerou.</li>
+          <li><b>Promessa em risco</b> — os pedidos somados passaram do que há em estoque.</li>
+          <li><b>Encomenda em risco</b> — uma entrega distante se aproxima sem cobertura de estoque.</li>
+        </ul>
+        <div class="note tip"><span class="lab">Por usuário</span><p>O "visto" é individual: cada login tem o seu, mesmo no tablet compartilhado. Os avisos aparecem em todos os aparelhos na hora (tempo real).</p></div>
+        <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do <b>sino aberto</b> com a lista de avisos.</figcaption></figure>
+      </section>
+
+      <!-- 14 -->
+      <section class="feat" id="preenchimento">
+        <div class="eyebrow"><span class="num">14</span> Referência</div>
+        <h2>Guia de preenchimento</h2>
+        <p class="purpose">Como cada campo especial se comporta enquanto você digita.</p>
+        <div class="tablescroll">
+          <table class="fields">
+            <thead><tr><th>Campo</th><th>Como digitar</th><th>Fica assim</th></tr></thead>
+            <tbody>
+              <tr><td>Preço (R$/m²)</td><td>Só números; a vírgula e o R$ entram sozinhos</td><td class="ex">R$ 89,90</td></tr>
+              <tr><td>m² por caixa</td><td>Só números; o ponto entra sozinho</td><td class="ex">2.16</td></tr>
+              <tr><td>Tamanho (cm)</td><td>Dois campos, aceita vírgula</td><td class="ex">83,2 × 83</td></tr>
+              <tr><td>Data de entrega</td><td>Números; recusa data impossível ou no passado</td><td class="ex">31/12/2026</td></tr>
+              <tr><td>Telefone</td><td>Só números (fixo ou celular)</td><td class="ex">(31) 90000-0000</td></tr>
+              <tr><td>CPF / CNPJ</td><td>Só números; alterna CPF↔CNPJ e valida os dígitos</td><td class="ex">000.000.000-00</td></tr>
+              <tr><td>Quadra</td><td>Só o número (o <code>Q-</code> já vem fixo)</td><td class="ex">Q-13</td></tr>
+              <tr><td>Nome do produto</td><td>Digite normal; salva em maiúsculas</td><td class="ex">PORCELANATO BRANCO</td></tr>
+              <tr><td>Código do lote</td><td>Livre — texto ou número</td><td class="ex">L-2405</td></tr>
+              <tr><td>Bitola / Tonalidade</td><td>Obrigatórios; aceitam número e letra</td><td class="ex">2 · A3</td></tr>
+              <tr><td>Avisar estoque baixo</td><td>Obrigatório; caixas para soar o alerta</td><td class="ex">50</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="end">
+        <p class="mono">Art Piso · Guia de uso</p>
+        <p>Documento de treinamento. As telas evoluem conforme o sistema é lapidado — ao mudar uma funcionalidade, atualize a seção correspondente e o print.</p>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Realce da seção ativa no índice conforme a rolagem.
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          var a = map[e.target.id];
+          if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+    document.querySelectorAll('section.feat').forEach(function (s) { obs.observe(s); });
+  })();
+</script>
+</body>
+</html>
