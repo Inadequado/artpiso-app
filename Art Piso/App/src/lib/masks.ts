@@ -140,3 +140,13 @@ export function parseMoeda(value: string): number {
   const digitos = onlyDigits(value)
   return digitos === '' ? 0 : Number(digitos) / 100
 }
+
+/**
+ * Mascara decimal de 2 casas com PONTO (para campos numericos lidos com Number()):
+ * o usuario digita so numeros e o ponto entra sozinho. Ex.: "216" -> "2.16"; vazio -> "".
+ */
+export function formatDecimalPonto(value: string | number): string {
+  const digitos = typeof value === 'number' ? String(Math.round(value * 100)) : onlyDigits(value)
+  if (digitos === '') return ''
+  return (Number(digitos) / 100).toFixed(2)
+}

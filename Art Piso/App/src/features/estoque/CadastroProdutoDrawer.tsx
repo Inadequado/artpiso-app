@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatM2, formatPreco, loteComCodigo } from '@/data/mock-inventory'
 import { uid } from '@/lib/id'
-import { formatMoeda, parseMoeda } from '@/lib/masks'
+import { formatDecimalPonto, formatMoeda, parseMoeda } from '@/lib/masks'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
 import type { LoteEstoque } from '@/types/inventory'
@@ -289,10 +289,10 @@ export function CadastroProdutoDrawer({
             {produtoExistente ? null : (
               <div className="grid grid-cols-2 gap-3 border-t pt-4">
                 <Field label="Peças por caixa" labelClassName="whitespace-nowrap tracking-[0.08em]">
-                  <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="6" />
+                  <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="0" />
                 </Field>
                 <Field label="m² por caixa" labelClassName="tracking-[0.12em]">
-                  <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />
+                  <Input inputMode="decimal" value={m2PorCaixa} onChange={(e) => setM2PorCaixa(formatDecimalPonto(e.target.value))} placeholder="0" />
                 </Field>
               </div>
             )}

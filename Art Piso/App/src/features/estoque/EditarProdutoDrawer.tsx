@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FotoProdutoField } from '@/features/estoque/FotoProdutoField'
 import { agruparPorProduto, chaveNome, chaveReferencia, formatPreco } from '@/data/mock-inventory'
-import { formatMoeda, parseMoeda } from '@/lib/masks'
+import { formatDecimalPonto, formatMoeda, parseMoeda } from '@/lib/masks'
 import { useInventory } from '@/store/inventory'
 import type { Produto } from '@/types/inventory'
 
@@ -27,7 +27,7 @@ export function EditarProdutoDrawer({
   const [referencia, setReferencia] = useState(produto?.referencia ?? '')
   const [marca, setMarca] = useState(produto?.marca ?? '')
   const [tamanho, setTamanho] = useState(produto?.tamanho ?? '')
-  const [m2PorCaixa, setM2PorCaixa] = useState(produto ? String(produto.m2PorCaixa) : '')
+  const [m2PorCaixa, setM2PorCaixa] = useState(produto ? formatDecimalPonto(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
   const [preco, setPreco] = useState(produto ? formatMoeda(produto.precoM2) : '')
   const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '10')
@@ -160,10 +160,10 @@ export function EditarProdutoDrawer({
           <FotoProdutoField value={foto} onChange={setFoto} />
           <div className="grid grid-cols-2 gap-4">
             <Field label="m² por caixa">
-              <Input type="number" inputMode="decimal" step="0.01" min={0} value={m2PorCaixa} onChange={(e) => setM2PorCaixa(e.target.value)} placeholder="2.16" />
+              <Input inputMode="decimal" value={m2PorCaixa} onChange={(e) => setM2PorCaixa(formatDecimalPonto(e.target.value))} placeholder="0" />
             </Field>
             <Field label="Peças por caixa">
-              <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="6" />
+              <Input type="number" inputMode="numeric" min={1} value={pecasPorCaixa} onChange={(e) => setPecasPorCaixa(e.target.value)} placeholder="0" />
             </Field>
           </div>
 
