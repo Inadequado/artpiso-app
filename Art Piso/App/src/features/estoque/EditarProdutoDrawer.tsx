@@ -151,7 +151,7 @@ export function EditarProdutoDrawer({
               min={1}
               value={limiteBaixo}
               onChange={(e) => setLimiteBaixo(e.target.value)}
-              placeholder="1"
+              placeholder="Digite a quantidade"
             />
           </Field>
           <Field label="Descrição" optional>

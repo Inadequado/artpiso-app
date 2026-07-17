@@ -230,7 +230,7 @@ export function CadastroProdutoDrawer({
                 min={1}
                 value={limiteBaixo}
                 onChange={(e) => setLimiteBaixo(e.target.value)}
-                placeholder="1"
+                placeholder="Digite a quantidade"
               />
             </Field>
           )}
