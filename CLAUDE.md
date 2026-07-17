@@ -55,7 +55,7 @@ Principios:
 REDEFINIDOS pelo usuario (2026-07-12):
 
 - `admin`: permissao TOTAL.
-- `gerente`: permissao limitada — funcoes exatas A DECIDIR (proposta em validacao no schema 0.0.2).
+- `gerente`: opera o dia a dia E gerencia produtos (criar/editar, inclusive foto e medidas) — decisao do usuario 2026-07-16. NAO exclui produto (so admin) e NAO acessa a secao Configuracoes (usuarios/quadras/parametros). Fora isso, unica restricao ativa hoje = Configuracoes.
 - `vendedor`: SOMENTE VISUALIZACAO, sem edicao — conta compartilhada num tablet disponivel na loja para todos os vendedores.
 
 Nao trocar por `operador`, `conferente`, `diretor` ou outros nomes sem decisao explicita.

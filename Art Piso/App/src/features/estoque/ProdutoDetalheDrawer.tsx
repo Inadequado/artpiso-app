@@ -66,7 +66,7 @@ export function ProdutoDetalheDrawer({
   onEditarLote: (lote: LoteEstoque) => void
 }) {
   const { reservas, movimentos, removerLote, removerProduto } = useInventory()
-  const { podeEditar } = useSessao()
+  const { podeEditar, ehAdmin } = useSessao()
   const [loteExcluir, setLoteExcluir] = useState<LoteEstoque | null>(null)
   const [confirmarExcluirProduto, setConfirmarExcluirProduto] = useState(false)
 
@@ -145,7 +145,7 @@ export function ProdutoDetalheDrawer({
           {produto.descricao ? (
             <p className="whitespace-pre-line text-sm text-muted-foreground">{produto.descricao}</p>
           ) : null}
-          {podeEditar ? (
+          {ehAdmin ? (
             <Button
               variant="ghost"
               size="sm"
