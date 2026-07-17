@@ -163,13 +163,24 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
       observacao: r.observacao ?? undefined,
       loteId: r.lote_id ?? undefined,
       produtoId: r.produto_id ?? undefined,
-      usuario: (r.profiles as { nome: string } | null)?.nome ?? '—',
+      usuario: (r.profiles as unknown as { nome: string } | null)?.nome ?? '—',
       data: formatarData(r.created_at),
     })))
 
     pedidosMeta.current = new Map()
     setReservas((tReservas.data ?? []).map((r): Reserva => {
-      const pedido = r.pedidos
+      // Embeds to-one do PostgREST: o supabase-js os tipa como array, mas em
+      // runtime vem OBJETO (relacao por FK). Normaliza aqui via `unknown` (os
+      // leaves ja sao `any`); os to-many (entregas/estornos/entrega_quadras) ficam array.
+      const pedido = r.pedidos as unknown as {
+        id: string; numero: string; cliente_id: string; endereco_id: string | null
+        endereco_entrega: string | null; data_prevista: string | null; observacoes: string | null
+        clientes: { nome: string; documento: string | null; telefone: string | null } | null
+        profiles: { nome: string } | null
+      } | null
+      const loteReserva = r.lotes as unknown as {
+        codigo: string; m2_por_caixa: number; produtos: { nome: string } | null
+      } | null
       if (pedido) pedidosMeta.current.set(pedido.numero, { id: pedido.id, clienteId: pedido.cliente_id })
       const entregas = [...(r.entregas ?? [])]
         .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
@@ -178,8 +189,8 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
           data: formatarData(e.created_at),
           responsavel: e.responsavel,
           caixas: e.caixas,
-          lote: (e.lotes as { codigo: string } | null)?.codigo,
-          quadras: labelRetiradas(e.entrega_quadras),
+          lote: (e.lotes as unknown as { codigo: string } | null)?.codigo,
+          quadras: labelRetiradas(e.entrega_quadras as unknown as { caixas: number; quadras: { numero: string } | null }[] | null),
           observacoes: e.observacoes ?? undefined,
         }))
       const estornos = [...(r.estornos ?? [])]
@@ -187,30 +198,32 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
         .map((e) => ({
           id: e.id,
           data: formatarData(e.created_at),
-          responsavel: (e.profiles as { nome: string } | null)?.nome ?? '—',
+          responsavel: (e.profiles as unknown as { nome: string } | null)?.nome ?? '—',
           caixas: e.caixas,
-          quadraDestino: (e.quadras as { numero: string } | null)?.numero ?? '—',
+          quadraDestino: (e.quadras as unknown as { numero: string } | null)?.numero ?? '—',
           motivo: e.motivo ?? undefined,
         }))
       // Snapshot de localizacao das HISTORICAS: de onde as entregas sairam.
       // (As ativas derivam do lote ao vivo via quadraDaReserva.)
       const quadrasHistoricas = [...new Set(
-        (r.entregas ?? []).flatMap((e) => (e.entrega_quadras ?? []).map((q) => (q.quadras as { numero: string } | null)?.numero)).filter(Boolean),
+        (r.entregas ?? []).flatMap((e) =>
+          ((e.entrega_quadras ?? []) as unknown as { quadras: { numero: string } | null }[]).map((q) => q.quadras?.numero),
+        ).filter(Boolean),
       )].join(' · ')
       return {
         id: r.id,
         pedido: pedido?.numero ?? '—',
         clienteId: pedido?.cliente_id ?? undefined,
-        cliente: (pedido?.clientes as { nome: string } | null)?.nome ?? '',
-        documento: (pedido?.clientes as { documento?: string } | null)?.documento ?? undefined,
-        telefone: (pedido?.clientes as { telefone?: string } | null)?.telefone ?? '',
+        cliente: pedido?.clientes?.nome ?? '',
+        documento: pedido?.clientes?.documento ?? undefined,
+        telefone: pedido?.clientes?.telefone ?? '',
         enderecoId: pedido?.endereco_id ?? undefined,
         enderecoEntrega: pedido?.endereco_entrega ?? undefined,
-        produto: ((r.lotes as { produtos?: { nome: string } } | null)?.produtos?.nome) ?? '—',
-        lote: (r.lotes as { codigo: string } | null)?.codigo ?? '—',
+        produto: loteReserva?.produtos?.nome ?? '—',
+        lote: loteReserva?.codigo ?? '—',
         quadra: quadrasHistoricas || '—',
         caixas: r.caixas_saldo,
-        m2: r.caixas_saldo * Number((r.lotes as { m2_por_caixa: number } | null)?.m2_por_caixa ?? 0),
+        m2: r.caixas_saldo * Number(loteReserva?.m2_por_caixa ?? 0),
         caixasEntregues: r.caixas_entregues || undefined,
         // Contrato do mock: caixasTravadas numerico so p/ rotacionando (nos demais deriva do saldo).
         caixasTravadas: r.regime === 'rotacionando' ? r.caixas_travadas : undefined,
@@ -220,7 +233,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
         status: r.status,
         regime: r.regime,
         data: formatarData(r.created_at),
-        vendedor: (pedido?.profiles as { nome: string } | null)?.nome ?? '—',
+        vendedor: pedido?.profiles?.nome ?? '—',
         observacoes: pedido?.observacoes ?? undefined,
         motivoCancelamento: r.motivo_cancelamento ?? undefined,
       }
