@@ -155,7 +155,7 @@ export function CadastroProdutoDrawer({
           <Field label="Nome do produto">
             <Autocomplete
               value={nome}
-              onChange={(v) => setNome(v.toUpperCase())}
+              onChange={setNome}
               onSelect={selecionarProduto}
               options={sugestoes}
               placeholder="Ex: Porcelanato Branco Acetinado"
@@ -230,7 +230,7 @@ export function CadastroProdutoDrawer({
                 min={1}
                 value={limiteBaixo}
                 onChange={(e) => setLimiteBaixo(e.target.value)}
-                placeholder="0"
+                placeholder="1"
               />
             </Field>
           )}
