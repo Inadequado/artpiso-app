@@ -27,14 +27,14 @@ export function EditarLoteDrawer({
   const [tonalidade, setTonalidade] = useState(lote?.tonalidade ?? '')
 
   const loteDuplicado = lote ? loteComCodigo(codigo, lotes, lote.id) : undefined
-  const valido = Boolean(lote && codigo.trim() && !loteDuplicado)
+  const valido = Boolean(lote && codigo.trim() && !loteDuplicado && bitola.trim() && tonalidade.trim())
 
   function salvar() {
     if (!lote || !valido) return
     atualizarLote(lote.id, {
       lote: codigo.trim(),
-      bitola: bitola.trim() || undefined,
-      tonalidade: tonalidade.trim() || undefined,
+      bitola: bitola.trim(),
+      tonalidade: tonalidade.trim(),
     })
     onClose()
   }
@@ -58,7 +58,7 @@ export function EditarLoteDrawer({
       {lote ? (
         <div className="flex flex-col gap-6">
           <Field label="Código do lote">
-            <Input className="font-mono" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: L-2405" />
+            <Input className="font-mono" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Digite aqui..." />
             {loteDuplicado ? (
               <p className="mt-1.5 text-xs font-semibold text-danger">
                 Código já usado em {loteDuplicado.produto}. Escolha outro.
@@ -74,11 +74,11 @@ export function EditarLoteDrawer({
             </p>
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola" optional>
+            <Field label="Bitola">
               <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade" optional>
-              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
+            <Field label="Tonalidade">
+              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: 3" />
             </Field>
           </div>
         </div>

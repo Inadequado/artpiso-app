@@ -32,7 +32,9 @@ export function NovoLoteDrawer({
 
   const loteDuplicado = loteComCodigo(codigo, lotes)
   // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
-  const valido = Boolean(produto && codigo.trim() && !loteDuplicado && quadra.trim() && estoque > 0)
+  const valido = Boolean(
+    produto && codigo.trim() && !loteDuplicado && quadra.trim() && estoque > 0 && bitola.trim() && tonalidade.trim(),
+  )
   const totalM2 = produto ? estoque * produto.m2PorCaixa : 0
 
   function salvar() {
@@ -46,8 +48,8 @@ export function NovoLoteDrawer({
       tamanho: produto.tamanho,
       lote: codigo.trim(),
       alocacoes: [{ quadra: quadra.trim(), caixas: estoque }],
-      bitola: bitola.trim() || undefined,
-      tonalidade: tonalidade.trim() || undefined,
+      bitola: bitola.trim(),
+      tonalidade: tonalidade.trim(),
       m2PorCaixa: produto.m2PorCaixa,
       pecasPorCaixa: produto.pecasPorCaixa,
       precoM2: produto.precoM2,
@@ -91,7 +93,7 @@ export function NovoLoteDrawer({
           </div>
 
           <Field label="Código do lote">
-            <Input className="font-mono" value={codigo} onChange={(event) => setCodigo(event.target.value)} placeholder="Ex: L-2407" />
+            <Input className="font-mono" value={codigo} onChange={(event) => setCodigo(event.target.value)} placeholder="Digite aqui..." />
             {loteDuplicado ? (
               <p className="mt-1.5 text-xs font-semibold text-danger">
                 Código já usado em {loteDuplicado.produto}. Remessa do mesmo lote? Use Ajustes → Adicionar
@@ -108,11 +110,11 @@ export function NovoLoteDrawer({
             />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola" optional>
+            <Field label="Bitola">
               <Input className="font-mono" value={bitola} onChange={(event) => setBitola(event.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade" optional>
-              <Input className="font-mono" value={tonalidade} onChange={(event) => setTonalidade(event.target.value)} placeholder="Ex: A3" />
+            <Field label="Tonalidade">
+              <Input className="font-mono" value={tonalidade} onChange={(event) => setTonalidade(event.target.value)} placeholder="Ex: 3" />
             </Field>
           </div>
 

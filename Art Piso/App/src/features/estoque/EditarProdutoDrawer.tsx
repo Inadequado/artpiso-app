@@ -113,7 +113,7 @@ export function EditarProdutoDrawer({
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Referência" optional>
-              <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
+              <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Digite aqui..." />
               {refDuplicada ? (
                 <p className="mt-1.5 text-xs font-semibold text-danger">
                   Referência já usada em {refDuplicada.produto}.

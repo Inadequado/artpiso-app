@@ -104,7 +104,9 @@ export function CadastroProdutoDrawer({
     : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0 && Number(limiteBaixo) >= 1)
   const loteDuplicado = loteComCodigo(lote, lotes)
   // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
-  const valido = Boolean(dadosProdutoValidos && lote.trim() && !loteDuplicado && quadra.trim() && estoque > 0)
+  const valido = Boolean(
+    dadosProdutoValidos && lote.trim() && !loteDuplicado && quadra.trim() && estoque > 0 && bitola.trim() && tonalidade.trim(),
+  )
 
   function salvar() {
     onSave({
@@ -117,8 +119,8 @@ export function CadastroProdutoDrawer({
       tamanho: produtoExistente ? produtoExistente.tamanho : tamanho.trim(),
       lote: lote.trim(),
       alocacoes: [{ quadra: quadra.trim(), caixas: estoque }],
-      bitola: bitola.trim() || undefined,
-      tonalidade: tonalidade.trim() || undefined,
+      bitola: bitola.trim(),
+      tonalidade: tonalidade.trim(),
       m2PorCaixa: m2Caixa,
       pecasPorCaixa: pecasCaixa,
       precoM2: precoNum,
@@ -190,7 +192,7 @@ export function CadastroProdutoDrawer({
           ) : null}
           <div className="grid grid-cols-2 gap-4">
             <Field label="Referência" optional>
-              <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ex: POR-6060-BL" />
+              <Input className="font-mono" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Digite aqui..." />
             </Field>
             {produtoExistente ? null : (
               <Field label="Marca">
@@ -244,7 +246,7 @@ export function CadastroProdutoDrawer({
           <StepLabel number={2} tone="success">Dados do lote</StepLabel>
           <div className="grid grid-cols-[1.4fr_0.8fr] gap-4">
             <Field label="Código do lote">
-              <Input className="font-mono" value={lote} onChange={(e) => setLote(e.target.value)} placeholder="Ex: L-2405" />
+              <Input className="font-mono" value={lote} onChange={(e) => setLote(e.target.value)} placeholder="Digite aqui..." />
               {loteDuplicado ? (
                 <p className="mt-1.5 text-xs font-semibold text-danger">
                   Código já usado em {loteDuplicado.produto}. Remessa do mesmo lote? Use Ajustes → Adicionar
@@ -262,11 +264,11 @@ export function CadastroProdutoDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bitola" optional>
+            <Field label="Bitola">
               <Input className="font-mono" value={bitola} onChange={(e) => setBitola(e.target.value)} placeholder="Ex: 2" />
             </Field>
-            <Field label="Tonalidade" optional>
-              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: A3" />
+            <Field label="Tonalidade">
+              <Input className="font-mono" value={tonalidade} onChange={(e) => setTonalidade(e.target.value)} placeholder="Ex: 3" />
             </Field>
           </div>
 
