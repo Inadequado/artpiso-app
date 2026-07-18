@@ -613,7 +613,9 @@ export function formatM2(value: number) {
   }).format(value)
 }
 
+/** Preco em BRL. Zero/ausente vira "—": produto cadastrado no deposito SEM valor de venda (2026-07-18) — a loja preenche depois pelo Editar produto. */
 export function formatPreco(value: number) {
+  if (!Number.isFinite(value) || value <= 0) return '—'
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 

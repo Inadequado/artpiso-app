@@ -277,7 +277,9 @@ export function EstoquePage() {
                     <td>
                       <div className="numeric flex flex-col">
                         <strong>{formatPreco(produto.precoM2)}</strong>
-                        <span className="text-sm text-muted-foreground">{formatPreco(precoPorCaixa(produto.precoM2, produto.m2PorCaixa))}/cx</span>
+                        {produto.precoM2 > 0 ? (
+                          <span className="text-sm text-muted-foreground">{formatPreco(precoPorCaixa(produto.precoM2, produto.m2PorCaixa))}/cx</span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="numeric text-sm">
@@ -525,7 +527,7 @@ function ProdutoCard({
         ) : (
           <span>1 lote</span>
         )}
-        <span>{formatPreco(produto.precoM2)}/m²</span>
+        <span>{produto.precoM2 > 0 ? `${formatPreco(produto.precoM2)}/m²` : '—'}</span>
         <span>
           {qtdReservas} {qtdReservas === 1 ? 'reserva' : 'reservas'}
         </span>

@@ -32,7 +32,8 @@ export function EditarProdutoDrawer({
   const [comprimento, setComprimento] = useState(formatMedida(partesTamanho[1] ?? ''))
   const [m2PorCaixa, setM2PorCaixa] = useState(produto ? formatDecimalPonto(produto.m2PorCaixa) : '')
   const [pecasPorCaixa, setPecasPorCaixa] = useState(produto ? String(produto.pecasPorCaixa) : '')
-  const [preco, setPreco] = useState(produto ? formatMoeda(produto.precoM2) : '')
+  // Sem preco (0 = cadastrado no deposito): abre vazio, nao "R$ 0,00".
+  const [preco, setPreco] = useState(produto && produto.precoM2 > 0 ? formatMoeda(produto.precoM2) : '')
   const [limiteBaixo, setLimiteBaixo] = useState(produto?.limiteEstoqueBaixo != null ? String(produto.limiteEstoqueBaixo) : '')
   const [descricao, setDescricao] = useState(produto?.descricao ?? '')
   const [foto, setFoto] = useState(produto?.foto)
@@ -58,6 +59,7 @@ export function EditarProdutoDrawer({
   const m2Num = Number(m2PorCaixa)
   const pecasNum = Number(pecasPorCaixa)
   const precoNum = parseMoeda(preco)
+  // Preco OPCIONAL (2026-07-18): 0 = "sem preco" (traco na exibicao), preenchido na loja.
   const valido = Boolean(
     produto &&
       nome.trim() &&
@@ -66,7 +68,6 @@ export function EditarProdutoDrawer({
       marca.trim() &&
       m2Num > 0 &&
       pecasNum > 0 &&
-      precoNum > 0 &&
       Number(limiteBaixo) >= 1,
   )
   const variosLotes = (produto?.lotes.length ?? 0) > 1
@@ -142,7 +143,7 @@ export function EditarProdutoDrawer({
                 <Input inputMode="decimal" value={comprimento} onChange={(e) => setComprimento(formatMedida(e.target.value))} placeholder="60" className="w-16 text-center" />
               </div>
             </Field>
-            <Field label="Preço (R$/m²)">
+            <Field label="Preço (R$/m²)" optional>
               <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
               {precoNum > 0 && m2Num > 0 ? (
                 <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Num)} por caixa</p>

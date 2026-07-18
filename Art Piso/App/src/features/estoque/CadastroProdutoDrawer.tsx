@@ -104,7 +104,9 @@ export function CadastroProdutoDrawer({
   const totalM2 = Number.isFinite(m2Caixa) && m2Caixa > 0 ? estoque * m2Caixa : 0
   const dadosProdutoValidos = produtoExistente
     ? true
-    : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && precoNum > 0 && Number(limiteBaixo) >= 1)
+    // Preco OPCIONAL (2026-07-18): o gerente do deposito cadastra sem saber o valor de
+    // venda; 0 = "sem preco" (exibido como traco), a loja preenche depois no Editar.
+    : Boolean(nome.trim() && marca.trim() && m2Caixa > 0 && pecasCaixa > 0 && Number(limiteBaixo) >= 1)
   const loteDuplicado = loteComCodigo(lote, lotes, produtoExistente?.id)
   // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
   const valido = Boolean(
@@ -186,7 +188,7 @@ export function CadastroProdutoDrawer({
                     [produtoExistente.marca, produtoExistente.tamanho].filter(Boolean).join(' - '),
                     `${formatM2(produtoExistente.m2PorCaixa)} m²/caixa`,
                     `${produtoExistente.pecasPorCaixa} pç/caixa`,
-                    `${formatPreco(produtoExistente.precoM2)}/m²`,
+                    produtoExistente.precoM2 > 0 ? `${formatPreco(produtoExistente.precoM2)}/m²` : 'sem preço',
                   ].join(' · ')}
                 </p>
                 <p>Os dados acima serão mantidos. Para cadastrar um produto diferente, altere o nome ou a referência.</p>
@@ -218,7 +220,7 @@ export function CadastroProdutoDrawer({
                   <Input inputMode="decimal" value={comprimento} onChange={(e) => setComprimento(formatMedida(e.target.value))} placeholder="60" className="w-16 text-center" />
                 </div>
               </Field>
-              <Field label="Preço (R$/m²)">
+              <Field label="Preço (R$/m²)" optional>
                 <Input inputMode="numeric" value={preco} onChange={(e) => setPreco(formatMoeda(e.target.value))} placeholder="R$ 0,00" />
                 {precoNum > 0 && m2Caixa > 0 ? (
                   <p className="mt-1.5 text-xs text-muted-foreground">≈ {formatPreco(precoNum * m2Caixa)} por caixa</p>
