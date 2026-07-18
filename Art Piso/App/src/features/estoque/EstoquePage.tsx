@@ -548,7 +548,14 @@ function ProdutoCard({
 
 function ProdutoThumb({ foto, nome }: { foto?: string; nome: string }) {
   if (foto) {
-    return <img src={foto} alt={nome} className="size-12 rounded-md border object-cover" />
+    // Moldura com tamanho fixo + img preenchendo: garante o QUADRADO mesmo se
+    // alguma regra externa mexer no sizing do <img> (foto saia retangular na
+    // lista em producao — achado do roteiro de teste, bloco 2).
+    return (
+      <span className="block size-12 shrink-0 overflow-hidden rounded-md border">
+        <img src={foto} alt={nome} className="h-full w-full object-cover" />
+      </span>
+    )
   }
   return (
     <div
