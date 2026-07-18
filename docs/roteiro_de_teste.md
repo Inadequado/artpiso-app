@@ -214,6 +214,7 @@ aplicadas no banco de teste). Itens 4 e 6 foram vistos na VERCEL — rode
 - [ ] **R-5** Erro de reserva acima do disponível → mensagem limpa, sem "(Q5)".
 - [ ] **R-6** Sino: tempo relativo ("15 min") atualiza sozinho após ~1 min, sem F5.
 - [ ] **R-7** Foto na lista de Estoque: thumb quadrado (após redeploy). Se AINDA sair retangular, inspecionar o elemento e anotar a regra CSS vencedora.
+- [ ] **R-8** (fix de 2026-07-18, refaz o R-4 que falhou) Cadastrar produto NOVO com código de lote igual ao de OUTRO produto → salva sem erro e aparece no Estoque na hora. Repetir o código dentro do MESMO produto → continua bloqueando (mensagem orienta Adicionar estoque / sufixo). Se der erro no salvar, NADA pode ficar pela metade: o nome do produto deve continuar livre pra tentar de novo.
 
 **Bug/obs:**
 
