@@ -270,7 +270,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [lotes, notificar])
 
   const removerLote = useCallback((loteId: string) => {
-    setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.id !== loteId) }))
+    setEstado((atual) => {
+      // Ultimo lote do produto nao sai por aqui: seria excluir o produto (acao so de admin).
+      const alvo = atual.lotes.find((item) => item.id === loteId)
+      if (alvo && atual.lotes.filter((item) => item.produtoId === alvo.produtoId).length === 1) return atual
+      return { ...atual, lotes: atual.lotes.filter((item) => item.id !== loteId) }
+    })
   }, [])
 
   const removerProduto = useCallback((produtoId: string) => {

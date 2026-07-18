@@ -75,6 +75,9 @@ export function ProdutoDetalheDrawer({
   const reservasAtivasLote = (codigoLote: string) =>
     reservas.filter((reserva) => reserva.lote === codigoLote && reserva.status === 'reservado').length
   const produtoTemReservas = produto.lotes.some((lote) => reservasAtivasLote(lote.lote) > 0)
+  // Remover o ULTIMO lote = excluir o produto (acao so de admin, botao proprio). O banco
+  // tambem bloqueia (fn_remover_lote); aqui e a explicacao antes do erro.
+  const unicoLote = produto.lotes.length === 1
 
   const estoqueTotal = produto.lotes.reduce((total, lote) => total + lote.caixasEstoque, 0)
   const reservadoTotal = produto.lotes.reduce((total, lote) => total + lote.caixasReserva, 0)
@@ -220,11 +223,13 @@ export function ProdutoDetalheDrawer({
                       className="size-8 shrink-0 text-muted-foreground hover:text-danger disabled:opacity-40"
                       aria-label={`Excluir lote ${lote.lote}`}
                       title={
-                        reservasAtivasLote(lote.lote) > 0
-                          ? 'Lote com reservas ativas não pode ser excluído'
-                          : 'Excluir lote'
+                        unicoLote
+                          ? 'Único lote do produto — para removê-lo, use Excluir produto (administrador)'
+                          : reservasAtivasLote(lote.lote) > 0
+                            ? 'Lote com reservas ativas não pode ser excluído'
+                            : 'Excluir lote'
                       }
-                      disabled={reservasAtivasLote(lote.lote) > 0}
+                      disabled={unicoLote || reservasAtivasLote(lote.lote) > 0}
                       onClick={() => setLoteExcluir(lote)}
                     >
                       <Trash2 aria-hidden="true" className="size-4" />
