@@ -389,6 +389,16 @@ export function AppShell({
           <div className="flex h-14 items-center justify-between gap-2 px-4">
             <h1 className="min-w-0 truncate text-lg font-bold">{title}</h1>
             <div className="flex items-center gap-1">
+              {/* Guia no topo mobile: o menu de conta (desktop) nao existe aqui — e o tablet
+                  e justamente onde o guia mais serve (conta compartilhada do vendedor). */}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Guia de uso"
+                onClick={() => window.open('/guia.html', '_blank', 'noopener')}
+              >
+                <BookOpen aria-hidden="true" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
