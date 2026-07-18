@@ -36,6 +36,7 @@
     font-size: 2.9mm; text-transform: uppercase; letter-spacing: .06em; text-align: left;
   }
   th small { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; color: #444; font-size: 2.5mm; }
+  th.th-tipo { text-align: center; }
   td { border: 1px solid #555; height: 9.2mm; padding: 1mm 1.5mm; font-size: 3.4mm; vertical-align: middle; }
   td.num { color: #888; font-size: 2.9mm; text-align: center; }
   .tris { display: flex; justify-content: space-around; align-items: center; }
@@ -101,14 +102,14 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Tipo<small class="tris"><span>E</span><span>S</span><span>P</span></small></th>
-        <th>Produto<small>nome ou referência</small></th>
-        <th>Lote<small>código</small></th>
-        <th>Qtd<small>caixas</small></th>
-        <th>Quadra<small>destino/origem</small></th>
-        <th>Pedido / Cliente<small>se for saída</small></th>
-        <th>Observações<small>motivo da perda, responsável…</small></th>
-        <th>Lançado<small>no sistema</small></th>
+        <th class="th-tipo">Tipo<small class="tris"><span>E</span><span>S</span><span>P</span></small></th>
+        <th>Produto</th>
+        <th>Lote</th>
+        <th>Qtd (cx)</th>
+        <th>Quadra</th>
+        <th>Pedido / Cliente</th>
+        <th>Observações</th>
+        <th>Lanç.</th>
       </tr>
     </thead>
     <tbody>
