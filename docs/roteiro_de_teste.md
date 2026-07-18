@@ -24,7 +24,7 @@ Legenda de esforço: 🟢 rápido · 🟡 exige preparo · 🔴 difícil de test
 
 Reset apagou as quadras; sem elas não dá pra alocar lote.
 
-- [x] **T-1.1** 🟢 Configurações → criar quadra digitando só `1` → **Esperado:** salva como `Q-1`.
+- [x] **T-1.1** 🟢 Ajustes → **Registrar nova quadra** digitando só `1` → **Esperado:** salva como `Q-1`. _(corrigido 2026-07-18: quadras vivem em Ajustes, não em Configurações)_
 - [x] **T-1.2** 🟢 Criar `Q-2` e `Q-3`.
 - [x] **T-1.3** 🟢 Tentar criar `Q-1` de novo → **Esperado:** bloqueia (identificador já usado).
 - [x] **T-1.4** 🟢 Editar uma quadra → **Esperado:** abre mostrando só o número (sem o `Q-`).
