@@ -42,32 +42,36 @@ type LinhaNotificacao = {
 // Linha CRUA da tabela notificacoes (sem lida — o estado de leitura vive noutra tabela).
 type LinhaNotificacaoNova = Omit<LinhaNotificacao, 'lida'>
 
-function paraNotificacao(linha: LinhaNotificacao): Notificacao {
+// Estado interno: guarda o created_at CRU e deriva o "tempo" so na renderizacao
+// (com tick por minuto) — congelar o texto no load deixava "15 min" parado ate o F5.
+type NotificacaoBase = Omit<Notificacao, 'tempo'> & { createdAt: string }
+
+function paraBase(linha: LinhaNotificacao): NotificacaoBase {
   return {
     id: linha.id,
     tipo: linha.tipo,
     titulo: linha.titulo,
     descricao: linha.descricao,
-    tempo: tempoRelativo(linha.created_at),
+    createdAt: linha.created_at,
     lida: linha.lida,
   }
 }
 
 // Notificacao recem-inserida: nasce NAO lida para todos.
-function paraNotificacaoNova(linha: LinhaNotificacaoNova): Notificacao {
-  return {
-    id: linha.id,
-    tipo: linha.tipo,
-    titulo: linha.titulo,
-    descricao: linha.descricao,
-    tempo: tempoRelativo(linha.created_at),
-    lida: false,
-  }
+function paraBaseNova(linha: LinhaNotificacaoNova): NotificacaoBase {
+  return paraBase({ ...linha, lida: false })
 }
 
 export function SupabaseNotificationsProvider({ children }: { children: ReactNode }) {
-  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([])
+  const [base, setBase] = useState<NotificacaoBase[]>([])
   const [ringTick, setRingTick] = useState(0)
+  // Relogio do "ha quanto tempo": re-renderiza a lista a cada minuto.
+  const [clockTick, setClockTick] = useState(0)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClockTick((tick) => tick + 1), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const carregar = useCallback(async () => {
     if (!supabase) return
@@ -80,7 +84,7 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
       console.warn('Erro ao carregar notificações:', error.message)
       return
     }
-    setNotificacoes((data as LinhaNotificacao[]).map(paraNotificacao))
+    setBase((data as LinhaNotificacao[]).map(paraBase))
   }, [])
 
   useEffect(() => {
@@ -92,14 +96,14 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
       .channel('sino-notificacoes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacoes' }, (payload) => {
         const linha = payload.new as LinhaNotificacaoNova
-        setNotificacoes((atual) => (atual.some((n) => n.id === linha.id) ? atual : [paraNotificacaoNova(linha), ...atual]))
+        setBase((atual) => (atual.some((n) => n.id === linha.id) ? atual : [paraBaseNova(linha), ...atual]))
         if (!linha.silencioso) setRingTick((tick) => tick + 1)
       })
       // Meu "lido" chega por notificacao_leitura (a RLS entrega so as MINHAS linhas):
       // mantem a sincronia entre aparelhos do mesmo login (ex.: tablets do balcao).
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notificacao_leitura' }, (payload) => {
         const linha = payload.new as { notificacao_id: string }
-        setNotificacoes((atual) => atual.map((n) => (n.id === linha.notificacao_id ? { ...n, lida: true } : n)))
+        setBase((atual) => atual.map((n) => (n.id === linha.notificacao_id ? { ...n, lida: true } : n)))
       })
       .subscribe()
     return () => {
@@ -121,7 +125,7 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
   }, [])
 
   const marcarTodasLidas = useCallback(() => {
-    setNotificacoes((atual) => atual.map((item) => (item.lida ? item : { ...item, lida: true })))
+    setBase((atual) => atual.map((item) => (item.lida ? item : { ...item, lida: true })))
     void (async () => {
       const { error } = await supabase!.rpc('fn_marcar_todas_lidas')
       if (error) console.warn('Erro ao marcar lidas:', error.message)
@@ -129,12 +133,19 @@ export function SupabaseNotificationsProvider({ children }: { children: ReactNod
   }, [])
 
   const marcarLida = useCallback((id: string) => {
-    setNotificacoes((atual) => atual.map((item) => (item.id === id && !item.lida ? { ...item, lida: true } : item)))
+    setBase((atual) => atual.map((item) => (item.id === id && !item.lida ? { ...item, lida: true } : item)))
     void (async () => {
       const { error } = await supabase!.rpc('fn_marcar_lida', { p_notificacao_id: id })
       if (error) console.warn('Erro ao marcar lida:', error.message)
     })()
   }, [])
+
+  // Deriva o "tempo" a cada render relevante (novas linhas OU o tick do minuto).
+  const notificacoes = useMemo<Notificacao[]>(
+    () => base.map(({ createdAt, ...resto }) => ({ ...resto, tempo: tempoRelativo(createdAt) })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clockTick e o relogio proposital do tempo relativo
+    [base, clockTick],
+  )
 
   const naoLidas = notificacoes.reduce((total, item) => total + (item.lida ? 0 : 1), 0)
 
