@@ -46,6 +46,7 @@ const TITULO_MOVIMENTO: Record<MovimentoTipo, string> = {
   perda: 'Perda registrada',
   quadra: 'Movimentação de quadra',
   correcao: 'Correção de quantidade',
+  descarte: 'Descarte de perda',
 }
 
 /** "12 jul 2026 · 14:03" (mesmo formato dos textos do mock). */
@@ -483,6 +484,14 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     }))
   }, [executar, quadraIdPorNumero, rpc])
 
+  const descartarPerda = useCallback((loteId: string, caixas: number, quadra: string) => {
+    executar('Erro ao descartar perda', async () => {
+      const quadraId = quadraIdPorNumero(quadra)
+      if (!quadraId) throw new Error(`Quadra ${quadra} não encontrada.`)
+      await rpc('fn_descartar_perda', { p_lote_id: loteId, p_caixas: caixas, p_quadra_id: quadraId })
+    })
+  }, [executar, quadraIdPorNumero, rpc])
+
   const moverQuadra = useCallback((loteId: string, origem: string, destino: string, caixas: number) => {
     executar('Erro ao mover caixas de quadra', async () => {
       const origemId = quadraIdPorNumero(origem)
@@ -729,6 +738,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     estornarReserva,
     registrarEntrada,
     registrarPerda,
+    descartarPerda,
     moverQuadra,
     corrigirEstoque,
   }

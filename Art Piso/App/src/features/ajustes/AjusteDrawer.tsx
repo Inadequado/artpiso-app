@@ -1,4 +1,4 @@
-import { ArrowRightLeft, PackagePlus, PenLine, TriangleAlert } from 'lucide-react'
+import { ArrowRightLeft, PackagePlus, PackageX, PenLine, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { caixasDisponiveis, formatM2, maiorAlocacao, quadraLabel, quadraLabelDetalhada } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
 
-export type AjusteTipo = 'entrada' | 'perda' | 'quadra' | 'correcao'
+export type AjusteTipo = 'entrada' | 'perda' | 'quadra' | 'correcao' | 'descarte'
 
 const config: Record<
   AjusteTipo,
@@ -40,6 +40,12 @@ const config: Record<
     icon: PenLine,
     confirmar: 'Aplicar correção',
   },
+  descarte: {
+    title: 'Descartar caixas perdidas',
+    description: 'As caixas saem da quadra e a perda registrada é baixada junto.',
+    icon: PackageX,
+    confirmar: 'Descartar caixas',
+  },
 }
 
 type AjusteDrawerProps = {
@@ -51,7 +57,7 @@ type AjusteDrawerProps = {
 
 /** Drawer unico para ajustes em lote existente (perda, mudanca de quadra e correcao). */
 export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
-  const { lotes, quadras, registrarEntrada, registrarPerda, moverQuadra, corrigirEstoque } = useInventory()
+  const { lotes, quadras, registrarEntrada, registrarPerda, descartarPerda, moverQuadra, corrigirEstoque } = useInventory()
   const [loteId, setLoteId] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [pisos, setPisos] = useState('')
@@ -71,7 +77,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
     const escolhido = lotes.find((item) => item.id === id)
     if (tipo === 'entrada') {
       setQuadraAlvo(escolhido ? (maiorAlocacao(escolhido)?.quadra ?? '') : '')
-    } else if (tipo === 'correcao' || tipo === 'perda') {
+    } else if (tipo === 'correcao' || tipo === 'perda' || tipo === 'descarte') {
       setQuadraAlvo(escolhido && escolhido.alocacoes.length === 1 ? escolhido.alocacoes[0].quadra : '')
     } else if (tipo === 'quadra') {
       const unica = escolhido && escolhido.alocacoes.length === 1 ? escolhido.alocacoes[0] : undefined
@@ -111,6 +117,10 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const moverExcedeOrigem = tipo === 'quadra' && Boolean(quadraAlvo) && quantidadeValida && numero > alocacaoOrigem
   // Quadra da perda: obrigatoria so quando o lote ocupa 2+ quadras (com uma, ja vai preenchida).
   const perdaPrecisaQuadra = tipo === 'perda' && Boolean(lote) && (lote?.alocacoes.length ?? 0) > 1
+  // Descarte: nao da pra descartar mais que a perda acumulada nem mais do que ha na quadra escolhida.
+  const descarteExcedePerda = tipo === 'descarte' && Boolean(lote) && quantidadeValida && numero > (lote?.caixasPerda ?? 0)
+  const descarteExcedeQuadra =
+    tipo === 'descarte' && Boolean(lote) && Boolean(quadraAlvo) && quantidadeValida && numero > alocacaoNaQuadraAlvo
 
   const valido = (() => {
     if (!lote) return false
@@ -120,6 +130,8 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
     if (tipo === 'entrada') return quantidadeValida && Boolean(quadraAlvo)
     if (tipo === 'perda')
       return quantidadeValida && !excedePerda && pisosValidos && motivo.trim() !== '' && (!perdaPrecisaQuadra || Boolean(quadraAlvo))
+    if (tipo === 'descarte')
+      return quantidadeValida && Boolean(quadraAlvo) && !descarteExcedePerda && !descarteExcedeQuadra
     return quantidadeValida && !excedePerda
   })()
 
@@ -137,6 +149,9 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
         break
       case 'correcao':
         corrigirEstoque(lote.id, quadraAlvo, numero)
+        break
+      case 'descarte':
+        descartarPerda(lote.id, numero, quadraAlvo)
         break
     }
     onConfirm()
@@ -168,11 +183,17 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
               value={loteId}
               onChange={selecionarLote}
               placeholder="Selecione um lote…"
-              options={lotes.map((item) => ({
+              options={(tipo === 'descarte' ? lotes.filter((item) => item.caixasPerda > 0) : lotes).map((item) => ({
                 value: item.id,
-                label: `${item.produto} — ${item.lote} (${quadraLabel(item)})`,
+                label:
+                  tipo === 'descarte'
+                    ? `${item.produto} — ${item.lote} (${item.caixasPerda} cx de perda)`
+                    : `${item.produto} — ${item.lote} (${quadraLabel(item)})`,
               }))}
             />
+            {tipo === 'descarte' && lotes.every((item) => item.caixasPerda === 0) ? (
+              <p className="text-xs text-muted-foreground">Nenhum lote tem perda acumulada para descartar.</p>
+            ) : null}
           </div>
 
           {lote ? (
@@ -185,13 +206,24 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
               <p className="mt-0.5 text-muted-foreground">
                 Onde está: <span className="font-mono text-foreground">{quadraLabelDetalhada(lote)}</span>
               </p>
+              {tipo === 'descarte' ? (
+                <p className="mt-0.5 text-muted-foreground">
+                  Perda acumulada: <span className="numeric font-semibold text-danger">{lote.caixasPerda} cx</span>
+                </p>
+              ) : null}
             </div>
           ) : null}
 
-          {lote && (tipo === 'entrada' || tipo === 'correcao' || perdaPrecisaQuadra) ? (
+          {lote && (tipo === 'entrada' || tipo === 'correcao' || tipo === 'descarte' || perdaPrecisaQuadra) ? (
             <div className="flex flex-col gap-2">
               <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                {tipo === 'entrada' ? 'Quadra de destino' : tipo === 'correcao' ? 'Quadra da contagem' : 'Quadra da perda'}
+                {tipo === 'entrada'
+                  ? 'Quadra de destino'
+                  : tipo === 'correcao'
+                    ? 'Quadra da contagem'
+                    : tipo === 'descarte'
+                      ? 'Quadra do descarte'
+                      : 'Quadra da perda'}
               </span>
               <SelectMenu
                 value={quadraAlvo}
@@ -217,6 +249,10 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
               ) : tipo === 'perda' ? (
                 <p className="text-xs text-muted-foreground">
                   De qual quadra saíram as caixas perdidas. Fica no histórico; a contagem por quadra se acerta na correção.
+                </p>
+              ) : tipo === 'descarte' ? (
+                <p className="text-xs text-muted-foreground">
+                  De qual quadra as caixas perdidas saem fisicamente. O disponível não muda — ele já caiu quando a perda foi registrada.
                 </p>
               ) : null}
             </div>
@@ -264,7 +300,9 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                     ? 'Caixas recebidas'
                     : tipo === 'quadra'
                       ? 'Caixas a mover'
-                      : 'Quantidade (caixas)'
+                      : tipo === 'descarte'
+                        ? 'Caixas a descartar'
+                        : 'Quantidade (caixas)'
               }
             >
               <Input
@@ -330,9 +368,26 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
             </p>
           ) : null}
 
+          {descarteExcedePerda && lote ? (
+            <p className="-mt-2 text-xs font-semibold text-danger">
+              O lote tem {lote.caixasPerda} cx de perda acumulada. Reduza a quantidade.
+            </p>
+          ) : null}
+
+          {descarteExcedeQuadra && lote && !descarteExcedePerda ? (
+            <p className="-mt-2 text-xs font-semibold text-danger">
+              A quadra {quadraAlvo} tem {alocacaoNaQuadraAlvo} cx do lote. Reduza a quantidade ou descarte de outra quadra.
+            </p>
+          ) : null}
+
           {correcaoAbaixoDoComprometido && lote ? (
             <p className="-mt-2 text-xs font-semibold text-danger">
-              Com essa contagem o lote ficaria com {novoTotalLote} cx, abaixo do comprometido ({comprometido} cx = {lote.caixasReserva} reservadas + {lote.caixasPerda} perda). Cancele reservas antes de reduzir.
+              Com essa contagem o lote ficaria com {novoTotalLote} cx, abaixo do comprometido ({comprometido} cx = {lote.caixasReserva} reservadas + {lote.caixasPerda} perda).{' '}
+              {lote.caixasPerda > 0 && lote.caixasReserva > 0
+                ? 'Descarte as caixas perdidas (Descartar caixas perdidas) e/ou cancele reservas antes de reduzir.'
+                : lote.caixasPerda > 0
+                  ? 'Descarte as caixas perdidas (ação Descartar caixas perdidas) antes de reduzir.'
+                  : 'Cancele reservas antes de reduzir.'}
             </p>
           ) : null}
         </div>

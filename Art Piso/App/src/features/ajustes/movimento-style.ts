@@ -1,4 +1,4 @@
-import { ArrowRightLeft, PackagePlus, PenLine, TriangleAlert } from 'lucide-react'
+import { ArrowRightLeft, PackagePlus, PackageX, PenLine, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MovimentoTipo } from '@/types/inventory'
 
@@ -8,6 +8,7 @@ export const movimentoIcon: Record<MovimentoTipo, LucideIcon> = {
   perda: TriangleAlert,
   quadra: ArrowRightLeft,
   correcao: PenLine,
+  descarte: PackageX,
 }
 
 /** Cor (token) por tipo de operacao de ajuste. */
@@ -16,4 +17,5 @@ export const movimentoTone: Record<MovimentoTipo, string> = {
   perda: 'text-danger',
   quadra: 'text-primary',
   correcao: 'text-warning',
+  descarte: 'text-muted-foreground',
 }

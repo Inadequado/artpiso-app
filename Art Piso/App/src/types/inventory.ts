@@ -170,7 +170,7 @@ export type Cliente = {
   enderecos?: EnderecoCliente[]
 }
 
-export type MovimentoTipo = 'entrada' | 'perda' | 'quadra' | 'correcao'
+export type MovimentoTipo = 'entrada' | 'perda' | 'quadra' | 'correcao' | 'descarte'
 
 /** Entrada do log de operacoes de AJUSTE de estoque (perda, mudanca de quadra, correcao, gestao de quadras). Mostrado no Historico da tela de Ajustes. Reserva/entrega/cadastro NAO entram aqui (vivem como notificacao). */
 export type Movimento = {

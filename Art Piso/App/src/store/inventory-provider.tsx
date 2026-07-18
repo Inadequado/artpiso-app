@@ -820,6 +820,33 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }))
   }, [lotes, notificar, registrarMovimento])
 
+  // Descarte de perda (2026-07-17): baixa FISICA das caixas ja registradas como perda —
+  // saem da quadra e do contador JUNTOS, entao o disponivel nao muda (ja caiu na perda).
+  // O historico de perdas fica intacto; o descarte gera o proprio movimento.
+  const descartarPerda = useCallback((loteId: string, caixas: number, quadra: string) => {
+    const loteDesc = lotes.find((item) => item.id === loteId)
+    if (!loteDesc || caixas <= 0 || caixas > loteDesc.caixasPerda) return
+    const naQuadra = loteDesc.alocacoes.find((a) => a.quadra === quadra)?.caixas ?? 0
+    if (caixas > naQuadra) return
+    registrarMovimento({
+      tipo: 'descarte',
+      titulo: 'Descarte de perda',
+      detalhe: `${caixas} cx perdidas descartadas de ${loteDesc.lote} · ${quadra}`,
+      loteId: loteDesc.id,
+      produtoId: loteDesc.produtoId,
+    })
+    setEstado((atual) => ({
+      ...atual,
+      lotes: atual.lotes.map((item) => {
+        if (item.id !== loteId) return item
+        const alocacoes = item.alocacoes
+          .map((a) => (a.quadra === quadra ? { ...a, caixas: a.caixas - caixas } : a))
+          .filter((a) => a.caixas > 0)
+        return { ...item, alocacoes, caixasEstoque: item.caixasEstoque - caixas, caixasPerda: item.caixasPerda - caixas }
+      }),
+    }))
+  }, [lotes, registrarMovimento])
+
   // M2 do Q1: move PARCIAL ou total — tira as caixas da alocacao de ORIGEM (some se zerar)
   // e soma na de DESTINO. O estoque do lote nao muda; so a distribuicao entre quadras.
   // Reservas ativas nao precisam de cascata: a UI deriva a localizacao do lote ao vivo
@@ -987,6 +1014,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       estornarReserva,
       registrarEntrada,
       registrarPerda,
+      descartarPerda,
       moverQuadra,
       corrigirEstoque,
     }),
@@ -1023,6 +1051,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       estornarReserva,
       registrarEntrada,
       registrarPerda,
+      descartarPerda,
       moverQuadra,
       corrigirEstoque,
     ],

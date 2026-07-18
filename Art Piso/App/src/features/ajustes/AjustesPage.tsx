@@ -1,4 +1,4 @@
-import { ArrowRightLeft, History, MapPinned, PackagePlus, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
+import { ArrowRightLeft, History, MapPinned, PackagePlus, PackageX, PenLine, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ const actions: AjusteAction[] = [
   { tipo: 'nova-quadra', label: 'Registrar nova quadra', description: 'Criar uma localização física do depósito', icon: Plus },
   { tipo: 'entrada', label: 'Adicionar estoque', description: 'Entrada de remessa em um lote existente', icon: PackagePlus },
   { tipo: 'perda', label: 'Registrar perda', description: 'Quebra, avaria ou ajuste de perda', icon: TriangleAlert },
+  { tipo: 'descarte', label: 'Descartar caixas perdidas', description: 'Baixa física de caixas já registradas como perda', icon: PackageX },
   { tipo: 'quadra', label: 'Mover lote de quadra', description: 'Alterar a localização de um lote', icon: ArrowRightLeft },
   { tipo: 'correcao', label: 'Corrigir quantidade', description: 'Ajuste administrativo controlado', icon: PenLine },
 ]

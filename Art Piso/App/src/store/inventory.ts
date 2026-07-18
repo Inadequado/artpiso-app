@@ -188,6 +188,8 @@ export type InventoryContextValue = {
   registrarEntrada: (loteId: string, caixas: number, quadra: string) => void
   /** Registra perda no lote; a quadra e INFORMATIVA (de onde sairam as caixas) e vai so pro historico. */
   registrarPerda: (loteId: string, caixas: number, pisos: number, motivo: string, quadra?: string) => void
+  /** Baixa FISICA de caixas ja registradas como perda: saem da quadra e do contador juntos (disponivel nao muda). */
+  descartarPerda: (loteId: string, caixas: number, quadra: string) => void
   /** Move caixas da quadra de ORIGEM para a de DESTINO (parcial ou total — M2 do Q1). */
   moverQuadra: (loteId: string, origem: string, destino: string, caixas: number) => void
   /** Corrige a contagem da alocacao do lote NAQUELA quadra; o estoque do lote vira a soma. */
