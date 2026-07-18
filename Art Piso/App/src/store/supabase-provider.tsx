@@ -387,37 +387,46 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   // ------------------------------------------------------------- catalogo
   const adicionarLote = useCallback((lote: LoteEstoque) => {
     executar('Erro ao cadastrar lote', async () => {
-      // Produto novo (id gerado no drawer) ou existente (id reaproveitado): garante a linha.
-      const { data: existente, error: erroBusca } = await supabase!.from('produtos').select('id').eq('id', lote.produtoId).maybeSingle()
-      if (erroBusca) throw erroBusca
-      if (!existente) {
-        const fotoUrl = await persistirFotoProduto(lote.produtoId, lote.foto)
-        const { error } = await supabase!.from('produtos').insert({
-          id: lote.produtoId,
-          nome: lote.produto,
-          referencia: lote.referencia || null,
-          marca: lote.marca,
-          tamanho_nominal: lote.tamanho || null,
-          descricao: lote.descricao ?? null,
-          preco_m2: lote.precoM2,
-          limite_estoque_baixo_cx: lote.limiteEstoqueBaixo ?? undefined,
-          foto: fotoUrl,
-        })
-        if (error) throw error
-      }
       const alocacao = lote.alocacoes[0]
       const quadraId = alocacao ? quadraIdPorNumero(alocacao.quadra) : undefined
       if (!quadraId) throw new Error(`Quadra ${alocacao?.quadra ?? ''} não encontrada.`)
-      await rpc('fn_criar_lote', {
-        p_produto_id: lote.produtoId,
-        p_codigo: lote.lote,
-        p_bitola: lote.bitola ?? null,
-        p_tonalidade: lote.tonalidade ?? null,
-        p_m2_por_caixa: lote.m2PorCaixa,
-        p_pecas_por_caixa: lote.pecasPorCaixa,
-        p_caixas: alocacao.caixas,
-        p_quadra_id: quadraId,
-      })
+      // Produto novo (id gerado no drawer) ou existente (id reaproveitado).
+      const { data: existente, error: erroBusca } = await supabase!.from('produtos').select('id').eq('id', lote.produtoId).maybeSingle()
+      if (erroBusca) throw erroBusca
+      if (!existente) {
+        // Produto + lote + alocação numa transação só (RPC atômica): falhou
+        // qualquer parte, nada fica pela metade (sem produto órfão no banco).
+        const fotoUrl = await persistirFotoProduto(lote.produtoId, lote.foto)
+        await rpc('fn_criar_produto_com_lote', {
+          p_produto_id: lote.produtoId,
+          p_nome: lote.produto,
+          p_referencia: lote.referencia || null,
+          p_marca: lote.marca,
+          p_tamanho: lote.tamanho || null,
+          p_descricao: lote.descricao ?? null,
+          p_preco_m2: lote.precoM2,
+          p_limite_estoque_baixo: lote.limiteEstoqueBaixo ?? null,
+          p_foto: fotoUrl,
+          p_codigo: lote.lote,
+          p_bitola: lote.bitola ?? null,
+          p_tonalidade: lote.tonalidade ?? null,
+          p_m2_por_caixa: lote.m2PorCaixa,
+          p_pecas_por_caixa: lote.pecasPorCaixa,
+          p_caixas: alocacao.caixas,
+          p_quadra_id: quadraId,
+        })
+      } else {
+        await rpc('fn_criar_lote', {
+          p_produto_id: lote.produtoId,
+          p_codigo: lote.lote,
+          p_bitola: lote.bitola ?? null,
+          p_tonalidade: lote.tonalidade ?? null,
+          p_m2_por_caixa: lote.m2PorCaixa,
+          p_pecas_por_caixa: lote.pecasPorCaixa,
+          p_caixas: alocacao.caixas,
+          p_quadra_id: quadraId,
+        })
+      }
       notificar({ tipo: 'estoque', titulo: 'Lote cadastrado', descricao: `${lote.produto} — ${lote.lote} (${alocacao.caixas} cx)` })
     })
   }, [executar, notificar, quadraIdPorNumero, rpc])
