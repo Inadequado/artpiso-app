@@ -201,6 +201,24 @@ Ainda **não** dá pra testar (tablet não adquirido). Deixar reservado:
 
 ---
 
+## Reteste dos fixes (2026-07-17)
+
+Os 6 achados da rodada acima foram corrigidos (commits do dia + migrations
+aplicadas no banco de teste). Itens 4 e 6 foram vistos na VERCEL — rode
+`vercel --prod` antes de retestá-los lá (local já tem tudo).
+
+- [ ] **R-1** Gerente: produto com 1 lote só → botão "Excluir lote" desabilitado (com explicação). Com 2+ lotes, excluir o extra funciona. Produto some SÓ pelo "Excluir produto" do admin.
+- [ ] **R-2** Descarte: registrar perda de 10 cx → Ajustes → **Descartar caixas perdidas** → quadra zera, contador de perda zera, disponível não muda. Depois, Corrigir contando 0 → aceita. Histórico mostra os dois atos.
+- [ ] **R-3** Mensagem da correção bloqueada agora indica o caminho (descarte e/ou reservas), sem mandar "cancelar reservas" quando o problema é perda.
+- [ ] **R-4** Lote: mesmo código em produtos/marcas DIFERENTES → aceita. Mesmo produto → continua bloqueando.
+- [ ] **R-5** Erro de reserva acima do disponível → mensagem limpa, sem "(Q5)".
+- [ ] **R-6** Sino: tempo relativo ("15 min") atualiza sozinho após ~1 min, sem F5.
+- [ ] **R-7** Foto na lista de Estoque: thumb quadrado (após redeploy). Se AINDA sair retangular, inspecionar o elemento e anotar a regra CSS vencedora.
+
+**Bug/obs:**
+
+---
+
 ## Registro de bugs encontrados
 
 | #   | Tela | O que aconteceu | Esperado | Severidade |

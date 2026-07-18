@@ -347,6 +347,7 @@
           <li><b>Novo lote</b> — vincula outro lote ao mesmo produto (herda medidas e preço).</li>
           <li><b>Editar produto</b> — muda nome, referência, marca, tamanho, preço, foto e o limite de aviso. Alterar <b>medidas</b> vale para <b>todos os lotes</b> da referência.</li>
           <li><b>Editar lote</b> — ajusta código, bitola e tonalidade. Para mudar as caixas de lugar, use <b>Ajustes → Mover</b>.</li>
+          <li><b>Excluir lote</b> — remove um lote extra. O <b>último lote</b> de um produto não pode ser excluído (seria excluir o produto pela porta lateral).</li>
           <li><b>Excluir produto</b> — <span class="badge" style="background:var(--brand-soft);color:var(--brand)">só admin</span>. Bloqueado se houver reserva ativa.</li>
         </ul>
         <figure class="shot"><span class="tag">Imagem</span><figcaption>Print do <b>detalhe de um produto</b>, com lotes e o histórico de perdas.</figcaption></figure>
@@ -436,18 +437,25 @@
         <div class="eyebrow"><span class="num">10</span> Operação</div>
         <h2>Ajustes de estoque</h2>
         <p class="purpose">Tudo que mexe na quantidade de um lote sem ser venda passa aqui — e fica no histórico, com quem fez e quando.</p>
-        <div class="flow" role="img" aria-label="Quatro tipos de ajuste">
+        <div class="flow" role="img" aria-label="Cinco tipos de ajuste">
           <span class="fn g">Adicionar estoque</span>
           <span class="fn">Registrar perda</span>
+          <span class="fn">Descartar caixas perdidas</span>
           <span class="fn">Mover de quadra</span>
           <span class="fn">Corrigir quantidade</span>
         </div>
         <ul class="plain">
           <li><b>Adicionar estoque</b> — entrada de uma remessa nova num lote existente; escolha a quadra de destino.</li>
-          <li><b>Registrar perda</b> — quebra/avaria. O <b>motivo é obrigatório</b>; informe também os pisos danificados se quiser. A caixa inteira vira perda.</li>
+          <li><b>Registrar perda</b> — quebra/avaria. O <b>motivo é obrigatório</b>; informe também os pisos danificados se quiser. A caixa inteira vira perda — mas ela <b>continua contando na quadra</b> (está fisicamente lá) até ser descartada.</li>
+          <li><b>Descartar caixas perdidas</b> — quando as caixas quebradas são jogadas fora de verdade: elas saem da quadra e a perda registrada é baixada junto. O disponível não muda (já caiu na perda). O histórico dos dois atos fica guardado.</li>
           <li><b>Mover de quadra</b> — leva caixas de uma quadra para outra (parcial ou total). O estoque do lote não muda, só o lugar.</li>
-          <li><b>Corrigir quantidade</b> — acerto administrativo após uma contagem. Não deixa reduzir abaixo do que já está comprometido (reserva + perda).</li>
+          <li><b>Corrigir quantidade</b> — acerto administrativo após uma contagem. Não deixa reduzir abaixo do que já está comprometido (reserva + perda) — se o bloqueio for por perda, descarte as caixas perdidas primeiro.</li>
         </ul>
+
+        <div class="note tip">
+          <span class="lab">Fluxo da caixa quebrada</span>
+          <p><b>Registrar perda</b> (na hora da quebra) → <b>Descartar</b> (quando jogar fora) → <b>Corrigir</b> (se a contagem ainda não bater). Cada passo no seu tempo, tudo no histórico.</p>
+        </div>
 
         <h3>Quadras (dentro de Ajustes)</h3>
         <p>O selo <b>Disponível/Ocupada</b> no cartão da quadra é um botão: um toque alterna, e a mudança entra no histórico. Criar/editar quadras fica em <b>Configurações</b>.</p>
