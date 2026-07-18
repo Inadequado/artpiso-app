@@ -1,11 +1,13 @@
 import {
   Archive,
   Bell,
+  BookOpen,
   CalendarCheck,
   CalendarPlus,
   ChevronRight,
   LogOut,
   Plus,
+  Printer,
   Search,
   Settings,
   SlidersHorizontal,
@@ -62,12 +64,27 @@ const navItems: Array<{ id: AppSection; label: string; shortLabel?: string; icon
   { id: 'configuracoes', label: 'Configurações', shortLabel: 'Config', icon: Settings },
 ]
 
-const accountMenuItems: Array<{ id: string; label: string; description: string; icon: LucideIcon }> = [
+// `href` abre em nova aba (paginas estaticas servidas de public/, vao junto no deploy).
+const accountMenuItems: Array<{ id: string; label: string; description: string; icon: LucideIcon; href?: string }> = [
   {
     id: 'perfil',
     label: 'Perfil',
     description: 'Dados do usuario atual',
     icon: UserRound,
+  },
+  {
+    id: 'guia',
+    label: 'Guia de uso',
+    description: 'Como usar cada tela do sistema',
+    icon: BookOpen,
+    href: '/guia.html',
+  },
+  {
+    id: 'planilha',
+    label: 'Planilha do depósito',
+    description: 'Folha de pico para imprimir',
+    icon: Printer,
+    href: '/planilha-deposito.html',
   },
   {
     id: 'sair',
@@ -90,6 +107,8 @@ export function AppShell({
   // Gating por papel (B1): vendedor nao ve acao primaria/FAB; Configuracoes e so do admin
   const primaryAction = podeEditar ? sectionAction[activeSection] : null
   const itensNav = ehAdmin ? navItems : navItems.filter((item) => item.id !== 'configuracoes')
+  // Planilha de pico e ferramenta do deposito: vendedor (leitura) nao ve.
+  const itensConta = accountMenuItems.filter((item) => item.id !== 'planilha' || podeEditar)
   const primaryActionRef = useRef<(() => void) | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [verTodasOpen, setVerTodasOpen] = useState(false)
@@ -205,7 +224,7 @@ export function AppShell({
                   <p className="mt-1 text-xs text-muted-foreground">{papelLabel[papel]}</p>
                 </div>
                 <div className="flex flex-col p-2">
-                  {accountMenuItems.map((item) => {
+                  {itensConta.map((item) => {
                     const Icon = item.icon
                     return (
                       <button
@@ -215,6 +234,7 @@ export function AppShell({
                         className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
                         onClick={() => {
                           setAccountOpen(false)
+                          if (item.href) window.open(item.href, '_blank', 'noopener')
                           if (item.id === 'sair') onLogout?.()
                           if (item.id === 'perfil') setPerfilOpen(true)
                         }}

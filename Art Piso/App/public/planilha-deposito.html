@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Movimentação — Depósito Art Piso</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #111; background: #f2f3f5; }
+
+  /* 5mm topo/base (ganha area util; ok na maioria das impressoras) · 9mm laterais */
+  @page { size: A4 landscape; margin: 5mm 9mm; }
+
+  .folha {
+    width: 277mm; /* A4 paisagem util (297 - 2x10mm) */
+    margin: 16px auto;
+    background: #fff;
+    padding: 6mm 7mm;
+    box-shadow: 0 2px 14px rgba(0,0,0,.12);
+  }
+
+  /* ---------- cabecalho ---------- */
+  .topo { display: flex; align-items: center; gap: 5mm; border-bottom: 2px solid #111; padding-bottom: 3mm; }
+  .marca { width: 11mm; height: 11mm; border: 2px solid #111; border-radius: 2.5mm; display: grid; place-items: center; font-weight: 800; font-size: 5mm; flex: 0 0 auto; }
+  .titulos { flex: 1; }
+  .titulos h1 { font-size: 5.4mm; letter-spacing: .02em; }
+  .titulos p { font-size: 3.1mm; color: #444; margin-top: .8mm; }
+  .meta { display: flex; gap: 6mm; font-size: 3.2mm; align-items: flex-end; }
+  .meta .campo { display: flex; align-items: baseline; gap: 2mm; white-space: nowrap; }
+  .meta .linha { display: inline-block; border-bottom: 1px solid #111; min-width: 26mm; height: 4.5mm; }
+  .meta .linha.curta { min-width: 12mm; }
+
+  /* ---------- tabela ---------- */
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 4mm; }
+  th {
+    border: 1px solid #111; background: #e8eaed; padding: 1.6mm 1.5mm;
+    font-size: 2.9mm; text-transform: uppercase; letter-spacing: .06em; text-align: left;
+  }
+  th small { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; color: #444; font-size: 2.5mm; }
+  th.th-tipo { text-align: center; }
+  td { border: 1px solid #555; height: 10mm; padding: 1mm 1.5mm; font-size: 3.4mm; vertical-align: middle; }
+  td.num { color: #888; font-size: 2.9mm; text-align: center; }
+  .tris { display: flex; justify-content: space-around; align-items: center; }
+  th .tris { font-weight: 700; text-transform: none; letter-spacing: 0; font-size: 2.9mm; margin-top: .6mm; }
+  td.tipo .box { width: 4.2mm; height: 4.2mm; }
+  td.check { text-align: center; }
+  .box { display: inline-block; width: 4.6mm; height: 4.6mm; border: 1.5px solid #111; border-radius: 1mm; }
+
+  col.c-num { width: 7mm; }
+  col.c-tipo { width: 17mm; }
+  col.c-prod { width: 62mm; }
+  col.c-lote { width: 26mm; }
+  col.c-qtd { width: 17mm; }
+  col.c-quadra { width: 18mm; }
+  col.c-pedido { width: 38mm; }
+  col.c-obs { width: auto; }
+  col.c-ok { width: 14mm; }
+
+  /* ---------- rodape ---------- */
+  .legenda { margin-top: 3.5mm; border: 1px solid #111; padding: 2.2mm 3mm; font-size: 2.9mm; line-height: 1.55; }
+  .legenda b { letter-spacing: .02em; }
+  .legenda .item { margin-right: 6mm; white-space: nowrap; display: inline-block; }
+
+  /* ---------- so na tela ---------- */
+  .noprint {
+    max-width: 277mm; margin: 14px auto 4px; padding: 10px 14px; border-radius: 8px;
+    background: #1e3a8a; color: #fff; font-size: 14px; display: flex; gap: 10px; align-items: center;
+  }
+  .noprint kbd { background: rgba(255,255,255,.18); border-radius: 4px; padding: 1px 7px; font-family: inherit; }
+
+  @media print {
+    html { background: #fff; }
+    .noprint { display: none; }
+    .folha { width: auto; margin: 0; padding: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noprint">
+  🖨️ Pressione <kbd>Ctrl</kbd> + <kbd>P</kbd> para imprimir (A4 · paisagem). Imprima várias cópias e deixe na prancheta do depósito.
+</div>
+
+<div class="folha">
+  <div class="topo">
+    <div class="marca">AP</div>
+    <div class="titulos">
+      <h1>Controle de Movimentação — Depósito</h1>
+      <p>Marque o tipo: <b>E</b> entrada · <b>S</b> saída · <b>P</b> perda/quebra.</p>
+    </div>
+    <div class="meta">
+      <span class="campo">Data <span class="linha curta"></span></span>
+      <span class="campo">Preenchido por <span class="linha"></span></span>
+      <span class="campo">Folha nº <span class="linha curta"></span></span>
+    </div>
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="c-num"><col class="c-tipo"><col class="c-prod"><col class="c-lote"><col class="c-qtd">
+      <col class="c-quadra"><col class="c-pedido"><col class="c-obs"><col class="c-ok">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th class="th-tipo">Tipo<small class="tris"><span>E</span><span>S</span><span>P</span></small></th>
+        <th>Produto</th>
+        <th>Lote</th>
+        <th>Qtd (cx)</th>
+        <th>Quadra</th>
+        <th>Pedido / Cliente</th>
+        <th>Observações</th>
+        <th>Lanç.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 14 linhas -->
+      <tr><td class="num">1</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">2</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">3</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">4</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">5</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">6</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">7</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">8</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">9</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">10</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">11</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">12</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">13</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">14</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">15</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="legenda">
+    <b>Onde lançar no sistema:</b>
+    <span class="item"><b>E</b> entrada → Ajustes → <b>Adicionar estoque</b> (lote novo? Estoque → Novo cadastro)</span>
+    <span class="item"><b>S</b> saída → Reservas → <b>Confirmar entrega</b> do pedido</span>
+    <span class="item"><b>P</b> perda → Ajustes → <b>Registrar perda</b> (motivo é obrigatório — anote na Obs!)</span>
+    <span class="item">Marque <b>Lançado ☑</b> só depois de digitar — é o que garante que nada entra duas vezes nem fica de fora.</span>
+  </div>
+</div>
+
+</body>
+</html>
