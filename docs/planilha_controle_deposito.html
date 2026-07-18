@@ -38,9 +38,11 @@
   th small { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; color: #444; font-size: 2.5mm; }
   td { border: 1px solid #555; height: 9.2mm; padding: 1mm 1.5mm; font-size: 3.4mm; vertical-align: middle; }
   td.num { color: #888; font-size: 2.9mm; text-align: center; }
-  td.tipo { text-align: center; font-weight: 700; letter-spacing: .45em; padding-left: 2.2mm; color: #333; }
+  .tris { display: flex; justify-content: space-around; align-items: center; }
+  th .tris { font-weight: 700; text-transform: none; letter-spacing: 0; font-size: 2.9mm; margin-top: .6mm; }
+  td.tipo .box { width: 4.2mm; height: 4.2mm; }
   td.check { text-align: center; }
-  td.check .box { display: inline-block; width: 4.6mm; height: 4.6mm; border: 1.5px solid #111; border-radius: 1mm; }
+  .box { display: inline-block; width: 4.6mm; height: 4.6mm; border: 1.5px solid #111; border-radius: 1mm; }
 
   col.c-num { width: 7mm; }
   col.c-tipo { width: 17mm; }
@@ -82,7 +84,7 @@
     <div class="marca">AP</div>
     <div class="titulos">
       <h1>Controle de Movimentação — Depósito</h1>
-      <p>Anote no pico, lance no sistema depois. Circule o tipo: <b>E</b> entrada · <b>S</b> saída · <b>P</b> perda/quebra.</p>
+      <p>Anote no pico, lance no sistema depois. Marque o tipo: <b>E</b> entrada · <b>S</b> saída · <b>P</b> perda/quebra.</p>
     </div>
     <div class="meta">
       <span class="campo">Data <span class="linha curta"></span></span>
@@ -99,7 +101,7 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Tipo<small>circule</small></th>
+        <th>Tipo<small class="tris"><span>E</span><span>S</span><span>P</span></small></th>
         <th>Produto<small>nome ou referência</small></th>
         <th>Lote<small>código</small></th>
         <th>Qtd<small>caixas</small></th>
@@ -111,20 +113,20 @@
     </thead>
     <tbody>
       <!-- 14 linhas -->
-      <tr><td class="num">1</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">2</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">3</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">4</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">5</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">6</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">7</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">8</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">9</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">10</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">11</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">12</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">13</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
-      <tr><td class="num">14</td><td class="tipo">E S P</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">1</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">2</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">3</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">4</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">5</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">6</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">7</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">8</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">9</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">10</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">11</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">12</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">13</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
+      <tr><td class="num">14</td><td class="tipo"><div class="tris"><span class="box"></span><span class="box"></span><span class="box"></span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="check"><span class="box"></span></td></tr>
     </tbody>
   </table>
 
