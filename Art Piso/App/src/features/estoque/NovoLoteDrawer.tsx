@@ -30,7 +30,7 @@ export function NovoLoteDrawer({
   const [tonalidade, setTonalidade] = useState('')
   const [estoque, setEstoque] = useState(0)
 
-  const loteDuplicado = loteComCodigo(codigo, lotes)
+  const loteDuplicado = loteComCodigo(codigo, lotes, produto?.id)
   // Minimo 1 caixa (decisao do usuario): lote sem caixa nasceria esgotado sem aviso.
   const valido = Boolean(
     produto && codigo.trim() && !loteDuplicado && quadra.trim() && estoque > 0 && bitola.trim() && tonalidade.trim(),

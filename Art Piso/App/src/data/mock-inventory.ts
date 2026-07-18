@@ -582,10 +582,13 @@ export function chaveReferencia(texto: string) {
  * Codigo de lote e GLOBAL no deposito e tambem e o vinculo das reservas (reserva.lote),
  * entao duplicar mesclaria lotes distintos. `ignorarLoteId` permite validar renomeacao.
  */
-export function loteComCodigo(codigo: string, lotes: LoteEstoque[], ignorarLoteId?: string) {
+/** Lote do MESMO produto com este codigo. Duplicado e POR PRODUTO (2026-07-17): fabricantes diferentes podem repetir codigo, entao produto novo (sem produtoId) nunca acusa duplicado. */
+export function loteComCodigo(codigo: string, lotes: LoteEstoque[], produtoId?: string, ignorarLoteId?: string) {
   const alvo = codigo.trim().toLowerCase()
-  if (!alvo) return undefined
-  return lotes.find((lote) => lote.id !== ignorarLoteId && lote.lote.trim().toLowerCase() === alvo)
+  if (!alvo || !produtoId) return undefined
+  return lotes.find(
+    (lote) => lote.produtoId === produtoId && lote.id !== ignorarLoteId && lote.lote.trim().toLowerCase() === alvo,
+  )
 }
 
 /** Limiar padrao de "estoque baixo" (cx) quando o produto nao define o seu. */

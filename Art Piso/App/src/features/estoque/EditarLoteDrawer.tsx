@@ -26,7 +26,7 @@ export function EditarLoteDrawer({
   const [bitola, setBitola] = useState(lote?.bitola ?? '')
   const [tonalidade, setTonalidade] = useState(lote?.tonalidade ?? '')
 
-  const loteDuplicado = lote ? loteComCodigo(codigo, lotes, lote.id) : undefined
+  const loteDuplicado = lote ? loteComCodigo(codigo, lotes, lote.produtoId, lote.id) : undefined
   const valido = Boolean(lote && codigo.trim() && !loteDuplicado && bitola.trim() && tonalidade.trim())
 
   function salvar() {
