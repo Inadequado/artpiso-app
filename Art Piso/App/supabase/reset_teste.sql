@@ -30,6 +30,11 @@ truncate table
   quadras
 restart identity cascade;
 
+-- 1b) Recria a quadra PERMANENTE do sistema (Q-00 · Local pendente) — nao e
+--     dado de teste, e fixture obrigatoria (ver migration 20260717140000).
+insert into quadras (id, numero, descricao)
+values ('00000000-0000-4000-8000-000000000000', 'Q-00', 'Local pendente');
+
 -- 2) Remove os usuarios de login que NAO sao admin.
 --    O FK profiles.id -> auth.users(id) ON DELETE CASCADE limpa o profile junto.
 --    O trigger trg_protege_admin so dispara em insert/update, nao em delete.

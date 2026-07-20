@@ -531,6 +531,9 @@ export const clientes: Cliente[] = [
 ]
 
 export const quadras: Quadra[] = [
+  // Quadra PERMANENTE do sistema (nao e dado de teste): a loja usa quando
+  // cadastra um produto sem saber a localizacao real; o deposito realoca depois.
+  { id: 'q-00', numero: 'Q-00', descricao: 'Local pendente' },
   { id: 'q-01', numero: 'Q-01', descricao: 'Quadra Norte', status: 'ocupado' },
   { id: 'q-02', numero: 'Q-02', descricao: 'Corredor de revestimentos' },
   { id: 'q-03', numero: 'Q-03', descricao: 'Quadra Sul' },
