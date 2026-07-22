@@ -565,11 +565,10 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
   }, [executar])
 
   const removerCliente = useCallback((id: string) => {
-    executar('Erro ao remover cliente', async () => {
-      const { error } = await supabase!.from('clientes').delete().eq('id', id)
-      if (error) throw new Error('Cliente com pedidos não pode ser removido (o histórico fica com ele).')
-    })
-  }, [executar])
+    // RPC (security definer): bloqueia so com reserva ativa/entregue; se houver so
+    // canceladas, descarta elas + pedidos vazios junto (a mensagem vem do banco).
+    executar('Erro ao remover cliente', () => rpc('fn_remover_cliente', { p_cliente_id: id }))
+  }, [executar, rpc])
 
   // ------------------------------------------------------------- pedidos / reservas
   /** Regime por item, espelhando o mock: rotacionando trava 0; o resto deriva do saldo no banco. */

@@ -148,8 +148,15 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const removerCliente = useCallback((id: string) => {
+    const cli = clientes.find((c) => c.id === id)
+    if (!cli) return
+    // Vinculo por id (reservas novas) ou nome (mock antigo), mesma casagem da tela de Clientes.
+    const doCliente = (r: Reserva) => (r.clienteId ? r.clienteId === id : r.cliente === cli.nome)
+    // So trava reserva NAO-cancelada; se for so cancelada, descarta junto com o cliente.
+    if (reservas.some((r) => doCliente(r) && r.status !== 'cancelado')) return
+    setEstado((atual) => ({ ...atual, reservas: atual.reservas.filter((r) => !doCliente(r)) }))
     setClientes((atual) => atual.filter((cliente) => cliente.id !== id))
-  }, [])
+  }, [clientes, reservas])
 
   // Log de movimentacao do estoque (jornada/auditoria). Lado a lado com as acoes, como o notificar.
   const registrarMovimento = useCallback((input: NovoMovimento) => {
@@ -279,7 +286,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const removerProduto = useCallback((produtoId: string) => {
-    setEstado((atual) => ({ ...atual, lotes: atual.lotes.filter((item) => item.produtoId !== produtoId) }))
+    setEstado((atual) => {
+      // Regra (2026-07-21): so trava reserva NAO-cancelada (ativa/entregue); se o
+      // vinculo for so cancelada, descarta essas reservas junto com o produto.
+      const codigos = new Set(atual.lotes.filter((l) => l.produtoId === produtoId).map((l) => l.lote))
+      if (atual.reservas.some((r) => codigos.has(r.lote) && r.status !== 'cancelado')) return atual
+      return {
+        ...atual,
+        lotes: atual.lotes.filter((item) => item.produtoId !== produtoId),
+        reservas: atual.reservas.filter((r) => !codigos.has(r.lote)),
+      }
+    })
   }, [])
 
   // Quadra saiu do patch (Q1): mudanca de localizacao tem caminho unico (Ajustes -> Mover),
