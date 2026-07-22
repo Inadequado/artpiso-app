@@ -28,6 +28,7 @@ import { PrimaryActionContext } from '@/components/layout/primary-action'
 import { PerfilDrawer } from '@/features/perfil/PerfilDrawer'
 import { SearchContext } from '@/components/layout/search'
 import { Button } from '@/components/ui/button'
+import { Drawer } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { ringBell } from '@/lib/animations'
 import { playNotificationSound } from '@/lib/sound'
@@ -116,6 +117,7 @@ export function AppShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [verTodasOpen, setVerTodasOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [contaMobileOpen, setContaMobileOpen] = useState(false)
   const [perfilOpen, setPerfilOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const notificationsRef = useRef<HTMLDivElement>(null)
@@ -132,6 +134,15 @@ export function AppShell({
     ringBell(bellRef.current)
     playNotificationSound()
   }, [ringTick])
+
+  // Acao de um item de conta (mesma regra no menu desktop e no sheet mobile).
+  function acionarItemConta(item: (typeof accountMenuItems)[number]) {
+    setAccountOpen(false)
+    setContaMobileOpen(false)
+    if (item.href) window.open(item.href, '_blank', 'noopener')
+    if (item.id === 'sair') onLogout?.()
+    if (item.id === 'perfil') setPerfilOpen(true)
+  }
 
   function abrirNotificacoes() {
     // Abrir o sino ja marca todas como vistas (comportamento "abriu = viu"): o badge zera
@@ -235,12 +246,7 @@ export function AppShell({
                         type="button"
                         role="menuitem"
                         className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
-                        onClick={() => {
-                          setAccountOpen(false)
-                          if (item.href) window.open(item.href, '_blank', 'noopener')
-                          if (item.id === 'sair') onLogout?.()
-                          if (item.id === 'perfil') setPerfilOpen(true)
-                        }}
+                        onClick={() => acionarItemConta(item)}
                       >
                         <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
                         <span className="min-w-0 flex-1">
@@ -392,16 +398,6 @@ export function AppShell({
           <div className="flex h-14 items-center justify-between gap-2 px-4">
             <h1 className="min-w-0 truncate text-lg font-bold">{title}</h1>
             <div className="flex items-center gap-1">
-              {/* Guia no topo mobile: o menu de conta (desktop) nao existe aqui — e o tablet
-                  e justamente onde o guia mais serve (conta compartilhada do vendedor). */}
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Guia de uso"
-                onClick={() => window.open('/guia.html', '_blank', 'noopener')}
-              >
-                <BookOpen aria-hidden="true" />
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -428,6 +424,17 @@ export function AppShell({
                   </span>
                 ) : null}
               </Button>
+              {/* Conta no mobile: abre o sheet com Perfil, Guia, Planilha e Sair
+                  (o menu de conta do desktop vive na sidebar, invisivel aqui). */}
+              <button
+                type="button"
+                aria-label="Conta"
+                aria-haspopup="dialog"
+                onClick={() => setContaMobileOpen(true)}
+                className="ml-3 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+              >
+                AP
+              </button>
             </div>
           </div>
           {mobileSearchOpen ? (
@@ -481,6 +488,34 @@ export function AppShell({
         onClose={() => setVerTodasOpen(false)}
         onMarcarLida={marcarLida}
       />
+
+      <Drawer
+        open={contaMobileOpen}
+        title="Conta"
+        description={`${nome} · ${papelLabel[papel]}`}
+        onClose={() => setContaMobileOpen(false)}
+      >
+        <div className="flex flex-col gap-1">
+          {itensConta.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className="flex items-center gap-3 rounded-md p-3 text-left transition hover:bg-muted"
+                onClick={() => acionarItemConta(item)}
+              >
+                <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">{item.label}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+                </span>
+                <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+            )
+          })}
+        </div>
+      </Drawer>
 
       <PerfilDrawer open={perfilOpen} onClose={() => setPerfilOpen(false)} />
     </div>
