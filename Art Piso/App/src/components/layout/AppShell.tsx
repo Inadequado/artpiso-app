@@ -48,10 +48,11 @@ type AppShellProps = {
 }
 
 // Acao primaria do topo por secao (contextual). null = secao sem botao no topo.
-const sectionAction: Record<AppSection, { label: string; icon: LucideIcon } | null> = {
-  estoque: { label: 'Novo produto/lote', icon: Plus },
-  reservas: { label: 'Nova Reserva', icon: CalendarPlus },
-  clientes: { label: 'Novo cliente', icon: UserPlus },
+// cap = capacidade exigida: 'vender' (todos os papeis) x 'editar' (admin+gerente).
+const sectionAction: Record<AppSection, { label: string; icon: LucideIcon; cap: 'editar' | 'vender' } | null> = {
+  estoque: { label: 'Novo produto/lote', icon: Plus, cap: 'editar' },
+  reservas: { label: 'Nova Reserva', icon: CalendarPlus, cap: 'vender' },
+  clientes: { label: 'Novo cliente', icon: UserPlus, cap: 'vender' },
   ajustes: null,
   configuracoes: null,
 }
@@ -103,9 +104,11 @@ export function AppShell({
   onNavigate,
   onLogout,
 }: AppShellProps) {
-  const { nome, papel, ehAdmin, podeEditar } = useSessao()
-  // Gating por papel (B1): vendedor nao ve acao primaria/FAB; Configuracoes e so do admin
-  const primaryAction = podeEditar ? sectionAction[activeSection] : null
+  const { nome, papel, ehAdmin, podeEditar, podeVender } = useSessao()
+  // Gating por papel (B1): a acao primaria/FAB depende da CAPACIDADE da secao —
+  // 'vender' (criar cliente/reserva) o vendedor tem; 'editar' (estoque) so admin+gerente.
+  const acaoSecao = sectionAction[activeSection]
+  const primaryAction = acaoSecao && (acaoSecao.cap === 'vender' ? podeVender : podeEditar) ? acaoSecao : null
   const itensNav = ehAdmin ? navItems : navItems.filter((item) => item.id !== 'configuracoes')
   // Planilha de pico e ferramenta do deposito: vendedor (leitura) nao ve.
   const itensConta = accountMenuItems.filter((item) => item.id !== 'planilha' || podeEditar)

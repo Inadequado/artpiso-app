@@ -66,7 +66,7 @@ export function ProdutoDetalheDrawer({
   onEditarLote: (lote: LoteEstoque) => void
 }) {
   const { reservas, movimentos, removerLote, removerProduto } = useInventory()
-  const { podeEditar, ehAdmin } = useSessao()
+  const { podeEditar, podeVender, ehAdmin } = useSessao()
   const [loteExcluir, setLoteExcluir] = useState<LoteEstoque | null>(null)
   const [confirmarExcluirProduto, setConfirmarExcluirProduto] = useState(false)
 
@@ -99,16 +99,20 @@ export function ProdutoDetalheDrawer({
       title="Detalhe do produto"
       onClose={onClose}
       footer={
-        podeEditar ? (
+        podeVender || podeEditar ? (
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={onReservar}>
-              <CalendarPlus aria-hidden="true" data-icon="inline-start" />
-              Criar reserva
-            </Button>
-            <Button className="flex-1" onClick={onNovoLote}>
-              <Plus aria-hidden="true" data-icon="inline-start" />
-              Novo lote
-            </Button>
+            {podeVender ? (
+              <Button variant="outline" className="flex-1" onClick={onReservar}>
+                <CalendarPlus aria-hidden="true" data-icon="inline-start" />
+                Criar reserva
+              </Button>
+            ) : null}
+            {podeEditar ? (
+              <Button className="flex-1" onClick={onNovoLote}>
+                <Plus aria-hidden="true" data-icon="inline-start" />
+                Novo lote
+              </Button>
+            ) : null}
           </div>
         ) : undefined
       }
