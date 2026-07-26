@@ -551,13 +551,23 @@ export const quadras: Quadra[] = [
   { id: 'q-c4', numero: 'Q-4 C', descricao: 'C', status: 'ocupado' },
 ]
 
-/** Ordena quadras por DEPOSITO (descricao) e depois pelo NUMERO numerico. */
+/** Numero puro da quadra ("Q-13 B" -> 13, "Q-00" -> 0). */
+function numeroQuadra(q: Quadra): number {
+  return parseInt(q.numero.replace(/^Q-?/i, ''), 10) || 0
+}
+
+/**
+ * Ordena por DEPOSITO (descricao) e depois pelo NUMERO. O balde sem deposito
+ * (Q-00 · "Local pendente", numero 0) fica SEMPRE em primeiro — senao ele
+ * ordenaria por "Local pendente", caindo depois de A/B/C (parece sumir).
+ */
 export function compararQuadra(a: Quadra, b: Quadra): number {
+  const numA = numeroQuadra(a)
+  const numB = numeroQuadra(b)
+  if ((numA === 0) !== (numB === 0)) return numA === 0 ? -1 : 1
   const depA = a.descricao.trim().toUpperCase()
   const depB = b.descricao.trim().toUpperCase()
   if (depA !== depB) return depA.localeCompare(depB, 'pt-BR')
-  const numA = parseInt(a.numero.replace(/^Q-?/i, ''), 10) || 0
-  const numB = parseInt(b.numero.replace(/^Q-?/i, ''), 10) || 0
   return numA - numB
 }
 
