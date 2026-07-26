@@ -9,6 +9,7 @@ import {
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
+  compararQuadra,
   encomendasEmRisco,
   furoProduto,
   loteComCodigo,
@@ -997,12 +998,16 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }
   }, [lotes, reservas, notificar])
 
+  // Exposta ordenada: por deposito (descricao) e depois numero — pega a lista de
+  // Ajustes e todos os seletores num ponto so.
+  const quadrasOrdenadas = useMemo(() => [...quadras].sort(compararQuadra), [quadras])
+
   const value = useMemo<InventoryContextValue>(
     () => ({
       lotes,
       reservas,
       clientes,
-      quadras,
+      quadras: quadrasOrdenadas,
       usuarios,
       movimentos,
       registrarMovimento,
@@ -1039,7 +1044,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       lotes,
       reservas,
       clientes,
-      quadras,
+      quadrasOrdenadas,
       usuarios,
       movimentos,
       registrarMovimento,

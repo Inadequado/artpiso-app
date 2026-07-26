@@ -231,7 +231,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                 placeholder="Selecione a quadra…"
                 options={
                   tipo === 'entrada'
-                    ? quadras.map((quadra) => ({ value: quadra.numero, label: `${quadra.numero} — ${quadra.descricao}` }))
+                    ? quadras.map((quadra) => ({ value: quadra.numero, label: quadra.numero }))
                     : (lote.alocacoes.length > 0
                         ? lote.alocacoes.map((alocacao) => ({
                             value: alocacao.quadra,
@@ -239,7 +239,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                               ? `${alocacao.quadra} — ${alocacao.caixas} cx contadas hoje`
                               : `${alocacao.quadra} — ${alocacao.caixas} cx no local`,
                           }))
-                        : quadras.map((quadra) => ({ value: quadra.numero, label: `${quadra.numero} — ${quadra.descricao}` })))
+                        : quadras.map((quadra) => ({ value: quadra.numero, label: quadra.numero })))
                 }
               />
               {tipo === 'entrada' ? (
@@ -280,7 +280,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
                   placeholder="Para onde vão as caixas…"
                   options={quadras.map((quadra) => ({
                     value: quadra.numero,
-                    label: `${quadra.numero} — ${quadra.descricao}`,
+                    label: quadra.numero,
                     disabled: quadra.numero === quadraAlvo,
                   }))}
                 />

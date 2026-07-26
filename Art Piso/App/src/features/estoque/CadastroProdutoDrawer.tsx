@@ -268,7 +268,7 @@ export function CadastroProdutoDrawer({
                 value={quadra}
                 onChange={setQuadra}
                 placeholder="Selecione…"
-                options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
+                options={quadras.map((q) => ({ value: q.numero, label: q.numero }))}
               />
             </Field>
           </div>

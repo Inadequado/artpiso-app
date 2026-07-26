@@ -106,7 +106,7 @@ export function NovoLoteDrawer({
               value={quadra}
               onChange={setQuadra}
               placeholder="Selecione…"
-              options={quadras.map((q) => ({ value: q.numero, label: `${q.numero} — ${q.descricao}` }))}
+              options={quadras.map((q) => ({ value: q.numero, label: q.numero }))}
             />
           </Field>
           <div className="grid grid-cols-2 gap-4">

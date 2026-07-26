@@ -19,16 +19,19 @@ export function QuadraDrawer({
   onSave: (dados: Pick<Quadra, 'numero' | 'descricao'>) => void
 }) {
   const { quadras } = useInventory()
-  // Guarda so os DIGITOS; o identificador salvo e sempre "Q-<numero>". Ao editar, tira o prefixo.
-  const [numero, setNumero] = useState(quadra ? onlyDigits(quadra.numero) : '')
-  const [descricao, setDescricao] = useState(quadra?.descricao ?? '')
+  // Identidade = "Q-<numero> <deposito>" (ex.: "Q-1 B"), UNICA — e a chave que
+  // resolve a quadra no app. Ao editar, extrai os digitos apos "Q-" e o deposito
+  // da descricao. Deposito e texto LIVRE (A/B/C hoje, D/E amanha sem mexer no codigo).
+  const [numero, setNumero] = useState(quadra?.numero.match(/^Q-?(\d+)/i)?.[1] ?? '')
+  const [deposito, setDeposito] = useState(quadra?.descricao ?? '')
 
-  const numeroFinal = numero.trim() ? `Q-${numero.trim()}` : ''
-  // O numero e o VINCULO das alocacoes dos lotes (texto): nao pode repetir em outra quadra.
+  const depositoFinal = deposito.trim().toUpperCase()
+  const numeroFinal = numero.trim() && depositoFinal ? `Q-${numero.trim()} ${depositoFinal}` : ''
+  // O numero (com deposito) e o VINCULO das alocacoes: nao pode repetir em outra quadra.
   const numeroDuplicado = numeroFinal
     ? quadras.find((item) => item.id !== quadra?.id && item.numero.trim().toLowerCase() === numeroFinal.toLowerCase())
     : undefined
-  const valido = numeroFinal.length > 0 && !numeroDuplicado && descricao.trim().length > 0
+  const valido = numeroFinal.length > 0 && !numeroDuplicado
 
   return (
     <Drawer
@@ -42,7 +45,7 @@ export function QuadraDrawer({
           <Button
             className="flex-[2]"
             disabled={!valido}
-            onClick={() => onSave({ numero: numeroFinal, descricao: descricao.trim() })}
+            onClick={() => onSave({ numero: numeroFinal, descricao: depositoFinal })}
           >
             {quadra ? 'Salvar alterações' : 'Criar quadra'}
           </Button>
@@ -50,28 +53,40 @@ export function QuadraDrawer({
       }
     >
       <div className="flex flex-col gap-6">
-        <Field label="Identificador">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
-              Q-
-            </span>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Número">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                Q-
+              </span>
+              <Input
+                inputMode="numeric"
+                value={numero}
+                onChange={(event) => setNumero(onlyDigits(event.target.value))}
+                placeholder="13"
+                className="pl-8"
+              />
+            </div>
+          </Field>
+          <Field label="Depósito">
             <Input
-              inputMode="numeric"
-              value={numero}
-              onChange={(event) => setNumero(onlyDigits(event.target.value))}
-              placeholder="13"
-              className="pl-8"
+              value={deposito}
+              onChange={(event) => setDeposito(event.target.value)}
+              placeholder="Ex.: A"
+              maxLength={12}
             />
-          </div>
-          {numeroDuplicado ? (
-            <p className="mt-1.5 text-xs font-semibold text-danger">
-              Identificador já usado ({numeroDuplicado.descricao}). Escolha outro.
-            </p>
-          ) : null}
-        </Field>
-        <Field label="Descrição">
-          <Input value={descricao} onChange={(event) => setDescricao(event.target.value)} placeholder="Ex.: Corredor 3" />
-        </Field>
+          </Field>
+        </div>
+        {numeroFinal ? (
+          <p className="-mt-3 text-xs text-muted-foreground">
+            Identificador: <strong className="text-foreground">{numeroFinal}</strong>
+          </p>
+        ) : null}
+        {numeroDuplicado ? (
+          <p className="-mt-3 text-xs font-semibold text-danger">
+            {numeroFinal} já existe. Escolha outro número ou depósito.
+          </p>
+        ) : null}
       </div>
     </Drawer>
   )

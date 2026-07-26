@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { proximoNumeroPedido } from '@/data/mock-inventory'
+import { compararQuadra, proximoNumeroPedido } from '@/data/mock-inventory'
 import { persistirFotoProduto } from '@/lib/foto-produto'
 import { uid } from '@/lib/id'
 import { parseDataPrevista, regimePorData } from '@/lib/reserva-regime'
@@ -148,7 +148,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     })))
     setQuadras((tQuadras.data ?? []).map((r): Quadra => ({
       id: r.id, numero: r.numero, descricao: r.descricao, status: r.status ?? undefined,
-    })))
+    })).sort(compararQuadra))
     setUsuarios((tProfiles.data ?? []).map((r): Usuario => ({
       id: r.id, nome: r.nome, email: r.email ?? '', role: r.role, status: r.status,
     })))

@@ -90,7 +90,7 @@ export function EstornoDrawer({ reserva, onClose, onConfirm }: EstornoDrawerProp
             <SelectMenu
               value={quadraId}
               onChange={setQuadraId}
-              options={quadras.map((q) => ({ value: q.id, label: `${q.numero} — ${q.descricao}` }))}
+              options={quadras.map((q) => ({ value: q.id, label: q.numero }))}
               placeholder="Selecionar quadra"
             />
           </Field>
