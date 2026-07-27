@@ -203,3 +203,50 @@ export type Quadra = {
    */
   status?: QuadraStatus
 }
+
+// ---------------------------------------------------------------------
+// Historico completo (linha do tempo unificada; modal central com filtros)
+// ---------------------------------------------------------------------
+
+/** Categoria do evento na linha do tempo. */
+export type EventoTipo = 'reserva' | 'entrega' | 'devolucao' | 'cancelamento' | 'ajuste'
+
+/** Um evento normalizado do historico (vem da view vw_historico ou derivado no mock). */
+export type EventoHistorico = {
+  /** Unico, prefixado pela fonte (mov-/res-/ent-/est-/can-). */
+  id: string
+  tipo: EventoTipo
+  /** Timestamp bruto (ISO) — base para ordenar e filtrar por periodo. */
+  createdAt: string
+  /** Rotulo de exibicao ja formatado (DD mes AAAA · HH:MM). */
+  data: string
+  /** Texto principal do evento (numero do pedido, ou o detalhe do ajuste). */
+  detalhe: string
+  /** Motivo/observacao livre (perda, cancelamento, devolucao). */
+  observacao?: string
+  /** Quem fez (ausente em cancelamento: o banco nao guarda o autor). */
+  usuario?: string
+  clienteId?: string
+  cliente?: string
+  produtoId?: string
+  produto?: string
+  lote?: string
+  caixas?: number
+}
+
+/** Filtros do historico. periodo em dias (0 = tudo); tipo 'todos' = sem filtro. */
+export type FiltroHistorico = {
+  periodoDias: number
+  tipo: EventoTipo | 'todos'
+  clienteId?: string
+  produtoId?: string
+  usuario?: string
+  busca?: string
+}
+
+/** Pagina de resultado do historico. */
+export type PaginaHistorico = {
+  eventos: EventoHistorico[]
+  /** Ha mais alem desta pagina (habilita "Carregar mais"). */
+  temMais: boolean
+}

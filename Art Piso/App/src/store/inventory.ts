@@ -1,5 +1,5 @@
 ﻿import { createContext, useContext } from 'react'
-import type { AlocacaoQuadra, Cliente, LoteEstoque, Movimento, MovimentoTipo, Quadra, Reserva, Usuario } from '@/types/inventory'
+import type { AlocacaoQuadra, Cliente, FiltroHistorico, LoteEstoque, Movimento, MovimentoTipo, PaginaHistorico, Quadra, Reserva, Usuario } from '@/types/inventory'
 
 /** Dados de cadastro do cliente (sem id; gerado no store). */
 export type ClienteInput = Omit<Cliente, 'id'>
@@ -194,6 +194,12 @@ export type InventoryContextValue = {
   moverQuadra: (loteId: string, origem: string, destino: string, caixas: number) => void
   /** Corrige a contagem da alocacao do lote NAQUELA quadra; o estoque do lote vira a soma. */
   corrigirEstoque: (loteId: string, quadra: string, novoTotalQuadra: number) => void
+  /**
+   * Historico completo unificado (modal central): busca paginada por pagina.
+   * Supabase consulta a view vw_historico; o mock deriva do estado. `offset` em
+   * numero de eventos; retorna a pagina + se ha mais.
+   */
+  carregarHistorico: (filtro: FiltroHistorico, opts: { limite: number; offset: number }) => Promise<PaginaHistorico>
 }
 
 export const InventoryContext = createContext<InventoryContextValue | null>(null)

@@ -10,7 +10,9 @@ import {
   caixasDisponiveis,
   caixasDisponiveisProduto,
   compararQuadra,
+  derivarHistorico,
   encomendasEmRisco,
+  filtrarHistorico,
   furoProduto,
   loteComCodigo,
   quadraLabel,
@@ -41,7 +43,7 @@ import {
   type QuadraInput,
   type UsuarioInput,
 } from '@/store/inventory'
-import type { Cliente, EstornoReserva, LoteEstoque, Movimento, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
+import type { Cliente, EstornoReserva, FiltroHistorico, LoteEstoque, Movimento, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 // Severidade de estoque para detectar PIORA (ok -> baixo -> esgotado).
 const SEVERIDADE_ESTOQUE: Record<StockStatus, number> = {
@@ -922,6 +924,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     }))
   }, [lotes, registrarMovimento])
 
+  // Historico completo (modal central): deriva a timeline do estado, filtra e pagina
+  // client-side (contrato identico ao Supabase, que consulta a view vw_historico).
+  const carregarHistorico = useCallback(
+    async (filtro: FiltroHistorico, opts: { limite: number; offset: number }) => {
+      const todos = filtrarHistorico(derivarHistorico(reservas, movimentos, lotes), filtro)
+      const eventos = todos.slice(opts.offset, opts.offset + opts.limite)
+      return { eventos, temMais: opts.offset + opts.limite < todos.length }
+    },
+    [reservas, movimentos, lotes],
+  )
+
   // Alerta de estoque baixo/esgotado: dispara SO na virada (quando o produto PIORA de nivel),
   // nunca repete enquanto continua baixo. Ignora o load inicial. Cobre todas as acoes (reserva,
   // entrega, perda, correcao, edicao) de forma unificada, por observar o estado resultante.
@@ -1039,6 +1052,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       descartarPerda,
       moverQuadra,
       corrigirEstoque,
+      carregarHistorico,
     }),
     [
       lotes,
@@ -1076,6 +1090,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       descartarPerda,
       moverQuadra,
       corrigirEstoque,
+      carregarHistorico,
     ],
   )
 

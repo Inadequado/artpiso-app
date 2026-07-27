@@ -21,6 +21,9 @@ import {
 import type {
   AlocacaoQuadra,
   Cliente,
+  EventoHistorico,
+  EventoTipo,
+  FiltroHistorico,
   LoteEstoque,
   Movimento,
   MovimentoTipo,
@@ -518,6 +521,51 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     })
   }, [executar, quadraIdPorNumero, rpc])
 
+  // ------------------------------------------------------------- historico
+  const carregarHistorico = useCallback(
+    async (filtro: FiltroHistorico, opts: { limite: number; offset: number }) => {
+      if (!supabase) return { eventos: [], temMais: false }
+      let query = supabase.from('vw_historico').select('*').order('created_at', { ascending: false })
+      if (filtro.periodoDias > 0) {
+        query = query.gte('created_at', new Date(Date.now() - filtro.periodoDias * 86_400_000).toISOString())
+      }
+      if (filtro.tipo !== 'todos') query = query.eq('tipo', filtro.tipo)
+      if (filtro.clienteId) query = query.eq('cliente_id', filtro.clienteId)
+      if (filtro.produtoId) query = query.eq('produto_id', filtro.produtoId)
+      if (filtro.usuario) query = query.eq('usuario', filtro.usuario)
+      const busca = filtro.busca?.trim().replace(/[,()%]/g, ' ').trim()
+      if (busca) {
+        const p = `%${busca}%`
+        query = query.or(`detalhe.ilike.${p},produto.ilike.${p},cliente.ilike.${p},lote.ilike.${p},observacao.ilike.${p},usuario.ilike.${p}`)
+      }
+      // Pede limite+1 (range e inclusivo) pra saber se ha proxima pagina.
+      const { data, error } = await query.range(opts.offset, opts.offset + opts.limite)
+      if (error) {
+        avisarErro('Erro ao carregar histórico', error)
+        return { eventos: [], temMais: false }
+      }
+      const linhas = (data ?? []) as Array<Record<string, unknown>>
+      const temMais = linhas.length > opts.limite
+      const eventos = linhas.slice(0, opts.limite).map((r): EventoHistorico => ({
+        id: String(r.id),
+        tipo: r.tipo as EventoTipo,
+        createdAt: String(r.created_at),
+        data: formatarData(String(r.created_at)),
+        detalhe: (r.detalhe as string | null) ?? '',
+        observacao: (r.observacao as string | null) ?? undefined,
+        usuario: (r.usuario as string | null) ?? undefined,
+        clienteId: (r.cliente_id as string | null) ?? undefined,
+        cliente: (r.cliente as string | null) ?? undefined,
+        produtoId: (r.produto_id as string | null) ?? undefined,
+        produto: (r.produto as string | null) ?? undefined,
+        lote: (r.lote as string | null) ?? undefined,
+        caixas: (r.caixas as number | null) ?? undefined,
+      }))
+      return { eventos, temMais }
+    },
+    [avisarErro],
+  )
+
   // ------------------------------------------------------------- clientes
   const adicionarCliente = useCallback((input: ClienteInput): Cliente => {
     // Contrato sincrono (o ClienteSelector usa o retorno na hora): cria com id
@@ -749,6 +797,7 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     descartarPerda,
     moverQuadra,
     corrigirEstoque,
+    carregarHistorico,
   }
 
   if (!carregado) {

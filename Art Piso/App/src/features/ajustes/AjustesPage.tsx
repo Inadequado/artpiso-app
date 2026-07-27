@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ocupacaoQuadra } from '@/data/mock-inventory'
 import { AjusteDrawer, type AjusteTipo } from '@/features/ajustes/AjusteDrawer'
-import { HistoricoDrawer } from '@/features/ajustes/HistoricoDrawer'
+import { HistoricoModal } from '@/features/ajustes/HistoricoModal'
 import { movimentoIcon, movimentoTone } from '@/features/ajustes/movimento-style'
 import { QuadraDrawer } from '@/features/configuracoes/QuadraDrawer'
 import { cn } from '@/lib/utils'
@@ -150,11 +150,7 @@ export function AjustesPage() {
         onConfirm={() => setAjusteAberto(null)}
       />
 
-      <HistoricoDrawer
-        open={historicoOpen}
-        movimentos={movimentos}
-        onClose={() => setHistoricoOpen(false)}
-      />
+      <HistoricoModal open={historicoOpen} onClose={() => setHistoricoOpen(false)} />
 
       <QuadraDrawer
         key={quadraEdit?.id ?? 'nova'}

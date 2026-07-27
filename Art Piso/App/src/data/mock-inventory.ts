@@ -1,5 +1,5 @@
 import { DIAS_ANTECEDENCIA_ENTREGA, diasAteEntrega } from '@/lib/reserva-regime'
-import type { AlocacaoQuadra, Cliente, LoteEstoque, Produto, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
+import type { AlocacaoQuadra, Cliente, EventoHistorico, FiltroHistorico, LoteEstoque, Movimento, Produto, Quadra, Reserva, StockStatus, Usuario } from '@/types/inventory'
 
 export const lotes: LoteEstoque[] = [
   {
@@ -569,6 +569,86 @@ export function compararQuadra(a: Quadra, b: Quadra): number {
   const depB = b.descricao.trim().toUpperCase()
   if (depA !== depB) return depA.localeCompare(depB, 'pt-BR')
   return numA - numB
+}
+
+// ------------------------------------------------------------- historico
+const MESES_BR = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+/** "21 out 2026 · 14:30" (ou sem hora) -> epoch ms; 0 se nao parsear. So no MOCK
+ *  (as datas de exibicao sao a unica fonte de tempo aqui; no Supabase vem created_at). */
+export function parseDataBR(data: string): number {
+  const [dataParte, horaParte] = data.split('·').map((s) => s.trim())
+  const m = dataParte.match(/^(\d{1,2})\s+(\w{3})\s+(\d{4})$/)
+  if (!m) return 0
+  const mes = MESES_BR.indexOf(m[2].toLowerCase())
+  if (mes < 0) return 0
+  const hm = (horaParte ?? '').match(/^(\d{1,2}):(\d{2})$/)
+  return new Date(Number(m[3]), mes, Number(m[1]), hm ? Number(hm[1]) : 0, hm ? Number(hm[2]) : 0).getTime()
+}
+
+/**
+ * Deriva a linha do tempo unificada do estado do mock — MESMOS eventos da view
+ * vw_historico do Supabase (ajuste, reserva, entrega, devolucao, cancelamento).
+ * Ordena do mais recente pro mais antigo.
+ */
+export function derivarHistorico(reservas: Reserva[], movimentos: Movimento[], lotes: LoteEstoque[]): EventoHistorico[] {
+  const nomePorId = new Map(lotes.map((l) => [l.produtoId, l.produto]))
+  const idPorNome = new Map(lotes.map((l) => [l.produto, l.produtoId]))
+  const iso = (data: string) => new Date(parseDataBR(data)).toISOString()
+  const eventos: EventoHistorico[] = []
+
+  for (const m of movimentos) {
+    eventos.push({
+      id: `mov-${m.id}`, tipo: 'ajuste', createdAt: iso(m.data), data: m.data,
+      detalhe: m.detalhe, observacao: m.observacao, usuario: m.usuario,
+      produtoId: m.produtoId, produto: m.produtoId ? nomePorId.get(m.produtoId) : undefined,
+    })
+  }
+  for (const r of reservas) {
+    const produtoId = idPorNome.get(r.produto)
+    const base = { clienteId: r.clienteId, cliente: r.cliente, produtoId, produto: r.produto, lote: r.lote }
+    eventos.push({
+      id: `res-${r.id}`, tipo: 'reserva', createdAt: iso(r.data), data: r.data,
+      detalhe: r.pedido, usuario: r.vendedor, caixas: r.caixas + (r.caixasEntregues ?? 0), ...base,
+    })
+    for (const e of r.entregas ?? []) {
+      eventos.push({
+        id: `ent-${e.id}`, tipo: 'entrega', createdAt: iso(e.data), data: e.data,
+        detalhe: r.pedido, observacao: e.observacoes, usuario: e.responsavel, caixas: e.caixas, ...base,
+      })
+    }
+    for (const es of r.estornos ?? []) {
+      eventos.push({
+        id: `est-${es.id}`, tipo: 'devolucao', createdAt: iso(es.data), data: es.data,
+        detalhe: r.pedido, observacao: es.motivo, usuario: es.responsavel, caixas: es.caixas, ...base,
+      })
+    }
+    if (r.status === 'cancelado') {
+      eventos.push({
+        id: `can-${r.id}`, tipo: 'cancelamento', createdAt: iso(r.data), data: r.data,
+        detalhe: r.pedido, observacao: r.motivoCancelamento, ...base,
+      })
+    }
+  }
+  return eventos.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+/** Aplica os filtros do historico a uma lista de eventos (mock; espelha os filtros da query). */
+export function filtrarHistorico(eventos: EventoHistorico[], filtro: FiltroHistorico): EventoHistorico[] {
+  const limiteData = filtro.periodoDias > 0 ? Date.now() - filtro.periodoDias * 86_400_000 : 0
+  const busca = filtro.busca?.trim().toLowerCase()
+  return eventos.filter((e) => {
+    if (filtro.tipo !== 'todos' && e.tipo !== filtro.tipo) return false
+    if (filtro.clienteId && e.clienteId !== filtro.clienteId) return false
+    if (filtro.produtoId && e.produtoId !== filtro.produtoId) return false
+    if (filtro.usuario && e.usuario !== filtro.usuario) return false
+    if (limiteData > 0 && new Date(e.createdAt).getTime() < limiteData) return false
+    if (busca) {
+      const alvo = [e.detalhe, e.produto, e.cliente, e.lote, e.observacao, e.usuario].filter(Boolean).join(' ').toLowerCase()
+      if (!alvo.includes(busca)) return false
+    }
+    return true
+  })
 }
 
 export function caixasDisponiveis(lote: LoteEstoque) {
