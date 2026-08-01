@@ -1,0 +1,19 @@
+# Normalização de fim de linha — o repositório é canônico em LF.
+# Sem este arquivo, o tratamento depende da config local de cada máquina
+# (copiar o projeto do Windows para o Linux marcava todos os arquivos como
+# "modificados" sem nenhuma mudança real de conteúdo).
+
+* text=auto eol=lf
+
+# Binários — nunca converter.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
