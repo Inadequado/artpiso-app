@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ClienteDrawer } from '@/features/clientes/ClienteDrawer'
 import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { useGsapListRefresh } from '@/lib/animations'
+import { QUERY_DESKTOP, useMediaQuery } from '@/lib/use-media-query'
 import { enderecoEntregaDaReserva, quadraDaReserva } from '@/data/mock-inventory'
 import { onlyDigits } from '@/lib/masks'
 import { cn } from '@/lib/utils'
@@ -19,13 +20,40 @@ import type { Cliente, Reserva, ReservaStatus } from '@/types/inventory'
 const statusAtivo = (status: ReservaStatus) => status === 'reservado' || status === 'parcial'
 
 /**
- * Pedidos vinculados ao cliente. Casa pela ENTIDADE: por id quando a reserva tem clienteId
- * (reservas novas); senao cai no nome (reservas mock antigas). Ordena os em aberto primeiro.
+ * Indexa as reservas por cliente numa passada so.
+ *
+ * Antes cada cliente renderizado filtrava E ordenava a lista inteira de
+ * reservas: O(clientes x reservas log reservas) a cada render, o que travava a
+ * tela no celular conforme o historico cresce.
+ *
+ * Duas chaves porque o vinculo tem duas formas: reserva com `clienteId` casa
+ * por id; reserva antiga sem id casa pelo NOME. Um cliente pode ter das duas.
  */
-function pedidosDoCliente(cliente: Cliente, reservas: Reserva[]) {
-  return reservas
-    .filter((reserva) => (reserva.clienteId ? reserva.clienteId === cliente.id : reserva.cliente === cliente.nome))
-    .sort((a, b) => Number(statusAtivo(b.status)) - Number(statusAtivo(a.status)))
+function indexarReservasPorCliente(reservas: Reserva[]) {
+  const porId = new Map<string, Reserva[]>()
+  const porNome = new Map<string, Reserva[]>()
+  for (const reserva of reservas) {
+    const mapa = reserva.clienteId ? porId : porNome
+    const chave = reserva.clienteId ?? reserva.cliente
+    const atual = mapa.get(chave)
+    if (atual) atual.push(reserva)
+    else mapa.set(chave, [reserva])
+  }
+  return { porId, porNome }
+}
+
+type IndiceReservas = ReturnType<typeof indexarReservasPorCliente>
+
+const SEM_PEDIDOS: Reserva[] = []
+
+function pedidosDoCliente(cliente: Cliente, indice: IndiceReservas) {
+  const porId = indice.porId.get(cliente.id)
+  const porNome = indice.porNome.get(cliente.nome)
+  if (!porId && !porNome) return SEM_PEDIDOS
+  // Ordena so os pedidos DESTE cliente (lista curta), nao o historico inteiro.
+  return [...(porId ?? []), ...(porNome ?? [])].sort(
+    (a, b) => Number(statusAtivo(b.status)) - Number(statusAtivo(a.status)),
+  )
 }
 
 export function ClientesPage() {
@@ -38,12 +66,17 @@ export function ClientesPage() {
   const [pedidoExpandido, setPedidoExpandido] = useState<string | null>(null)
   const clientesTableRef = useRef<HTMLTableElement>(null)
   const busca = useSearchQuery()
+  // Celular monta so os cards; desktop so a tabela. Nunca os dois.
+  const ehDesktop = useMediaQuery(QUERY_DESKTOP)
 
   usePrimaryAction(() => {
     setClienteEdit(null)
     setClienteSeq((seq) => seq + 1)
     setClienteOpen(true)
   })
+
+  // Uma passada sobre as reservas em vez de uma varredura por cliente renderizado.
+  const indiceReservas = useMemo(() => indexarReservasPorCliente(reservas), [reservas])
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -102,9 +135,10 @@ export function ClientesPage() {
           ) : (
           <>
             {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
-            <div className="flex flex-col gap-3 lg:hidden">
+            {!ehDesktop ? (
+            <div className="flex flex-col gap-3">
               {filtrados.map((cliente) => {
-                const pedidos = pedidosDoCliente(cliente, reservas)
+                const pedidos = pedidosDoCliente(cliente, indiceReservas)
                 return (
                   <ClienteCard
                     key={cliente.id}
@@ -120,9 +154,11 @@ export function ClientesPage() {
                 )
               })}
             </div>
+            ) : null}
 
             {/* Desktop: tabela completa */}
-            <table ref={clientesTableRef} className="data-table hidden lg:table">
+            {ehDesktop ? (
+            <table ref={clientesTableRef} className="data-table">
               <thead>
                 <tr>
                   <th>Cliente</th>
@@ -133,7 +169,7 @@ export function ClientesPage() {
               </thead>
               <tbody>
                 {filtrados.map((cliente) => {
-                  const pedidos = pedidosDoCliente(cliente, reservas)
+                  const pedidos = pedidosDoCliente(cliente, indiceReservas)
                   const aberto = expandido === cliente.id
                   return (
                     <ClienteRow
@@ -151,6 +187,7 @@ export function ClientesPage() {
                 })}
               </tbody>
             </table>
+            ) : null}
           </>
           )}
         </CardContent>

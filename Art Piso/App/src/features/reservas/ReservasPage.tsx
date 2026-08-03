@@ -19,6 +19,7 @@ import { ReservaDrawer } from '@/features/reservas/ReservaDrawer'
 import { RegimeTag } from '@/features/reservas/RegimeTag'
 import { statusLabel, statusVariant } from '@/features/reservas/status'
 import { useGsapListRefresh } from '@/lib/animations'
+import { QUERY_DESKTOP, useMediaQuery } from '@/lib/use-media-query'
 import { caixasTravadasReserva } from '@/lib/reserva-regime'
 import { cn } from '@/lib/utils'
 import { useInventory } from '@/store/inventory'
@@ -66,6 +67,8 @@ export function ReservasPage() {
   const { podeEditar } = useSessao()
   const reservasTableRef = useRef<HTMLTableElement>(null)
   const busca = useSearchQuery()
+  // Celular monta so os cards; desktop so a tabela. Nunca os dois.
+  const ehDesktop = useMediaQuery(QUERY_DESKTOP)
 
   usePrimaryAction(() => {
     setNovaReservaSeq((seq) => seq + 1)
@@ -171,7 +174,8 @@ export function ReservasPage() {
           </div>
 
           {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
-          <div className="flex flex-col gap-3 lg:hidden">
+          {!ehDesktop ? (
+          <div className="flex flex-col gap-3">
             {ordenadas.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
                 Nenhuma reserva encontrada para os filtros selecionados.
@@ -210,9 +214,11 @@ export function ReservasPage() {
               })
             )}
           </div>
+          ) : null}
 
           {/* Desktop: tabela completa */}
-          <table ref={reservasTableRef} className="data-table hidden lg:table">
+          {ehDesktop ? (
+          <table ref={reservasTableRef} className="data-table">
             <thead>
               <tr>
                 <th>
@@ -335,6 +341,7 @@ export function ReservasPage() {
               )}
             </tbody>
           </table>
+          ) : null}
         </CardContent>
       </Card>
 

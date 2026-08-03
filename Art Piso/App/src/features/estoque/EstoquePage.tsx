@@ -12,13 +12,13 @@ import {
   agruparPorProduto,
   caixasDisponiveis,
   caixasDisponiveisProduto,
+  contarReservasAtivasPorProduto,
   formatM2,
   formatPreco,
   m2Disponivel,
   m2DisponivelProduto,
   precoPorCaixa,
   quadrasDoLote,
-  reservasAtivasDoProduto,
   statusProduto,
 } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
@@ -30,7 +30,8 @@ import { NovoLoteDrawer } from '@/features/estoque/NovoLoteDrawer'
 import { ProdutoDetalheDrawer } from '@/features/estoque/ProdutoDetalheDrawer'
 import { ReservaDrawer } from '@/features/reservas/ReservaDrawer'
 import { useGsapListRefresh } from '@/lib/animations'
-import type { LoteEstoque, Produto, Reserva, StockStatus } from '@/types/inventory'
+import { QUERY_DESKTOP, useMediaQuery } from '@/lib/use-media-query'
+import type { LoteEstoque, Produto, StockStatus } from '@/types/inventory'
 
 const statusLabel: Record<StockStatus, string> = {
   disponivel: 'Disponível',
@@ -69,6 +70,8 @@ export function EstoquePage() {
   const [filtrosOpen, setFiltrosOpen] = useState(false)
   const produtosTableRef = useRef<HTMLTableElement>(null)
   const busca = useSearchQuery()
+  // Celular monta so os cards; desktop so a tabela. Nunca os dois.
+  const ehDesktop = useMediaQuery(QUERY_DESKTOP)
 
   usePrimaryAction(() => {
     setCadastroSeq((seq) => seq + 1)
@@ -76,6 +79,8 @@ export function EstoquePage() {
   })
 
   const produtos = useMemo(() => agruparPorProduto(listaLotes), [listaLotes])
+  // Uma passada sobre as reservas em vez de uma varredura por item renderizado.
+  const reservasAtivasPorProduto = useMemo(() => contarReservasAtivasPorProduto(reservas), [reservas])
   const quadras = useMemo(() => Array.from(new Set(listaLotes.flatMap((lote) => quadrasDoLote(lote)))), [listaLotes])
   const marcas = useMemo(() => Array.from(new Set(produtos.map((produto) => produto.marca))), [produtos])
 
@@ -196,26 +201,29 @@ export function EstoquePage() {
           </Button>
 
           {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
-          <div className="flex flex-col gap-3 lg:hidden">
-            {produtosFiltrados.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum produto encontrado para os filtros selecionados.
-              </p>
-            ) : (
-              produtosFiltrados.map((produto) => (
-                <ProdutoCard
-                  key={produto.id}
-                  produto={produto}
-                  reservas={reservas}
-                  onReservar={() => openReserva(produto)}
-                  onDetalhe={() => openDetalhe(produto)}
-                />
-              ))
-            )}
-          </div>
+          {!ehDesktop ? (
+            <div className="flex flex-col gap-3">
+              {produtosFiltrados.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  Nenhum produto encontrado para os filtros selecionados.
+                </p>
+              ) : (
+                produtosFiltrados.map((produto) => (
+                  <ProdutoCard
+                    key={produto.id}
+                    produto={produto}
+                    qtdReservas={reservasAtivasPorProduto.get(produto.produto) ?? 0}
+                    onReservar={() => openReserva(produto)}
+                    onDetalhe={() => openDetalhe(produto)}
+                  />
+                ))
+              )}
+            </div>
+          ) : null}
 
           {/* Desktop: tabela completa */}
-          <table ref={produtosTableRef} className="data-table hidden lg:table">
+          {ehDesktop ? (
+          <table ref={produtosTableRef} className="data-table">
             <thead>
               <tr>
                 <th className="w-16">Foto</th>
@@ -239,7 +247,7 @@ export function EstoquePage() {
               {produtosFiltrados.map((produto) => {
                 const disponivel = caixasDisponiveisProduto(produto)
                 const status = statusProduto(produto)
-                const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
+                const qtdReservas = reservasAtivasPorProduto.get(produto.produto) ?? 0
                 return (
                   <tr key={produto.id}>
                     <td>
@@ -306,6 +314,7 @@ export function EstoquePage() {
               })}
             </tbody>
           </table>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -481,19 +490,18 @@ function FiltrosProduto({
 // Card de produto para mobile/tablet (equivalente a uma linha da tabela do desktop).
 function ProdutoCard({
   produto,
-  reservas,
+  qtdReservas,
   onReservar,
   onDetalhe,
 }: {
   produto: Produto
-  reservas: Reserva[]
+  qtdReservas: number
   onReservar: () => void
   onDetalhe: () => void
 }) {
   const { podeVender } = useSessao()
   const disponivel = caixasDisponiveisProduto(produto)
   const status = statusProduto(produto)
-  const qtdReservas = reservasAtivasDoProduto(produto.produto, reservas)
   const meta = [produto.marca, produto.tamanho, produto.referencia ? `Ref. ${produto.referencia}` : '']
     .filter(Boolean)
     .join(' · ')
@@ -555,7 +563,10 @@ function ProdutoThumb({ foto, nome }: { foto?: string; nome: string }) {
     // lista em producao — achado do roteiro de teste, bloco 2).
     return (
       <span className="block size-12 shrink-0 overflow-hidden rounded-md border">
-        <img src={foto} alt={nome} className="h-full w-full object-cover" />
+        {/* A lista tem centenas de produtos e a foto no Storage e 800x800: sem
+            lazy/async o Safari baixa e DECODIFICA todas de uma vez na abertura,
+            travando a main thread. Assim so as visiveis custam. */}
+        <img src={foto} alt={nome} loading="lazy" decoding="async" className="h-full w-full object-cover" />
       </span>
     )
   }

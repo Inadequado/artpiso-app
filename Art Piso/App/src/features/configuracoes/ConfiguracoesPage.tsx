@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { useGsapListRefresh } from '@/lib/animations'
+import { QUERY_DESKTOP, useMediaQuery } from '@/lib/use-media-query'
 import { paraEmailLogin, paraUsuarioExibicao } from '@/lib/login'
 import { useInventory, type UsuarioInput } from '@/store/inventory'
 import { papelLabel, useSessao } from '@/store/sessao'
@@ -40,6 +41,8 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
   const [usuarioEdit, setUsuarioEdit] = useState<Usuario | null>(null)
   const [usuarioExcluir, setUsuarioExcluir] = useState<Usuario | null>(null)
   const usuariosTableRef = useRef<HTMLTableElement>(null)
+  // Celular monta so os cards; desktop so a tabela. Nunca os dois.
+  const ehDesktop = useMediaQuery(QUERY_DESKTOP)
 
   const totalAdmins = usuarios.filter((usuario) => usuario.role === 'admin').length
   const ehUltimoAdmin = (usuario: Usuario) => usuario.role === 'admin' && totalAdmins === 1
@@ -100,7 +103,8 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
         </CardHeader>
         <CardContent className="max-lg:p-0">
           {/* Mobile/tablet: lista de cards (a tabela nao cabe abaixo de lg) */}
-          <div className="flex flex-col gap-3 lg:hidden">
+          {!ehDesktop ? (
+          <div className="flex flex-col gap-3">
             {usuarios.map((usuario) => (
               <UsuarioCard
                 key={usuario.id}
@@ -112,9 +116,11 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
               />
             ))}
           </div>
+          ) : null}
 
           {/* Desktop: tabela completa */}
-          <table ref={usuariosTableRef} className="data-table hidden lg:table">
+          {ehDesktop ? (
+          <table ref={usuariosTableRef} className="data-table">
             <thead>
               <tr>
                 <th>Usuário</th>
@@ -173,6 +179,7 @@ export function ConfiguracoesPage({ onLogout }: { onLogout?: () => void }) {
               ))}
             </tbody>
           </table>
+          ) : null}
         </CardContent>
       </Card>
 

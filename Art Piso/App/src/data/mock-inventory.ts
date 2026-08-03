@@ -781,6 +781,23 @@ export function reservasAtivasDoProduto(produto: string, lista: Reserva[]) {
   ).length
 }
 
+/**
+ * Contagem de reservas ativas de TODOS os produtos numa passada so.
+ *
+ * Chamar `reservasAtivasDoProduto` dentro do render de cada item varre a lista
+ * inteira de reservas por produto: com 400 produtos vira O(produtos x reservas)
+ * a cada render, e trava a tela no celular. Monte este mapa uma vez (useMemo)
+ * e leia por nome do produto.
+ */
+export function contarReservasAtivasPorProduto(lista: Reserva[]): Map<string, number> {
+  const mapa = new Map<string, number>()
+  for (const reserva of lista) {
+    if (reserva.status !== 'reservado' && reserva.status !== 'parcial') continue
+    mapa.set(reserva.produto, (mapa.get(reserva.produto) ?? 0) + 1)
+  }
+  return mapa
+}
+
 /** Estoque FISICO liquido do produto: caixas reais menos perda (o que de fato da pra entregar). */
 export function estoqueFisicoProduto(produto: Produto) {
   return produto.lotes.reduce((total, lote) => total + (lote.caixasEstoque - lote.caixasPerda), 0)
