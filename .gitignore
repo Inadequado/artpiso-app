@@ -5,6 +5,8 @@ node_modules/
 # Obs: NAO ignorar GSAP/dist e GSAP/esm — sao a lib publicada usada via "gsap": "file:../../GSAP"
 Art Piso/App/dist/
 Art Piso/App/dist-ssr/
+# Build de comparacao A/B em teste de performance (temporario)
+Art Piso/App/dist-antes/
 
 # === Logs ===
 *.log
@@ -23,6 +25,10 @@ pnpm-debug.log*
 
 # === Ferramentas Claude (reinstalaveis, pesadas) ===
 .claude/skills/
+# Permissoes/config por maquina (o settings.json compartilhado continua versionado)
+.claude/settings.local.json
+# Worktrees temporarias criadas por agentes
+.claude/worktrees/
 
 # === Editores ===
 .vscode/*
