@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { compararQuadra, proximoNumeroPedido } from '@/data/mock-inventory'
 import { persistirFotoProduto } from '@/lib/foto-produto'
@@ -43,6 +43,17 @@ import type {
  * criar/editar/cancelar/entregar/estornar via RPCs (Q5/R-05/R-07 valem no banco).
  * Falta: CRUD de usuarios (admin API exige service role — painel por ora).
  */
+
+/** Identidade estavel: um arrow inline aqui invalidaria o `value` memoizado a cada render. */
+const NAO_FAZ_NADA = () => {}
+
+/** Janela que junta os N eventos de realtime de uma mesma transacao numa recarga so. */
+const DEBOUNCE_REALTIME = 400
+/**
+ * Rede de seguranca da mutacao. Maior que a janela do realtime de proposito: no
+ * caminho normal o eco chega antes e este pedido nem chega a disparar sozinho.
+ */
+const RECARGA_APOS_MUTACAO = 1200
 
 const TITULO_MOVIMENTO: Record<MovimentoTipo, string> = {
   entrada: 'Entrada de estoque',
@@ -257,26 +268,51 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     }
   }, [recarregar])
 
+  // Agendador UNICO de recarga.
+  //
+  // Antes havia dois caminhos independentes: a mutacao recarregava na hora E o
+  // realtime ecoava a MESMA mudanca ~400ms depois, recarregando de novo — duas
+  // leituras completas do banco por acao. Agora os dois pedem recarga aqui e o
+  // pedido mais CEDO vence, entao os dois colapsam em uma.
+  //
+  // A mutacao pede com folga (RECARGA_APOS_MUTACAO) de proposito: no caminho
+  // normal o eco do realtime chega antes e atende os dois; se o realtime estiver
+  // fora do ar, esse pedido e a rede de seguranca que garante a atualizacao.
+  // Nunca duas, nunca nenhuma.
+  const timerRecarga = useRef<number | undefined>(undefined)
+  const prazoRecarga = useRef(Number.POSITIVE_INFINITY)
+
+  const agendarRecarga = useCallback((atrasoMs: number) => {
+    const prazo = Date.now() + atrasoMs
+    // Ja existe uma marcada para antes: ela atende este pedido tambem.
+    if (timerRecarga.current !== undefined && prazo >= prazoRecarga.current) return
+    window.clearTimeout(timerRecarga.current)
+    prazoRecarga.current = prazo
+    timerRecarga.current = window.setTimeout(() => {
+      timerRecarga.current = undefined
+      prazoRecarga.current = Number.POSITIVE_INFINITY
+      void recarregar()
+    }, atrasoMs)
+  }, [recarregar])
+
+  useEffect(() => () => window.clearTimeout(timerRecarga.current), [])
+
   // Realtime GERAL (etapa 4): qualquer mudanca nas tabelas publicadas — deste ou de
-  // OUTRO aparelho — recarrega os dados (debounce: uma transacao emite N eventos).
+  // OUTRO aparelho — recarrega os dados (a janela acima junta os N eventos que
+  // uma unica transacao emite).
   useEffect(() => {
     if (!supabase) return
-    let timer: number | undefined
     const canal = supabase
       .channel('dados-inventario')
       .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
         if (payload.table === 'notificacoes') return // o sino tem canal proprio
-        window.clearTimeout(timer)
-        timer = window.setTimeout(() => {
-          void recarregar()
-        }, 400)
+        agendarRecarga(DEBOUNCE_REALTIME)
       })
       .subscribe()
     return () => {
-      window.clearTimeout(timer)
       void supabase?.removeChannel(canal)
     }
-  }, [recarregar])
+  }, [agendarRecarga])
 
   // ------------------------------------------------------------- helpers
   const quadraIdPorNumero = useCallback((numero: string) => {
@@ -288,12 +324,12 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     void (async () => {
       try {
         await acao()
-        await recarregar()
+        agendarRecarga(RECARGA_APOS_MUTACAO)
       } catch (erro) {
         avisarErro(contexto, erro)
       }
     })()
-  }, [avisarErro, recarregar])
+  }, [agendarRecarga, avisarErro])
 
   const rpc = useCallback(async (fn: string, args: Record<string, unknown>) => {
     if (!supabase) return
@@ -760,15 +796,17 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     })
   }, [executar, notificar, reservas, rpc])
 
-  // ------------------------------------------------------------- stubs (proximas fatias)
-  const value: InventoryContextValue = {
+  // Memoizado como no provider mock (inventory-provider): sem isto, todo render
+  // deste Provider cria um `value` novo e re-renderiza TODO consumidor do
+  // contexto — que sao as 4 telas inteiras e os drawers.
+  const value = useMemo<InventoryContextValue>(() => ({
     lotes,
     reservas,
     clientes,
     quadras,
     usuarios,
     movimentos,
-    registrarMovimento: () => {}, // o banco loga sozinho (RPCs/trigger)
+    registrarMovimento: NAO_FAZ_NADA, // o banco loga sozinho (RPCs/trigger)
     adicionarQuadra,
     atualizarQuadra,
     removerQuadra,
@@ -798,7 +836,17 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     moverQuadra,
     corrigirEstoque,
     carregarHistorico,
-  }
+  }), [
+    lotes, reservas, clientes, quadras, usuarios, movimentos,
+    adicionarQuadra, atualizarQuadra, removerQuadra, alternarStatusQuadra,
+    adicionarUsuario, atualizarUsuario, removerUsuario, alternarStatusUsuario,
+    adicionarCliente, atualizarCliente, removerCliente,
+    adicionarLote, removerLote, removerProduto, atualizarLote, atualizarProduto,
+    criarReserva, criarPedido, editarReserva, editarPedido, cancelarReserva,
+    entregarReserva, estornarReserva,
+    registrarEntrada, registrarPerda, descartarPerda, moverQuadra, corrigirEstoque,
+    carregarHistorico,
+  ])
 
   if (!carregado) {
     return <div className="flex h-dvh items-center justify-center bg-background text-sm text-muted-foreground">Carregando dados do banco…</div>
