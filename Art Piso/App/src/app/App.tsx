@@ -1,10 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { AjustesPage } from '@/features/ajustes/AjustesPage'
-import { ClientesPage } from '@/features/clientes/ClientesPage'
-import { ConfiguracoesPage } from '@/features/configuracoes/ConfiguracoesPage'
 import { EstoquePage } from '@/features/estoque/EstoquePage'
-import { ReservasPage } from '@/features/reservas/ReservasPage'
 import { AppShell, type AppSection } from '@/components/layout/AppShell'
 import { SplashScreen } from '@/components/layout/SplashScreen'
 import { SignInPage } from '@/components/ui/sign-in'
@@ -16,6 +12,16 @@ import { SessaoProvider } from '@/store/sessao-provider'
 import { SupabaseInventoryProvider } from '@/store/supabase-provider'
 import { NotificationsProvider } from '@/store/notifications-provider'
 import { SupabaseNotificationsProvider } from '@/store/supabase-notifications-provider'
+
+// Code splitting: so o Estoque (secao inicial) entra no chunk de abertura. As
+// demais paginas — e os drawers que elas arrastam junto — viram chunks sob
+// demanda, tirando parse/compile do caminho critico do celular.
+const ReservasPage = lazy(() => import('@/features/reservas/ReservasPage').then((m) => ({ default: m.ReservasPage })))
+const ClientesPage = lazy(() => import('@/features/clientes/ClientesPage').then((m) => ({ default: m.ClientesPage })))
+const AjustesPage = lazy(() => import('@/features/ajustes/AjustesPage').then((m) => ({ default: m.AjustesPage })))
+const ConfiguracoesPage = lazy(() =>
+  import('@/features/configuracoes/ConfiguracoesPage').then((m) => ({ default: m.ConfiguracoesPage })),
+)
 
 const titles: Record<AppSection, string> = {
   estoque: 'Estoque',
@@ -139,7 +145,7 @@ function AreaLogada({ onLogout }: { onLogout: () => void }) {
       onNavigate={handleNavigate}
       onLogout={onLogout}
     >
-      {page}
+      <Suspense fallback={<p className="py-12 text-center text-sm text-muted-foreground">Carregando…</p>}>{page}</Suspense>
     </AppShell>
   )
 }

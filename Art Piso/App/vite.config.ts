@@ -11,4 +11,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Teste em aparelho real via tunnel (cloudflared): sem isto o Vite responde
+  // "Blocked request" para o dominio do tunel. Vale so para o servidor local.
+  preview: {
+    allowedHosts: ['.trycloudflare.com'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Vendors em chunks proprios: o app muda toda semana, essas libs nao —
+        // assim um deploy nao invalida o cache delas no aparelho da loja.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('@supabase')) return 'supabase'
+          if (id.includes('/gsap/')) return 'gsap'
+          if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) return 'react'
+        },
+      },
+    },
+  },
 })
