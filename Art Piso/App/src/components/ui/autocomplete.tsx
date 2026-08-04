@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 export type AutocompleteOption = {
   value: string
   label: string
-  hint?: string
+  /** Linha secundaria. Aceita JSX para destacar campos (ex.: codigo do lote + quadra). */
+  hint?: ReactNode
 }
 
 type AutocompleteProps = {
