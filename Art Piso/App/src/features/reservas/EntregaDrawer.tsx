@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva, quadraLabel, sugerirRetiradas } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoEntregaDaReserva, loteDaReserva, quadraLabel, sugerirRetiradas } from '@/data/mock-inventory'
 import { useInventory, type EntregarReservaInput } from '@/store/inventory'
 import type { LoteEstoque, Reserva } from '@/types/inventory'
 
@@ -24,7 +24,8 @@ type EntregaDrawerProps = {
 
 export function EntregaDrawer({ reserva, onClose, onConfirm }: EntregaDrawerProps) {
   const { lotes, clientes } = useInventory()
-  const loteOriginal = lotes.find((l) => l.lote === reserva?.lote)
+  // Codigo de lote e unico so POR PRODUTO — ver loteDaReserva.
+  const loteOriginal = reserva ? loteDaReserva(reserva, lotes) : undefined
   const clienteNome = reserva ? (clienteDaReserva(reserva, clientes)?.nome ?? reserva.cliente) : ''
   const enderecoEntrega = reserva ? enderecoEntregaDaReserva(reserva, clientes) : undefined
 

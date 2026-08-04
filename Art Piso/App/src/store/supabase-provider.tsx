@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { compararQuadra, proximoNumeroPedido } from '@/data/mock-inventory'
+import { compararQuadra, loteDaReserva, proximoNumeroPedido } from '@/data/mock-inventory'
 import { persistirFotoProduto } from '@/lib/foto-produto'
 import { uid } from '@/lib/id'
 import { parseDataPrevista, regimePorData } from '@/lib/reserva-regime'
@@ -734,9 +734,15 @@ export function SupabaseInventoryProvider({ children }: { children: ReactNode })
     const outrasLinhas = reservas
       .filter((item) => item.pedido === linha.pedido && item.id !== linha.id && item.status === 'reservado')
       .map((item) => {
-        const lote = lotes.find((l) => l.lote === item.lote)
+        // (produto, codigo): codigo de lote nao e unico global — ver loteDaReserva.
+        const lote = loteDaReserva(item, lotes)
         return { reserva_id: item.id, lote_id: lote?.id ?? null, caixas: item.caixas, regime: item.regime ?? 'aguardando', caixas_travadas: item.caixasTravadas ?? 0 }
       })
+    // lote_id nulo faria a RPC gravar a linha sem lastro: aborta e avisa.
+    if (outrasLinhas.some((l) => l.lote_id === null)) {
+      notificar({ tipo: 'info', titulo: 'Não foi possível editar', descricao: 'Não localizei o lote de uma das linhas do pedido. Recarregue a página e tente de novo.' })
+      return
+    }
     executar('Erro ao editar reserva', () => rpc('fn_editar_pedido', {
       p_pedido_id: meta.id,
       p_cliente_id: meta.clienteId, // cliente imutavel na parcial (R-05)

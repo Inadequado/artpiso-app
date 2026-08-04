@@ -72,8 +72,12 @@ export function ProdutoDetalheDrawer({
 
   if (!produto) return null
 
+  // Filtra tambem pelo PRODUTO: o codigo do lote e unico so por produto, entao
+  // sem isso a conta somava as reservas do lote de mesmo codigo de outro produto.
   const reservasAtivasLote = (codigoLote: string) =>
-    reservas.filter((reserva) => reserva.lote === codigoLote && reserva.status === 'reservado').length
+    reservas.filter(
+      (reserva) => reserva.lote === codigoLote && reserva.produto === produto.produto && reserva.status === 'reservado',
+    ).length
   const produtoTemReservas = produto.lotes.some((lote) => reservasAtivasLote(lote.lote) > 0)
   // Remover o ULTIMO lote = excluir o produto (acao so de admin, botao proprio). O banco
   // tambem bloqueia (fn_remover_lote); aqui e a explicacao antes do erro.

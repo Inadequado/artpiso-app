@@ -10,7 +10,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, quadraLabel } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, enderecoLabel, formatM2, formatPreco, loteDaReserva, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { statusLabel, statusVariant } from '@/features/reservas/status'
@@ -38,7 +38,9 @@ type EditarPedidoDrawerProps = {
 export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedidoDrawerProps) {
   const { lotes: todosLotes, reservas, clientes } = useInventory()
   const loteById = (id: string) => todosLotes.find((l) => l.id === id)
-  const loteByCode = (code: string) => todosLotes.find((l) => l.lote === code)
+  // Codigo de lote NAO e unico global (so por produto) — resolver so por codigo
+  // pegaria o lote de outro produto e reapontaria a linha do pedido. Ver loteDaReserva.
+  const loteDaLinha = (r: Reserva) => loteDaReserva(r, todosLotes)
 
   const linhasDoPedido = reserva ? reservas.filter((r) => r.pedido === reserva.pedido) : []
   const reservadoLines = linhasDoPedido.filter((r) => r.status === 'reservado')
@@ -62,7 +64,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
     reservadoLines.map((r) => ({
       key: r.id,
       reservaId: r.id,
-      loteId: loteByCode(r.lote)?.id ?? '',
+      loteId: loteDaLinha(r)?.id ?? '',
       caixas: String(r.caixas),
     })),
   )
@@ -93,7 +95,7 @@ export function EditarPedidoDrawer({ reserva, onClose, onConfirm }: EditarPedido
   // Lotes ja presentes no pedido (itens + travados): nao podem ser re-adicionados.
   const lotesNoPedido = new Set<string>([
     ...itens.map((item) => item.loteId),
-    ...linhasTravadas.map((r) => loteByCode(r.lote)?.id ?? ''),
+    ...linhasTravadas.map((r) => loteDaLinha(r)?.id ?? ''),
   ])
 
   const buscaTrim = builderBusca.trim().toLowerCase()

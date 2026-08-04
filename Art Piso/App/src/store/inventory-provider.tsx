@@ -15,6 +15,7 @@ import {
   filtrarHistorico,
   furoProduto,
   loteComCodigo,
+  loteDaReserva,
   quadraLabel,
   retiradasValidas,
   retirarAlocacoes,
@@ -93,10 +94,19 @@ const movimentosSeed: Movimento[] = [
   { id: 'mov-seed-12', tipo: 'perda', titulo: 'Perda registrada', detalhe: '1 cx em L-2391', observacao: 'Caixa esmagada no fundo da pilha', loteId: 'lote-2391', produtoId: 'prod-eli-1020-sg', usuario: 'Renata Costa', data: '15 jun 2026 · 14:00' },
 ]
 
-/** Soma as caixas em reservas ATIVAS (status reservado) de um lote, por codigo de lote. */
-function reservadasDoLote(codigoLote: string, reservas: Reserva[]) {
+/**
+ * Soma as caixas em reservas ATIVAS de um lote. Recebe o LOTE, nao o codigo: o
+ * codigo e unico so por produto, entao filtrar so por ele somaria as reservas do
+ * lote homonimo de outro produto (ver loteDaReserva em mock-inventory).
+ */
+function reservadasDoLote(lote: LoteEstoque, reservas: Reserva[]) {
   return reservas
-    .filter((reserva) => reserva.lote === codigoLote && (reserva.status === 'reservado' || reserva.status === 'parcial'))
+    .filter(
+      (reserva) =>
+        reserva.lote === lote.lote &&
+        reserva.produto === lote.produto &&
+        (reserva.status === 'reservado' || reserva.status === 'parcial'),
+    )
     .reduce((total, reserva) => total + caixasTravadasReserva(reserva), 0)
 }
 
@@ -108,7 +118,7 @@ function estadoInicial() {
   const reservas = reservasSeed.map((reserva) => ({ ...reserva }))
   const lotes = lotesSeed.map((lote) => ({
     ...lote,
-    caixasReserva: reservadasDoLote(lote.lote, reservas),
+    caixasReserva: reservadasDoLote(lote, reservas),
   }))
   return { lotes, reservas }
 }
@@ -315,7 +325,10 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       // Renomear o codigo do lote faz cascata no vinculo de TODAS as reservas (evita orfas).
       reservas: codigoMudou
         ? atual.reservas.map((reserva) =>
-            reserva.lote === alvo.lote ? { ...reserva, lote: patch.lote } : reserva,
+            // Tambem pelo produto: outro produto pode ter lote de mesmo codigo.
+            reserva.lote === alvo.lote && reserva.produto === alvo.produto
+              ? { ...reserva, lote: patch.lote }
+              : reserva,
           )
         : atual.reservas,
     }))
@@ -469,23 +482,23 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       if (!reserva || (reserva.status !== 'reservado' && reserva.status !== 'parcial')) return atual
       const isParcial = reserva.status === 'parcial'
       // Para parcial: lote e imutavel (entrega ja saiu daquele lote); ignora input.loteId.
-      const novoLote = isParcial
-        ? atual.lotes.find((item) => item.lote === reserva.lote)
-        : atual.lotes.find((item) => item.id === input.loteId)
+      const loteAntigo = loteDaReserva(reserva, atual.lotes)
+      const novoLote = isParcial ? loteAntigo : atual.lotes.find((item) => item.id === input.loteId)
       if (!novoLote) return atual
 
-      const loteAntigoCodigo = reserva.lote
-      const mesmoLote = novoLote.lote === loteAntigoCodigo
+      // Por ID: comparar codigo daria "mesmo lote" para lotes homonimos de
+      // produtos diferentes, e a baixa cairia no lote errado.
+      const mesmoLote = novoLote.id === loteAntigo?.id
       const travadasAntes = caixasTravadasReserva(reserva)
       const regime = regimePorData(input.dataPrevista, input.manterReservadoAgora)
       const disponivelNovoLote = caixasDisponiveis(novoLote) + (mesmoLote ? travadasAntes : 0)
       const caixasTravadas = regime === 'rotacionando' ? 0 : Math.min(input.caixas, Math.max(0, disponivelNovoLote))
 
       const lotes = atual.lotes.map((item) => {
-        if (mesmoLote && item.lote === loteAntigoCodigo) {
+        if (mesmoLote && item.id === loteAntigo?.id) {
           return { ...item, caixasReserva: Math.max(0, item.caixasReserva - travadasAntes + caixasTravadas) }
         }
-        if (!mesmoLote && item.lote === loteAntigoCodigo) {
+        if (!mesmoLote && item.id === loteAntigo?.id) {
           return { ...item, caixasReserva: Math.max(0, item.caixasReserva - travadasAntes) }
         }
         if (!mesmoLote && item.id === novoLote.id) {
@@ -568,7 +581,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           reservas.push({ ...reserva, status: 'cancelado', caixasTravadas: 0, motivoCancelamento: 'Removido na edição do pedido' })
           continue
         }
-        const lote = atual.lotes.find((l) => l.lote === reserva.lote)
+        const lote = loteDaReserva(reserva, atual.lotes)
         const m2PorCaixa = lote?.m2PorCaixa ?? 0
         reservas.push({
           ...reserva,
@@ -613,7 +626,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           observacoes,
         })
       }
-      const lotes = atual.lotes.map((lote) => ({ ...lote, caixasReserva: reservadasDoLote(lote.lote, reservas) }))
+      const lotes = atual.lotes.map((lote) => ({ ...lote, caixasReserva: reservadasDoLote(lote, reservas) }))
       return { ...atual, reservas, lotes }
     })
   }, [])
@@ -631,7 +644,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         ),
         // Cancelar devolve as caixas travadas ao disponivel (reduz a reserva do lote).
         lotes: atual.lotes.map((item) =>
-          item.lote === reserva.lote
+          item.id === loteDaReserva(reserva, atual.lotes)?.id
             ? { ...item, caixasReserva: Math.max(0, item.caixasReserva - travadas) }
             : item,
         ),
@@ -661,7 +674,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       // Rotacionando pode trocar de lote na entrega; lote alternativo vem do input.
       const loteParaEntrega = input.loteId
         ? atual.lotes.find((item) => item.id === input.loteId)
-        : atual.lotes.find((item) => item.lote === reserva.lote)
+        : loteDaReserva(reserva, atual.lotes)
       const m2PorCaixa = loteParaEntrega?.m2PorCaixa ?? 0
       // De onde saem as caixas (M3): usa as quadras escolhidas na UI quando batem com o
       // total e com as alocacoes; senao cai na sugestao automatica (maior quadra primeiro).
@@ -698,7 +711,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         ),
         // Baixa por entrega: sai do estoque fisico nas quadras escolhidas e deixa de ser reserva.
         lotes: atual.lotes.map((item) =>
-          item.lote === (loteParaEntrega?.lote ?? reserva.lote)
+          item.id === loteParaEntrega?.id
             ? {
                 ...item,
                 caixasReserva: Math.max(0, item.caixasReserva - travadasEntregues),
@@ -743,7 +756,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         // Devolucao volta ao estoque JA ALOCADA na quadra de destino informada (com o modelo
         // de alocacoes do Q1, isso nao corrompe mais as caixas remanescentes do lote).
         lotes: atual.lotes.map((l) =>
-          l.lote === reserva.lote
+          l.id === loteDaReserva(reserva, atual.lotes)?.id
             ? {
                 ...l,
                 caixasEstoque: l.caixasEstoque + input.caixas,

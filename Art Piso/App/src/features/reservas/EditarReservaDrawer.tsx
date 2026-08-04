@@ -8,7 +8,7 @@ import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, clienteDaReserva, formatM2, quadraLabel } from '@/data/mock-inventory'
+import { caixasDisponiveis, clienteDaReserva, formatM2, loteDaReserva, quadraLabel } from '@/data/mock-inventory'
 import { ClienteSelector } from '@/features/reservas/ClienteSelector'
 import { RegimeTogglePanel } from '@/features/reservas/RegimeTogglePanel'
 import { erroDataEntrega, formatData } from '@/lib/masks'
@@ -24,7 +24,8 @@ type EditarReservaDrawerProps = {
 
 export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReservaDrawerProps) {
   const { lotes, clientes } = useInventory()
-  const loteOriginal = lotes.find((item) => item.lote === reserva?.lote)
+  // Codigo de lote e unico so POR PRODUTO — ver loteDaReserva.
+  const loteOriginal = reserva ? loteDaReserva(reserva, lotes) : undefined
   const [loteId, setLoteId] = useState(loteOriginal?.id ?? '')
   const [caixas, setCaixas] = useState(reserva ? String(reserva.caixas) : '')
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(
@@ -38,7 +39,9 @@ export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReser
   const isParcial = reserva?.status === 'parcial'
   const lote = lotes.find((item) => item.id === loteId)
   const travadasOriginais = reserva ? caixasTravadasReserva(reserva) : 0
-  const mesmoLote = Boolean(lote && reserva && lote.lote === reserva.lote)
+  // Por ID: dois produtos podem ter lotes de MESMO codigo, e comparar codigo
+  // liberaria as travadas de um lote que nao e o da reserva.
+  const mesmoLote = Boolean(lote && loteOriginal && lote.id === loteOriginal.id)
   const maxDisponivel = lote ? caixasDisponiveis(lote) + (mesmoLote ? travadasOriginais : 0) : 0
   const quantidade = Number(caixas)
   const quantidadeValida = Number.isFinite(quantidade) && quantidade > 0
@@ -97,7 +100,7 @@ export function EditarReservaDrawer({ reserva, onClose, onConfirm }: EditarReser
                 onChange={setLoteId}
                 placeholder="Selecione um lote..."
                 options={lotes.map((item) => {
-                  const disp = caixasDisponiveis(item) + (reserva.lote === item.lote ? travadasOriginais : 0)
+                  const disp = caixasDisponiveis(item) + (item.id === loteOriginal?.id ? travadasOriginais : 0)
                   return {
                     value: item.id,
                     label: `${item.produto} - ${item.lote} (${disp} cx)`,

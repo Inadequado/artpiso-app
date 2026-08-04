@@ -909,9 +909,33 @@ export function quadraLabelDetalhada(lote: LoteEstoque) {
  * Localizacao de exibicao da reserva. Fonte unica (mesmo padrao do cliente): reserva ATIVA
  * deriva do lote AO VIVO (mover/renomear quadra reflete na hora); historica usa o snapshot.
  */
+/**
+ * Localiza o lote de uma reserva.
+ *
+ * ATENCAO: o codigo do lote e unico POR PRODUTO, nao global — mudou na migration
+ * 20260717130000 (`drop index lotes_codigo_unico`), porque cadastrar o codigo
+ * "007" em marcas diferentes e legitimo. Casar so por codigo devolve o lote de
+ * OUTRO produto: em 2026-08-04 havia 64 codigos repetidos cobrindo ~204 lotes.
+ *
+ * O par (produto, codigo) e unico por constraint (`produtos_nome_unico` +
+ * `lotes_codigo_unico_por_produto`) e, no modo Supabase, os dois campos da
+ * reserva vem do mesmo JOIN vivo — entao isto e tao confiavel quanto o id.
+ */
+export function loteDaReserva(
+  reserva: Pick<Reserva, 'produto' | 'lote'>,
+  lotes: LoteEstoque[],
+): LoteEstoque | undefined {
+  return lotes.find((item) => item.lote === reserva.lote && item.produto === reserva.produto)
+}
+
+/** Idem, para quando so ha o nome do produto e o codigo soltos (sem objeto de reserva). */
+export function acharLote(lotes: LoteEstoque[], produto: string, codigo: string): LoteEstoque | undefined {
+  return lotes.find((item) => item.lote === codigo && item.produto === produto)
+}
+
 export function quadraDaReserva(reserva: Reserva, lotes: LoteEstoque[]) {
   if (reserva.status === 'reservado' || reserva.status === 'parcial') {
-    const lote = lotes.find((item) => item.lote === reserva.lote)
+    const lote = loteDaReserva(reserva, lotes)
     if (lote) return quadraLabel(lote)
   }
   return reserva.quadra
