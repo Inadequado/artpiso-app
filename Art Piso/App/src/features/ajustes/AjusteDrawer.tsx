@@ -1,14 +1,16 @@
 import { ArrowRightLeft, PackagePlus, PackageX, PenLine, TriangleAlert } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Autocomplete } from '@/components/ui/autocomplete'
 import { Button } from '@/components/ui/button'
 import { Drawer } from '@/components/ui/drawer'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SelectMenu } from '@/components/ui/select-menu'
 import { Textarea } from '@/components/ui/textarea'
-import { caixasDisponiveis, formatM2, maiorAlocacao, quadraLabel, quadraLabelDetalhada } from '@/data/mock-inventory'
+import { caixasDisponiveis, formatM2, maiorAlocacao, quadraLabel, quadraLabelDetalhada, quadrasDoLote } from '@/data/mock-inventory'
 import { useInventory } from '@/store/inventory'
+import type { LoteEstoque } from '@/types/inventory'
 
 export type AjusteTipo = 'entrada' | 'perda' | 'quadra' | 'correcao' | 'descarte'
 
@@ -55,10 +57,23 @@ type AjusteDrawerProps = {
   onConfirm: () => void
 }
 
+/** Teto de sugestoes: a lista e um dropdown, nao uma tela de resultados. */
+const LIMITE_SUGESTOES = 50
+
+/** Rotulo do lote na busca: produto sempre primeiro (e por ele que se procura). */
+function rotuloLote(lote: LoteEstoque, tipo: AjusteTipo | null) {
+  return tipo === 'descarte'
+    ? `${lote.produto} — ${lote.lote} (${lote.caixasPerda} cx de perda)`
+    : `${lote.produto} — ${lote.lote} (${quadraLabel(lote)})`
+}
+
 /** Drawer unico para ajustes em lote existente (perda, mudanca de quadra e correcao). */
 export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const { lotes, quadras, registrarEntrada, registrarPerda, descartarPerda, moverQuadra, corrigirEstoque } = useInventory()
   const [loteId, setLoteId] = useState('')
+  // Texto digitado na busca do lote (o deposito tem ~400 produtos: rolar a lista
+  // inteira era a reclamacao do gerente).
+  const [loteBusca, setLoteBusca] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [pisos, setPisos] = useState('')
   const [motivo, setMotivo] = useState('')
@@ -67,6 +82,22 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   const [quadraAlvo, setQuadraAlvo] = useState('')
 
   const lote = lotes.find((item) => item.id === loteId)
+
+  // Sugestoes da busca: casa por produto, codigo do lote OU quadra — o gerente
+  // procura tanto pelo nome quanto por "onde esta". Sem termo, mostra o comeco da
+  // lista em vez de nada, para o campo continuar navegavel sem digitar.
+  const opcoesLote = useMemo(() => {
+    const base = tipo === 'descarte' ? lotes.filter((item) => item.caixasPerda > 0) : lotes
+    const termo = loteBusca.trim().toLowerCase()
+    const casam =
+      termo === ''
+        ? base
+        : base.filter((item) =>
+            `${item.produto} ${item.lote} ${quadrasDoLote(item).join(' ')}`.toLowerCase().includes(termo),
+          )
+    return casam.slice(0, LIMITE_SUGESTOES).map((item) => ({ value: item.id, label: rotuloLote(item, tipo) }))
+  }, [lotes, loteBusca, tipo])
+
   const cfg = tipo ? config[tipo] : null
   const Icon = cfg?.icon
 
@@ -75,6 +106,7 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   function selecionarLote(id: string) {
     setLoteId(id)
     const escolhido = lotes.find((item) => item.id === id)
+    setLoteBusca(escolhido ? rotuloLote(escolhido, tipo) : '')
     if (tipo === 'entrada') {
       setQuadraAlvo(escolhido ? (maiorAlocacao(escolhido)?.quadra ?? '') : '')
     } else if (tipo === 'correcao' || tipo === 'perda' || tipo === 'descarte') {
@@ -179,18 +211,19 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">Lote</span>
-            <SelectMenu
-              value={loteId}
-              onChange={selecionarLote}
-              placeholder="Selecione um lote…"
-              options={(tipo === 'descarte' ? lotes.filter((item) => item.caixasPerda > 0) : lotes).map((item) => ({
-                value: item.id,
-                label:
-                  tipo === 'descarte'
-                    ? `${item.produto} — ${item.lote} (${item.caixasPerda} cx de perda)`
-                    : `${item.produto} — ${item.lote} (${quadraLabel(item)})`,
-              }))}
+            <Autocomplete
+              value={loteBusca}
+              onChange={(texto) => {
+                setLoteBusca(texto)
+                if (loteId) setLoteId('') // digitou de novo: a escolha anterior deixa de valer
+              }}
+              onSelect={selecionarLote}
+              options={opcoesLote}
+              placeholder="Busque por produto, lote ou quadra…"
             />
+            {loteBusca.trim() !== '' && !loteId && opcoesLote.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Nenhum lote encontrado para “{loteBusca.trim()}”.</p>
+            ) : null}
             {tipo === 'descarte' && lotes.every((item) => item.caixasPerda === 0) ? (
               <p className="text-xs text-muted-foreground">Nenhum lote tem perda acumulada para descartar.</p>
             ) : null}
