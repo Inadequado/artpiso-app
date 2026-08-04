@@ -60,11 +60,57 @@ type AjusteDrawerProps = {
 /** Teto de sugestoes: a lista e um dropdown, nao uma tela de resultados. */
 const LIMITE_SUGESTOES = 50
 
-/** Rotulo do lote na busca: produto sempre primeiro (e por ele que se procura). */
+/** Texto que o campo mostra DEPOIS de escolher (uma linha, resume a escolha). */
 function rotuloLote(lote: LoteEstoque, tipo: AjusteTipo | null) {
   return tipo === 'descarte'
     ? `${lote.produto} — ${lote.lote} (${lote.caixasPerda} cx de perda)`
     : `${lote.produto} — ${lote.lote} (${quadraLabel(lote)})`
+}
+
+/**
+ * Sugestao da lista: produto em cima; lote e localizacao embaixo.
+ *
+ * O codigo do lote muda so a FONTE (mono), sem cor de destaque: numa lista longa
+ * de nomes numericos isso ja basta para separar o lote do nome do produto, e o
+ * destaque colorido competia com o proprio nome.
+ */
+function opcaoLote(lote: LoteEstoque, tipo: AjusteTipo | null) {
+  return {
+    value: lote.id,
+    label: lote.produto,
+    hint: (
+      <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        {/* Levemente maior que o texto ao lado: fonte mono rende menor opticamente. */}
+        <span className="font-mono text-[0.8125rem] font-bold">{lote.lote}</span>
+        <span aria-hidden="true">·</span>
+        {tipo === 'descarte' ? (
+          <span className="numeric">{lote.caixasPerda} cx de perda</span>
+        ) : (
+          <span>{quadraLabel(lote)}</span>
+        )}
+      </span>
+    ),
+  }
+}
+
+/** Campos onde a busca procura: nome do produto, codigo do lote e quadras. */
+function textoBuscavel(lote: LoteEstoque) {
+  return `${lote.produto} ${lote.lote} ${quadrasDoLote(lote).join(' ')}`.toLowerCase()
+}
+
+/**
+ * Peso de relevancia (menor = mais relevante). Num catalogo de nomes NUMERICOS,
+ * buscar "002" casa dentro de "120020", "0020" e "0002-26" — filtrar mais forte
+ * esconderia resultado legitimo, entao mantemos o alcance e ORDENAMOS: quem tem
+ * o codigo exato sobe, quem so contem o numero no meio desce.
+ */
+function relevanciaLote(lote: LoteEstoque, termos: string[]) {
+  const codigo = lote.lote.toLowerCase()
+  const produto = lote.produto.toLowerCase()
+  if (termos.some((termo) => codigo === termo)) return 0
+  if (termos.some((termo) => codigo.startsWith(termo))) return 1
+  if (termos.some((termo) => produto.startsWith(termo))) return 2
+  return 3
 }
 
 /** Drawer unico para ajustes em lote existente (perda, mudanca de quadra e correcao). */
@@ -86,16 +132,25 @@ export function AjusteDrawer({ tipo, onClose, onConfirm }: AjusteDrawerProps) {
   // Sugestoes da busca: casa por produto, codigo do lote OU quadra — o gerente
   // procura tanto pelo nome quanto por "onde esta". Sem termo, mostra o comeco da
   // lista em vez de nada, para o campo continuar navegavel sem digitar.
+  //
+  // O ESPACO separa termos e cada um precisa casar (E, nao OU): "002 q-1" acha o
+  // lote 002 que esta na Quadra 1. Antes o termo era comparado inteiro, entao
+  // digitar mais nao estreitava nada.
   const opcoesLote = useMemo(() => {
     const base = tipo === 'descarte' ? lotes.filter((item) => item.caixasPerda > 0) : lotes
-    const termo = loteBusca.trim().toLowerCase()
-    const casam =
-      termo === ''
-        ? base
-        : base.filter((item) =>
-            `${item.produto} ${item.lote} ${quadrasDoLote(item).join(' ')}`.toLowerCase().includes(termo),
-          )
-    return casam.slice(0, LIMITE_SUGESTOES).map((item) => ({ value: item.id, label: rotuloLote(item, tipo) }))
+    const termos = loteBusca.trim().toLowerCase().split(/\s+/).filter(Boolean)
+    if (termos.length === 0) {
+      return base.slice(0, LIMITE_SUGESTOES).map((item) => opcaoLote(item, tipo))
+    }
+    return base
+      .filter((item) => {
+        const alvo = textoBuscavel(item)
+        return termos.every((termo) => alvo.includes(termo))
+      })
+      .map((item) => ({ item, peso: relevanciaLote(item, termos) }))
+      .sort((a, b) => a.peso - b.peso || a.item.produto.localeCompare(b.item.produto, 'pt-BR'))
+      .slice(0, LIMITE_SUGESTOES)
+      .map(({ item }) => opcaoLote(item, tipo))
   }, [lotes, loteBusca, tipo])
 
   const cfg = tipo ? config[tipo] : null
